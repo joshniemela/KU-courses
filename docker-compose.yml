@@ -10,6 +10,8 @@ services:
     environment:
       POSTGRES_USER: admin
       POSTGRES_PASSWORD: admin
+    networks:
+      - dis-network
     volumes: 
       - local_pgdata:/var/lib/postgresql/data
 
@@ -22,6 +24,8 @@ services:
     environment:
       PGADMIN_DEFAULT_EMAIL: admin@private.org
       PGADMIN_DEFAULT_PASSWORD: admin
+    networks:
+      - dis-network
     volumes:
       - pgadmin-data:/var/lib/pgadmin
 
@@ -31,9 +35,14 @@ services:
       dockerfile: Dockerfile
     container_name: backend
     restart: always
+    networks:
+      - dis-network
     ports:
       - "5000:5000"
 
 volumes:
   local_pgdata:
   pgadmin-data:
+
+networks:
+  dis-network:
