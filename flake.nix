@@ -44,8 +44,8 @@
               #nodePackages.prettier
             ];
 
-            #LD_LIBRARY_PATH = lib.makeLibraryPath [ stdenv.cc.cc 
-            #libpng glibc mlib zlib ];
+            LD_LIBRARY_PATH = lib.makeLibraryPath [ stdenv.cc.cc 
+            libpng mlib zlib ];
           };
 
         devShells.content = pkgs.mkShell {
