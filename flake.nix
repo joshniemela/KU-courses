@@ -45,7 +45,7 @@
             ];
 
             LD_LIBRARY_PATH = lib.makeLibraryPath [ stdenv.cc.cc 
-            libpng mlib zlib ];
+            glibc libpng mlib zlib ];
           };
 
         devShells.content = pkgs.mkShell {
