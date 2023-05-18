@@ -11,8 +11,9 @@ import theme from "../theme.js"
 </div>
 
 <style scoped>
+
 :global(body) {
-    margin: 0
+    margin: 0;
 }
 h1 {
     color: var(--theme);
