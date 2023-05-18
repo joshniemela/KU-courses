@@ -11,7 +11,7 @@ async function testConnection() {
 }
 
 let clicked = false
-$: color = clicked  ? theme.colors.neutral[800] : theme.colors.neutral[900]
+$: color = clicked  ? theme.colors.neutral[800] : theme.colors.red[900]
 
 let error = false
 
