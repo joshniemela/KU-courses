@@ -1,33 +1,15 @@
 <script>
 import theme from '../theme'
 import SearchIcon from '../assets/SearchIcon.svelte';
-import Navbar from '../components/Navbar/Navbar.svelte';
+import FilterButton from '../components/FilterButton/FilterButton.svelte'
 
-// Button on hover animation
-let buttonTextColor = theme.colors.brand[200]
-let buttonBgColor = theme.colors.brand[800]
-function handleHover(e) {
-    buttonTextColor = theme.colors.brand[900]
-    buttonBgColor = theme.colors.brand[500]
-}
-function handleHoverOut(e) {
-    buttonTextColor = theme.colors.brand[200]
-    buttonBgColor = theme.colors.brand[800]
-}
 </script>
     <div class="content">
         <h1 class="title" style="--font-color: {theme.colors.brand[500]}">KU Courses (WIP)</h1>
 
         <!-- Container responsible for the search area --> 
         <div class="search-container">
-            <button class="filter-button" style=
-                "
-                --bg-color: {buttonBgColor};
-                --text-color: {buttonTextColor}
-                "
-                on:mouseover={handleHover}
-                on:mouseout={handleHoverOut}
-            >Filter</button>
+            <FilterButton />
             <input class="search" type="search" placeholder="Search"
                 style="
                 --text-color: {theme.colors.brand[200]};
