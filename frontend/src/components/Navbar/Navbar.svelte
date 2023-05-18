@@ -4,10 +4,12 @@
     import Logo from "../../assets/Logo.svelte";
 </script>
 <div class="navbar-container" style="--bg: {theme.colors.neutral[300]}">
-    <div class="title-container">
-        <Logo />
-        <h1 style="--font-color: {theme.colors.brand[900]}"> DISKU </h1>
-    </div>
+    <a href="/">
+        <div class="title-container">
+            <Logo />
+            <h1 style="--font-color: {theme.colors.brand[900]}"> DISKU </h1>
+        </div>
+    </a>
     <a href="https://www.youtube.com/watch?v=j5a0jTc9S10" style="--color: {theme.colors.brand[900]}">
     <div class="git-container">
         <Github />
@@ -36,11 +38,12 @@
 }
 
 .social-text {
-    font-size: 1rem;
+    font-size: 1vw;
 }
 .git-container {
     display: flex;
     flex-direction: row;
+    width: fit-content;
     padding: 5%;
     align-items: center;
     justify-content: center;
@@ -48,7 +51,7 @@
 }
 
 h1 {
-    font-size: 1rem;
+    font-size: 1vw;
     color: var(--font-color);
     margin-left: 0.2vw; /* Coordinated with the logo width */
 }

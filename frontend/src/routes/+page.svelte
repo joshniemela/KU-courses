@@ -1,25 +1,55 @@
 <script>
 import theme from '../theme'
+import SearchIcon from '../assets/SearchIcon.svelte';
 import Navbar from '../components/Navbar/Navbar.svelte';
-import DbConnectionTester from '../components/DbConnectionTester/DbConnectionTester.svelte';
+
+// Button on hover animation
+let buttonTextColor = theme.colors.brand[200]
+let buttonBgColor = theme.colors.brand[800]
+function handleHover(e) {
+    buttonTextColor = theme.colors.brand[900]
+    buttonBgColor = theme.colors.brand[500]
+}
+function handleHoverOut(e) {
+    buttonTextColor = theme.colors.brand[200]
+    buttonBgColor = theme.colors.brand[800]
+}
 </script>
-<div class="main-container">
-    <Navbar />
     <div class="content">
         <h1 class="title" style="--font-color: {theme.colors.brand[500]}">KU Courses (WIP)</h1>
+
+        <!-- Container responsible for the search area --> 
         <div class="search-container">
-    <button class="filter-button">Filter</button>
-            <input type="search" placeholder="Search"/>
+            <button class="filter-button" style=
+                "
+                --bg-color: {buttonBgColor};
+                --text-color: {buttonTextColor}
+                "
+                on:mouseover={handleHover}
+                on:mouseout={handleHoverOut}
+            >Filter</button>
+            <input class="search" type="search" placeholder="Search"
+                style="
+                --text-color: {theme.colors.brand[200]};
+                --search-bg-color: {theme.colors.neutral[800]}
+                "
+            />
+            <a class="search-icon-ref" href="/browse">
+            <SearchIcon />
+            </a>
         </div>
-        <button>View all (WIP)</button>
-    </div>
+
+        <a href="/browse">
+        <button class="view-all-button"
+            style="
+                --bg-color: {theme.colors.neutral[900]};
+                --text-color: {theme.colors.brand[200]}
+            "
+        >View all (WIP)</button>
+        </a>
 </div>
 
 <style scoped>
-:global(*) {
-    margin: 0px;
-}
-
 .title {
     color: var(--font-color);
     margin-bottom: 2vh;
@@ -38,12 +68,34 @@ import DbConnectionTester from '../components/DbConnectionTester/DbConnectionTes
 .search-container {
     display: flex;
     flex-direction: row;
+    justify-content: center;
+    align-items: center;
     margin-bottom: 2vh;
+    height: 5vh;
+    width: 30vw;
 }
 
 .filter-button {
     background: none;
-    border: 1;
+    font-size: 1.5rem;
+    border: 0;
+    padding-right: 1vw;
+    padding-left: 1vw;
+    border-color: var(--text-color);
+    color: var(--text-color);
+    height: 100%;
+    background-color: var(--bg-color);
+    transition: ease-in-out 0.1s;
+}
+
+.search {
+    font-size: 1.5rem;
+    border: 0;
+    width: 100%;
+    height: 100%;
+    padding-left: 1vw;
+    color: var(--text-color);
+    background-color: var(--search-bg-color);
 }
 
 .main-container {
@@ -51,4 +103,17 @@ import DbConnectionTester from '../components/DbConnectionTester/DbConnectionTes
     flex-direction: row;
 }
 
+.view-all-button {
+    background: none;
+    font-size: 1rem;
+    border: 0;
+    color: var(--text-color);
+    width: 8vw;
+    background-color: var(--bg-color);
+    transition: ease-in-out 0.1s;
+}
+
+.search-icon-ref {
+    height: 5vh;
+}
 </style>
