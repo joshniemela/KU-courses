@@ -105,8 +105,62 @@ def get_course_items(url:str) -> dict:
 
     return out_dict
 
+def process_course_div(course_soup):
+    # find the a tag, this is the name of the section
+    key = course_soup.find("a").text.strip()
+    # find the div containing the tags
+    div = course_soup.find("div")
+    # find all the tags
+    tags = div.find_all(recursive=False)
+    # process
+   # print(key)
+    value = [process_course_item(tag) for tag in tags]
+   # print(value)
+    
+    # find all text in the div itself
+    div_text = div.find_all(text=True, recursive=False)
+    
+    # append text to value
+    value += [text.strip() for text in div_text if text.strip() != ""]
+
+    return {key: value}
+
+def process_course_item(course_soup):
+    match course_soup.name:
+        case "p":
+            return course_soup.text.strip()
+        case "h5":
+            return course_soup.text.strip()
+        case "ul":
+            return [li.text.strip() for li in course_soup.find_all("li")]
+        case "dl":
+            return {dt.text.strip(): dd.text.strip() for dt, dd in zip(course_soup.find_all("dt"), course_soup.find_all("dd"))}
+        case "a":
+            return course_soup.text.strip()
+        case "div":
+            return course_soup.text.strip() + " WARNIGN DIV"
+
+
+def get_course_items2(url:str) -> dict:
+    # Find a div with regex class * main-content
+    soup = BeautifulSoup(get_page(url), "html.parser")
+    main_content = soup.find("div", class_=lambda x: x and "main-content" in x)
+    
+    out_dict = {}
+    out_dict["primary title"] = main_content.find("h1").text.strip()
+
+    course_items = main_content.find_all("div", class_="course-item")
+    
+
+    out_dict["course items"] = [process_course_div(course_item) for course_item in course_items]
+    
+    
+    return out_dict
+
+
+
 def get_all_info(url):
     return {
         **get_panel_info(url),
-        **get_course_items(url)
+        **get_course_items2(url)
     }
