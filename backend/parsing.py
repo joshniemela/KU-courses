@@ -152,7 +152,10 @@ def get_course_items2(url:str) -> dict:
     course_items = main_content.find_all("div", class_="course-item")
     
 
-    out_dict["course items"] = [process_course_div(course_item) for course_item in course_items]
+    course_items = [process_course_div(course_item) for course_item in course_items]
+    # append every dict to out_dict
+    for course_item in course_items:
+        out_dict = {**out_dict, **course_item}
     
     
     return out_dict
