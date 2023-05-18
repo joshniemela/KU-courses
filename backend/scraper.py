@@ -4,6 +4,7 @@ import requests
 from bs4 import BeautifulSoup
 # this module is responsible for scraping the pages and caching them
 
+# TODO: sitemap contains last-mod, use this to check if the page should be scraped again.
 SITEMAP_URL ="https://kurser.ku.dk/sitemap.xml" # the magic url
 DATA_DIR = "../data" # where to store the data
 
