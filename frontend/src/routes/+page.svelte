@@ -29,7 +29,7 @@ import DbConnectionTester from '../components/DbConnectionTester/DbConnectionTes
     display: flex;
     height: 100vh;
     width: 100%;
-    margin-right: 6vw;
+    margin-right: 8vw; /* should be the same as navbar-container width */
     flex-direction: column;
     align-items: center;
     justify-content: center;
@@ -50,4 +50,5 @@ import DbConnectionTester from '../components/DbConnectionTester/DbConnectionTes
     display: flex;
     flex-direction: row;
 }
+
 </style>
