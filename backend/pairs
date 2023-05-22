@@ -30,3 +30,28 @@ key_dictionary = {'pris: 'NULL',
 #url
 #Exam
 #last-modified
+
+
+
+WHAT TO HARVEST:
+# critical (course is to be terminated if it lacks ANY of these)
+placement
+schedule
+primary title
+contracting faculty
+exam
+course coordinators
+credit
+last-modified
+content
+
+# important
+workload 
+formal requirements
+duration
+
+
+
+# nice to have (some courses dont have this)
+lecturers
+
