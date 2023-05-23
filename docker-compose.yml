@@ -29,17 +29,6 @@ services:
     volumes:
       - pgadmin-data:/var/lib/pgadmin
 
-  backend:
-    build:
-      context: ./to_be_deleted_backend
-      dockerfile: Dockerfile
-    container_name: backend
-    restart: always
-    networks:
-      - dis-network
-    ports:
-      - "5000:5000"
-
 volumes:
   local_pgdata:
   pgadmin-data:
