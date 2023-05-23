@@ -6,7 +6,9 @@
   :dependencies [[org.clojure/clojure "1.11.1"]
                  [com.github.seancorfield/next.jdbc "1.3.834"]
                  [org.postgresql/postgresql "42.2.10"]
-                 [com.github.seancorfield/honeysql "2.3.928"]]
+                 [com.github.seancorfield/honeysql "2.3.928"]
+                 [org.clojure/data.json "2.4.0"]
+                 [org.clojure/data.csv "1.0.1"]]
   :main ^:skip-aot db-manager.core
   :target-path "target/%s"
   :profiles {:uberjar {:aot :all

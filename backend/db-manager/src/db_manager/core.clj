@@ -3,7 +3,9 @@
   (:require [next.jdbc :as jdbc] 
             [honey.sql :as sql] 
             [honey.sql.helpers :refer :all :as h] 
-            [clojure.core :as c]))
+            [clojure.core :as c]
+            [clojure.data.json :as json]
+            [clojure.java.io :as io]))
                                              
 
 (def db-config
@@ -20,7 +22,7 @@
   [:employees [[:name [:varchar 255] [:not nil]]
                [:email [:varchar 50] [:not nil]]
                [:title [:varchar 255] [:not nil]]
-               ;[:phone [:varchar 255]] might not be allowed by GDPR
+               [:phone [:varchar 255]] ;might not be allowed by GDPR
                [[:primary-key :email]]]])
 
 (def course-table 
@@ -35,12 +37,22 @@
 (defn init-tables! [tables]
   (map #(init-table! (first %) (second %)) tables))
 
+; read employed.json
+(def employees (json/read-str (slurp "employed.json") :key-fn keyword))
 
-
+; upsert employees
+(defn upsert-employees! [employees]
+  (-> (insert-into :employees)
+      (values employees)
+      (on-conflict :email)
+      do-nothing
+      sql/format))
 (defn -main []
   (println (jdbc/execute! db ["select version();"])))
 
 (comment 
   (init-tables! [employee-table course-table])
   (jdbc/execute! db ["drop table employees;"])
-  )
+  (jdbc/execute! db (upsert-employees! employees)
+
+   )
