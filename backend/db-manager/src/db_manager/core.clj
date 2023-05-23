@@ -1,5 +1,7 @@
 (ns db-manager.core
-  (:require [next.jdbc :as jdbc]))
+  (:require [next.jdbc :as jdbc]
+            [honeysql.core :as sql]
+            [honeysql.helpers :refer :all :as helpers]))
 
 
 (def db-config
@@ -10,6 +12,7 @@
    :password "admin"})
 
 (def db (jdbc/get-datasource db-config))
+
 
 
 (defn -main []

@@ -5,7 +5,8 @@
             :url "https://www.eclipse.org/legal/epl-2.0/"}
   :dependencies [[org.clojure/clojure "1.11.1"]
                  [com.github.seancorfield/next.jdbc "1.3.834"]
-                 [org.postgresql/postgresql "42.2.10"]]
+                 [org.postgresql/postgresql "42.2.10"]
+                 [honeysql "1.0.461"]]
   :main ^:skip-aot db-manager.core
   :target-path "target/%s"
   :profiles {:uberjar {:aot :all

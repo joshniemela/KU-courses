@@ -3,7 +3,7 @@ version: "3.8"
 services:
   db:
     image: postgres
-    container_name: local_pgdb
+    container_name: disku_pgdb
     restart: always
     ports:
       - "5432:5432"
@@ -13,7 +13,7 @@ services:
     networks:
       - dis-network
     volumes: 
-      - local_pgdata:/var/lib/postgresql/data
+      - ./data/postgres:/var/lib/postgresql/data
 
   pgadmin:
     image: dpage/pgadmin4
