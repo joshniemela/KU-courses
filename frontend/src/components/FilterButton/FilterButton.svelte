@@ -16,6 +16,14 @@ function handleHoverOut(e) {
     buttonTextColor = theme.colors.brand[200]
     buttonBgColor = theme.colors.brand[800]
 }
+
+// Logic
+let toggled = false;
+
+const handleClick = () => {
+    toggled = !toggled;
+    console.log(toggled)
+}
 </script>
 
 <button class="filter-button" style=
@@ -27,7 +35,14 @@ function handleHoverOut(e) {
     "
     on:mouseover={handleHover}
     on:mouseout={handleHoverOut}
+    on:click={handleClick}
 >Filter</button>
+
+{#if toggled}
+<div class="overlay-container" on:click={handleClick}>
+    <p>I am toggled!</p>
+</div>
+{/if}
 
 <style scoped>
 .filter-button {
@@ -41,5 +56,15 @@ function handleHoverOut(e) {
     height: 100%;
     background-color: var(--bg-color);
     transition: ease-in-out 0.1s;
+}
+
+.overlay-container{
+    position: absolute;
+    top: 0;
+    left: 0;
+    background-color: black;
+    opacity: 0.3;
+    height: 100vh;
+    width: 100vw;
 }
 </style>

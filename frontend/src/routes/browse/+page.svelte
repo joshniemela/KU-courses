@@ -2,6 +2,13 @@
 import theme from "../../theme";
 import SearchIcon from "../../assets/SearchIcon.svelte";
 import FilterButton from "../../components/FilterButton/FilterButton.svelte";
+
+let toggled = false;
+
+const handleClick = () => {
+    toggled = !toggled;
+    console.log(toggled)
+}
 </script>
 
 <div class="browse-container">
@@ -11,7 +18,6 @@ import FilterButton from "../../components/FilterButton/FilterButton.svelte";
             style="--bg-color: {theme.colors.neutral[800]}"
         />
         <SearchIcon />
-
     </div>
 </div>
 
@@ -34,22 +40,13 @@ import FilterButton from "../../components/FilterButton/FilterButton.svelte";
     justify-content: center;
 }
 
-.filter-button {
-    font-size: 1.25rem;
-    height: 100%;
-    border: 0;
-    background-color: var(--bg-color);
-    color: var(--text-color);
-    padding-left: 2vw;
-    padding-right: 2vw;
-}
-
 .search {
     height: 100%;
     width: 30vw;
     max-width: 800px;
     margin-left: 1vw;
     font-size: 1.25rem;
+    padding-left: 1vw;
     border: 0;
     background-color: var(--bg-color);
 

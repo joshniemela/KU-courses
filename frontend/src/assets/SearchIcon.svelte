@@ -1,16 +1,16 @@
 <script>
 import theme from "../theme";
-let fill = theme.colors.brand[200]
-let BgColor = theme.colors.brand[800]
+let fill = theme.colors.neutral[200]
+let BgColor = theme.colors.neutral[800]
 
 function handleOnMouseOver() {
-    fill = theme.colors.brand[900]
-    BgColor = theme.colors.brand[500]
+    fill = theme.colors.neutral[900]
+    BgColor = theme.colors.neutral[500]
 }
 
 function handleOnMouseLeave() {
-    fill = theme.colors.brand[200]
-    BgColor = theme.colors.brand[800]
+    fill = theme.colors.neutral[200]
+    BgColor = theme.colors.neutral[800]
 }
 
 </script>
