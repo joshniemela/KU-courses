@@ -53,6 +53,5 @@
 (comment 
   (init-tables! [employee-table course-table])
   (jdbc/execute! db ["drop table employees;"])
-  (jdbc/execute! db (upsert-employees! employees)
-
-   )
+  (jdbc/execute! db (upsert-employees! employees))
+)
