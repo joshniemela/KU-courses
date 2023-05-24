@@ -167,6 +167,7 @@ def get_all_info(url):
     dk_to_en_keys = {'varighed': 'duration',
         'kursuskapacitet': 'course capacity',
         'udbydende institutter': 'contracting departments', #
+        'contracting department': 'contracting departments', #
         'udbydende institut': 'contracting departments',    # These map to the same.
         'studienævn': 'study board',
         'kursuskode': 'course code',
@@ -189,12 +190,13 @@ def get_all_info(url):
         'point': 'credit',
         'udbydende fakultet': 'contracting faculty',
         'Tilmelding': 'Sign up'}
-    dk_to_en_faculties = {'Det Juridiske Fakultet': 'Faculty of Law',
-                          'Det Humanistiske Fakultet': 'Faculty of Humanities',
-                          'Det Teologiske Fakultet': 'Faculty of Theology',
-                          'Det Sundhedsvidenskabelige Fakultet': 'Faculty of Health and Medical Sciences',
-                          'Det Natur- og Biovidenskabelige Fakultet': 'Faculty of Science',
-                          'Det Samfundsvidenskabelige Fakultet': 'Faculty of Social Sciences'}
+    dk_to_en_faculties = {
+            'Det Juridiske Fakultet': 'Faculty of Law',
+            'Det Humanistiske Fakultet': 'Faculty of Humanities',
+            'Det Teologiske Fakultet': 'Faculty of Theology',
+            'Det Sundhedsvidenskabelige Fakultet': 'Faculty of Health and Medical Sciences',
+            'Det Natur- og Biovidenskabelige Fakultet': 'Faculty of Science',
+            'Det Samfundsvidenskabelige Fakultet': 'Faculty of Social Sciences'}
     all_info = {
         **get_panel_info(url),
         **get_course_items2(url)
@@ -203,12 +205,15 @@ def get_all_info(url):
     all_info_en = {dk_to_en_keys.get(k, k): v for k, v in all_info.items()}
 
     # Translate faculties to english
-    danish_name = all_info_en['contracting faculty'][0]  
+    faculty = all_info_en['contracting faculty'][0]  
 
     # only attempt to translate if the danish_name is in the translation dictionary
-    if danish_name in dk_to_en_faculties:
-        english_name = dk_to_en_faculties[danish_name] 
+    if faculty in dk_to_en_faculties:
+        english_name = dk_to_en_faculties[faculty] 
         all_info_en['contracting faculty'] = english_name  
+    else:
+        all_info_en['contracting faculty'] = faculty
+
 
 
     return all_info_en
