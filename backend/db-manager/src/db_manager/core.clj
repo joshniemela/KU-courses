@@ -50,16 +50,18 @@
   (println (jdbc/execute! db ["select version();"])))
   (run-server (app) {:port 3000})
 
+(defn merge-employees [employees]
+  (let [grouped (group-by :email employees)]
+    (map (fn [[email employees]]
+           (reduce (fn [acc employee]
+                     (assoc acc :title (str (:title acc) ", " (:title employee))))
+                   (first employees)
+                   (rest employees)))
+         grouped)))
+
 (comment 
   ; some employees have multiple titles, so we need to group them
-  (defn merge-employees [employees] 
-    (let [grouped (group-by :email employees)]
-      (map (fn [[email employees]] 
-             (reduce (fn [acc employee] 
-                       (assoc acc :title (str (:title acc) ", " (:title employee)))) 
-                     (first employees) 
-                     (rest employees))) 
-           grouped))) 
+   
   
   (println (merge-employees employees))
   (println (count employees))
