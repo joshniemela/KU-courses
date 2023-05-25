@@ -23,10 +23,12 @@
    :user "admin"
    :password "admin"})
 
+(def data-dir "../../data/")
+
 (def db (jdbc/get-datasource db-config))
 
 ; read employed.json
-(def employees (json/read-str (slurp "employed.json") :key-fn keyword))
+(def employees (json/read-str (slurp (str data-dir "employed.json")) :key-fn keyword))
 
 
 (defn app []
@@ -63,6 +65,7 @@
   (println (count employees))
   (println (count (merge-employees employees))
   (nuke-replace-employees! db (merge-employees employees)))
+  (jdbc/execute! db ["drop table employees;"])
   ; find person with email back@di.ku.dk
   (println (jdbc/execute! db ["select * from employees;"])) 
   (println (jdbc/execute! db ["select * from employees where email = 'back@di.ku.dk';"]))
