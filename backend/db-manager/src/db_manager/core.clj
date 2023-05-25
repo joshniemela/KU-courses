@@ -30,7 +30,7 @@
   [:employees [[:name [:varchar 255] [:not nil]]
                [:email [:varchar 50] [:not nil]]
                [:title [:varchar 255] [:not nil]]
-               [:phone [:varchar 255]] ;might not be allowed by GDPR
+               ;[:phone [:varchar 255]] ;might not be allowed by GDPR
                [[:primary-key :email]]]])
 
 (def course-table 
@@ -49,9 +49,10 @@
 (def employees (json/read-str (slurp "employed.json") :key-fn keyword))
 
 ; upsert employees
-(defn upsert-employees! [employees]
+(defn upsert-employees [employees]
   (-> (insert-into :employees)
-      (values employees)
+      ; values are the keys of the table
+      (values (map #(select-keys % [:name :email :title]) employees))
       (on-conflict :email)
       do-nothing
       sql/format))
@@ -78,5 +79,6 @@
 (comment 
   (init-tables! [employee-table course-table])
   (jdbc/execute! db ["drop table employees;"])
-  (jdbc/execute! db (upsert-employees! employees))
+  (upsert-employees (take 10 employees)))
+  (jdbc/execute! db (upsert-employees employees))
 )
