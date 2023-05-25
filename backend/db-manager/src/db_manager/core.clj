@@ -25,8 +25,6 @@
 
 (def db (jdbc/get-datasource db-config))
 
-
-
 (defn init-table! [table-name columns]
   (jdbc/execute! db (sql/format {:create-table [table-name :if-not-exists]
                                  :with-columns columns})))
@@ -38,9 +36,10 @@
 (def employees (json/read-str (slurp "employed.json") :key-fn keyword))
 
 ; upsert employees
-(defn upsert-employees! [employees]
+(defn upsert-employees [employees]
   (-> (insert-into :employees)
-      (values employees)
+      ; values are the keys of the table
+      (values (map #(select-keys % [:name :email :title]) employees))
       (on-conflict :email)
       do-nothing
       sql/format))
@@ -67,5 +66,6 @@
 (comment 
   (init-tables! [employee-table course-table])
   (jdbc/execute! db ["drop table employees;"])
-  (jdbc/execute! db (upsert-employees! employees))
+  (upsert-employees (take 10 employees)))
+  (jdbc/execute! db (upsert-employees employees))
 )

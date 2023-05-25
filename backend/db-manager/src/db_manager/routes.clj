@@ -1,5 +1,6 @@
 (ns db-manager.routes
-  (:require [clojure.data.json :as json]))
+  (:require [clojure.data.json :as json] 
+            ))
 
 (def ping-route
   ["/ping"
@@ -10,10 +11,16 @@
 
 (def crud-routes
   ; make a route that takes json body with values "x" and "y", and returns the sum
-  ["/post" {:post {:parameters {:body {:x int?
+  [["/post" {:post {:parameters {:body {:x int?
                                        :y int?}}
                    :responses {200 {:body {:sum int?}}} 
                    
                    :handler (fn [{{{:keys [x y]} :body} :parameters}]
                               {:status 200
-                               :body {:sum (+ x y)}})}}])
+                               :body {:sum (+ x y)}})}}]
+  ; echo json back
+  ["/echo" {:post {:parameters {:body {:json map?}}
+                   :responses {200 {:body {:json map?}}}
+                   :handler (fn [{{{:keys [json]} :body} :parameters}]
+                              {:status 200
+                               :body {:json json}})}}]])
