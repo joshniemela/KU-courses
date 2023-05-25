@@ -8,7 +8,10 @@
                  [org.postgresql/postgresql "42.2.10"]
                  [com.github.seancorfield/honeysql "2.3.928"]
                  [org.clojure/data.json "2.4.0"]
-                 [org.clojure/data.csv "1.0.1"]]
+                 [http-kit "2.3.0"]
+                 [ring "1.10.0"]
+                 [metosin/reitit "0.6.0"]
+                 [metosin/muuntaja "0.6.8"]]
   :main ^:skip-aot db-manager.core
   :target-path "target/%s"
   :profiles {:uberjar {:aot :all
