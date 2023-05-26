@@ -2,16 +2,19 @@ import os
 import time
 import requests
 from bs4 import BeautifulSoup
-# this module is responsible for scraping the pages and caching them
 
+# this module is responsible for scraping the pages and caching them
 # TODO: sitemap contains last-mod, use this to check if the page should be scraped again.
 SITEMAP_URL ="https://kurser.ku.dk/sitemap.xml" # the magic url
-DATA_DIR = "../data" # where to store the data
-
+DATA_DIR = "../../data" # where to store the data
 
 # helper functions:
 def name_from_url(url):
     return url.split("/")[-1]
+
+def ensure_dir_exists(dir_path):
+    os.makedirs(dir_path, exist_ok=True)
+
 # end helper functions
 
 def get_sitemap_urls(url=SITEMAP_URL):
@@ -22,17 +25,20 @@ def get_sitemap_urls(url=SITEMAP_URL):
 
 def get_page(url, data_dir=DATA_DIR):
     name = name_from_url(url)
+    file_path = f"{data_dir}/pages/{name}.html"
+    ensure_dir_exists(os.path.dirname(file_path)) # Create necessary folders if they don't exist
     try:
-        with open(f"{data_dir}/pages/{name}.html", "r") as f:
+        with open(file_path, "r") as f:
             return f.read()
     except FileNotFoundError:
         time.sleep(0.20) # be nice to the server
         page = requests.get(url)
-        with open(f"{data_dir}/pages/{name}.html", "w") as f:
+        with open(file_path, "w") as f:
             f.write(page.text)
         return page.text
 
 def cache_pages(data_dir=DATA_DIR):
+    ensure_dir_exists(f"{data_dir}/pages") # Create necessary folders if they don't exist
     cached_pages = os.listdir(f"{data_dir}/pages")
     sitemap_urls = get_sitemap_urls(SITEMAP_URL)
     missing = [url for url in sitemap_urls if f"{name_from_url(url)}.html" not in cached_pages]
