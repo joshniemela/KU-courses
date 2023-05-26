@@ -121,10 +121,33 @@ def process_course_div(course_soup):
     div_text = div.find_all(text=True, recursive=False)
     
     # append text to value
-    value += [text.strip() for text in div_text if text.strip() != ""]
+    value += [" "+text.strip() for text in div_text if text.strip() != ""]
 
     return {key: value}
 
+def process_course_item(course_soup):
+    def checkdiv(tag):
+        divs = tag.find_all('div')
+        if divs:
+            
+            return [d.text.strip() for d in divs]
+        else:
+            return tag.text.strip()
+        
+    match course_soup.name:
+        case "p":
+            return course_soup.text.strip()
+        case "h5":
+            return course_soup.text.strip()
+        case "ul":
+            return [li.text.strip() for li in course_soup.find_all("li")]
+        case "dl":
+            return {dt.text.strip(): checkdiv(dd) for dt, dd in zip(course_soup.find_all("dt"), course_soup.find_all("dd"))} # TODO FIX THIS: this calling .text collapses listed structures such as stacks of divs into a single text, 2 exams get merged etc.
+        case "a":
+            return course_soup.text.strip()
+        case "div":
+            return course_soup.text.strip() + " WARNIGN DIV"
+"""
 def process_course_item(course_soup):
     match course_soup.name:
         case "p":
@@ -134,12 +157,12 @@ def process_course_item(course_soup):
         case "ul":
             return [li.text.strip() for li in course_soup.find_all("li")]
         case "dl":
-            return {dt.text.strip(): dd.text.strip() for dt, dd in zip(course_soup.find_all("dt"), course_soup.find_all("dd"))}
+            return {dt.text.strip(): dd.text.strip() for dt, dd in zip(course_soup.find_all("dt"), course_soup.find_all("dd"))} # TODO FIX THIS: this calling .text collapses listed structures such as stacks of divs into a single text, 2 exams get merged etc.
         case "a":
             return course_soup.text.strip()
         case "div":
             return course_soup.text.strip() + " WARNIGN DIV"
-
+"""
 
 def get_course_items2(url:str) -> dict:
     # Find a div with regex class * main-content
