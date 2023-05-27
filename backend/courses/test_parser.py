@@ -31,3 +31,6 @@ def test_LFKB10272U():
                               "Vejledning": 5,
                               "Eksamen": 1,
                               "I alt": 206}, input)
+    assert_field("lecturers", ["Christian Gamborg, chg@ifro.ku.dk",
+                               "Tina Hansen, tih@ifro.ku.dk",
+                               "Trine Agervig Carstensen tac@ign.ku.dk"], input)
