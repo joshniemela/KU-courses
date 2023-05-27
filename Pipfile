@@ -19,6 +19,7 @@ fastapi = "*"
 uvicorn = {extras = ["standard"], version = "*"}
 starlette = "*"
 pydantic = "*"
+pytest = "*"
 
 [dev-packages]
 

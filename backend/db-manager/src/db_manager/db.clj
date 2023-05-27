@@ -17,7 +17,8 @@
    [:placement [:char 3] [:not nil]]])
 
 ; takes map of shape:
-; {:name "Erik" :email "foo@bar.dk" :title "CEO"}
+; [{:name "Erik" :email "foo@bar.dk" :title "CEO"}
+;  {...}...]
 (defn insert-employees [employees]
   (-> (insert-into :employees)
       ; values are the keys of the table
