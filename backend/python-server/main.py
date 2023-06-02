@@ -1,4 +1,10 @@
 from fastapi import FastAPI
+from decouple import config
+
+
+PORT = config("BACKEND_PORT")
+print("# INITIAlIZING BACKEND #")
+print(f'Port: {PORT}')
 
 app = FastAPI()
 
