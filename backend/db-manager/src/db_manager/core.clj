@@ -46,9 +46,11 @@
                          rrc/coerce-response-middleware]}})))
 
 
+;(defn -main []
+;  (println (jdbc/execute! db ["select version();"])))
+;  (run-server (app) {:port 3000})
 (defn -main []
-  (println (jdbc/execute! db ["select version();"])))
-  (run-server (app) {:port 3000})
+  (println (slurp  (io/resource "schema.sql"))))
 
 (defn merge-employees [employees]
   (let [grouped (group-by :email employees)]

@@ -13,6 +13,7 @@
                  [metosin/reitit "0.6.0"]
                  [metosin/muuntaja "0.6.8"]]
   :main ^:skip-aot db-manager.core
+  :resource-path "resources"
   :target-path "target/%s"
   :profiles {:uberjar {:aot :all
                        :jvm-opts ["-Dclojure.compiler.direct-linking=true"]}})
