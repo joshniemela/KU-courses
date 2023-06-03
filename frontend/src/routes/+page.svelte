@@ -1,8 +1,17 @@
 <script>
 import theme from '../theme'
 import SearchIcon from '../assets/SearchIcon.svelte';
-import FilterButton from '../components/FilterButton/FilterButton.svelte'
+import FilterButton from '../components/FilterButton/FilterButton.svelte';
+import { navigate } from 'svelte-navigator';
 
+
+function submit(event) {
+    if (event.key === 'Enter') {
+        console.log("Submit")
+        navigate('/browse')
+        location.reload()
+    }
+}
 </script>
     <div class="content">
         <h1 class="title" style="--font-color: {theme.colors.brand[500]}">KU Courses (WIP)</h1>
@@ -15,6 +24,7 @@ import FilterButton from '../components/FilterButton/FilterButton.svelte'
                 --text-color: {theme.colors.brand[200]};
                 --search-bg-color: {theme.colors.neutral[800]}
                 "
+                on:keydown={submit}
             />
             <a class="search-icon-ref" href="/browse">
             <SearchIcon />
@@ -66,6 +76,11 @@ import FilterButton from '../components/FilterButton/FilterButton.svelte'
     padding-left: 1vw;
     color: var(--text-color);
     background-color: var(--search-bg-color);
+}
+
+.search:focus {
+    outline: none !important;
+    border:2px solid var(--text-color);
 }
 
 .view-all-button {
