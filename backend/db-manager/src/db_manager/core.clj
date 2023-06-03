@@ -11,7 +11,7 @@
             [reitit.ring.middleware.parameters :as parameters]
             [org.httpkit.server :refer [run-server]]
             [db-manager.routes :refer [ping-route crud-routes]]
-            [db-manager.db :refer [nuke-db! insert-employees! insert-course-emp! insert-course! insert-coordinates! emp-fields]]
+            [db-manager.db :refer [nuke-db! insert-course-emp!]]
             [next.jdbc :as jdbc]
             [next.jdbc.types :refer [as-other]]
             [honey.sql :as sql]))
@@ -82,7 +82,8 @@
 
 (defn -main []
   (nuke-db! db)
-  (insert-employees! db [{:email "josh@jniemela.dk" :full_name "josh"}])
+  (insert-course-emp! db test-course)
+  (insert-course-emp! db another-test-course)
   (println (jdbc/execute! db ["SELECT * FROM Employee"])))
 
 (defn merge-employees [employees]
