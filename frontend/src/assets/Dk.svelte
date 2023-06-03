@@ -9,7 +9,7 @@ svg {
     position: absolute;
     bottom: 0;
     right: 0;
-    height: 10%;
+    height: 100%;
     border-top-left-radius: 20%;
 }
 </style>
