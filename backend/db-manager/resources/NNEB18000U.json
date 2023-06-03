@@ -1,132 +1,33 @@
 {
+    "course_id": "NNEB18000U",
     "url": "http://kurser.ku.dk/course/NNEB18000U",
-    "language": "Dansk",
-    "course code": "NNEB18000U",
-    "credit": 15.0,
-    "level": "Bachelor",
-    "duration": "2 blokke",
-    "placement": "Blok 3 og Blok 4",
-    "schedule": "B",
-    "course capacity": "125\n\nDer kan v\u00e6re f\u00e6rre pladser i eftertilmeldingsperioden",
-    "study board": [
-        "Studien\u00e6vn for F\u00f8devarer, Human ern\u00e6ring og Idr\u00e6t"
-    ],
-    "contracting departments": [
-        "Institut for Idr\u00e6t og Ern\u00e6ring"
-    ],
-    "contracting faculty": "Faculty of Science",
-    "course coordinators": [
-        "Pia Grethe Sandfeld Melcher"
-    ],
-    "last-modified": "Gemt den\n28-02-2023",
     "title": "NNEB18000U\u00a0Funktionel anatomi, muskel-\nog neurofysiologi",
-
-    "Education": [
-        "Bacheloruddannelsen i idr\u00e6t og fysisk aktivitet"
+    "course_language": "Dansk",
+    "credits": 15.0,
+    "study_level": "Bachelor",
+    "start_block": 3,
+    "duration": 2,
+    "schedule_group": "B",
+    "coordinators": [
+        {"full_name": "Pia Grethe Sandfeld Melcher", "email": "placeholder"}
     ],
-    "Content": [
-        "Kurset starter med en introduktion til kroppens grundl\u00e6ggende\nfysiologi og anatomi, samt biomekaniske principper. Dette danner\nbasis for det videre arbejde med bev\u00e6geapparatets funktion\nanalyseret ud fra en biomekanisk og funktionel anatomisk vinkel og\nfor arbejdet med det neurofysiologiske grundlag for bev\u00e6gelse \u2013\nherunder det motoriske og sensoriske systems funktion, opbygning og\nplasticitet.",
-        "",
-        "Emner p\u00e5 kurset inkluderer:",
-        [
-            "Cellers opbygning, funktion og metabolisme",
-            "Transportprocesser",
-            "Nervesystemets celler og signalering imellem dem",
-            "Nervesystemets overordnede anatomi",
-            "Det motoriske og sensoriske systems funktion, opbygning og\nplasticitet",
-            "Bev\u00e6geapparatets funktionelle anatomi og\nbev\u00e6gelsesanalyser",
-            "Kroppens anatomi (herunder knogler, led og muskler)\nog\u00a0antropometri",
-            "Biomekaniske grundbegreber og Newtons love",
-            "Line\u00e6r og angul\u00e6r kinematik og\u00a0kinetik, samt\nhydro/aerodynamik"
-        ]
+    "description":
+        "Kurset starter med en introduktion til kroppens grundl\u00e6ggende\nfysiologi og anatomi, samt biomekaniske principper. Dette danner\nbasis for det videre arbejde med bev\u00e6geapparatets funktion\nanalyseret ud fra en biomekanisk og funktionel anatomisk vinkel og\nfor arbejdet med det neurofysiologiske grundlag for bev\u00e6gelse \u2013\nherunder det motoriske og sensoriske systems funktion, opbygning og\nplasticitet. 
+        Emner p\u00e5 kurset inkluderer:,
+        *    Cellers opbygning, funktion og metabolisme,
+        *    Transportprocesser,
+        *    Nervesystemets celler og signalering imellem dem,
+        *    Nervesystemets overordnede anatomi,
+        *    Det motoriske og sensoriske systems funktion, opbygning og\nplasticitet,
+        *    Bev\u00e6geapparatets funktionelle anatomi og\nbev\u00e6gelsesanalyser,
+        *    Kroppens anatomi (herunder knogler, led og muskler)\nog\u00a0antropometri,
+        *    Biomekaniske grundbegreber og Newtons love,
+        *    Line\u00e6r og angul\u00e6r kinematik og\u00a0kinetik, samt\nhydro/aerodynamik",
+    "workloads": [
+            {"workload_type": "lectures", "hours": 56},
+            {"workload_type": "preparation", "hours": 200},
+            {"workload_type": "exercises", "hours": 60},
+            {"workload_type": "exam", "hours": 40}
     ],
-    "Learning Outcome": [
-        "VIDEN \u2013 den studerende opn\u00e5r viden om:",
-        [
-            "fysiologiske principper der ligger til grund for cellens\nfunktion.",
-            "nervecellers signalering og de principper som ligger til grund\nherfor, herunder membranpotentialer samt synaptisk\ntransmission.",
-            "basale fysiologiske grundprincipper omhandlende det motoriske\nog sensoriske systems opbygning og funktion.",
-            "den funktionelle betydning af neurale netv\u00e6rk i hjerne og\nrygmarv, for bl.a.\u00a0gangbev\u00e6gelser, kropsstillingen og h\u00e5ndens\nmotoriske funktion samt de neuroplastiske tilpasninger som sker ved\nmotorisk indl\u00e6ring.",
-            "skeletmuskler og centralnervesystemet, herunder musklers\nmetaboliske egenskaber, kapill\u00e6rt\u00e6thed, muskelfiberkarakteristik,\nmuskelfunktion og motorisk kontrol.",
-            "knoglepunkter, led og skeletmusklers anatomi (latinske\nbetegnelser).",
-            "udvalgte nerver i ben og arme.",
-            "biomekaniske grundbegreber, herunder antropometri, kraft og\nkraftmomenter, inerti og inertimoment, impuls og impulsmoment,\nenergi, arbejde og effekt, samt hydro- og aerodynamik.",
-            "metoder til at gennemf\u00f8re eksperimentelle fors\u00f8g indenfor\nkvantitativ bev\u00e6gelsesanalyse og motorisk kontrol."
-        ],
-        "F\u00c6RDIGHEDER \u2013 den studerende kan:",
-        [
-            "beskrive cellens opbygning og redeg\u00f8re for cellens funktioner,\nherunder transportprocesser, replikation og metabolisme.",
-            "redeg\u00f8re for cellens opbygningen og metabolisme (glykolysen,\nKrebs' cyklus samt respirationsk\u00e6den).",
-            "redeg\u00f8re for neuroners signalering.",
-            "beskrive den overordnede opbygning af nervesystemet.",
-            "fortolke klassiske eksperimenter samt skriftligt og mundtligt\nkunne forklare og diskutere mekanismerne bag neurale adaptationer\ntil tr\u00e6ning p\u00e5 integrativt niveau.",
-            "anvende fysiologisk og biomekanisk viden i analyser af den\nunderliggende neurale generering af bev\u00e6gelser og i\nbev\u00e6gelsesanalyser.",
-            "vurdere metoder til bestemmelse af motoriske funktion ud fra\nlaboratorie\u00f8velser, hvori der indg\u00e5r underlagsreaktionskr\u00e6fter,\nEMG, TMS og refleksm\u00e5linger.",
-            "beskrive typer af st\u00f8ttev\u00e6v, hvor de findes og deres\nbiomekaniske egenskaber, samt fortolke hvordan opbygningen og\negenskaberne relaterer til deres funktion.",
-            "beskrive knogler og led, og forklare hvordan opbygningen af\nleddene relaterer til deres funktion (herunder funktion af\nligamenter, menisker, ledtype).",
-            "beskrive skeletmusklernes anatomi (udspring, insertion og\nfunktion).",
-            "redeg\u00f8re for og anvende biomekaniske grundprincipper i\nberegninger."
-        ],
-        "",
-        "KOMPETENCER \u2013 den studerende kan:",
-        [
-            "forklare principper, der relaterer sig til cellens funktioner\nog s\u00e6tte disse i en overordnet sammenh\u00e6ng.",
-            "vurdere betydningen af neurale netv\u00e6rk og forbindelser for\nneurale adaptationer, samt diskutere betydningen af adaptationer i\nforbindelse med tr\u00e6ning.",
-            "analysere og fortolke eksperimentelle data med udgangspunkt i\nlitteraturen.",
-            "anvende korrekt terminologi ved analyse af bev\u00e6gelser og\nbeskrive arbejdsform, udspring, insertion og funktion for de\ninvolverede muskler."
-        ],
-        [
-            "anvende og inddrage biomekaniske grundbegreber og Newtons love\ni forbindelse med analyse og vurdering af\nidr\u00e6tsf\u00e6rdigheder."
-        ]
-    ],
-    "Literature": [
-        "Litteratur oplyses f\u00f8r kursusstart p\u00e5 Absalon."
-    ],
-    "Teaching and learning methods": [
-        " Forel\u00e6sninger,\nholdundervisning og obligatorisk \u00f8velser."
-    ],
-    "Workload": [
-        [
-            "Kategori",
-            "Timer",
-            "Forel\u00e6sninger",
-            "56",
-            "Holdundervisning",
-            "56",
-            "Forberedelse (ansl\u00e5et)",
-            "200",
-            "Praktiske \u00f8velser",
-            "60",
-            "Eksamen",
-            "40",
-            "I alt",
-            "412"
-        ]
-    ],
-    "Feedback form": [
-        "Skriftlig WARNIGN DIV",
-        "Mundtlig WARNIGN DIV",
-        "Peerfeedback (studerende giver hinanden feedback) WARNIGN DIV",
-        "I l\u00f8bet af kurset gives kvalitativ feedback p\u00e5\n\u00f8velsesrapporterne (enten skriftlig eller mundtlig). Derudover\nanvendes prim\u00e6rt peer-feedback."
-    ],
-    "Sign up": [
-        "Som meritstuderende - klik her!\nSom enkeltfags-studerende (efter- og\u00a0\u00a0 videreuddannelse)\n- klik her!",
-        " Selvbetjeningen p\u00e5 KUnet"
-    ],
-    "Exam": [
-        {
-            "Point": "15 ECTS",
-            "Pr\u00f8veform": [
-                "Mundtlig pr\u00f8ve, 20 min med opsyn."
-            ],
-            "Pr\u00f8veformsdetaljer": "Kurset afsluttes med en 20 min mundtlig eksamen (ekskl.\nvotering) uden forberedelse. Eksaminanden tr\u00e6kker her et sp\u00f8rgsm\u00e5l,\nder d\u00e6kker omr\u00e5der fra deres portfolio (som udarbejdes l\u00f8bende\ngennem kurset og indeholder \u00f8velsesrapporter, opgaver og tilh\u00f8rende\nnoter inden for anatomi/biomekanik og fysiologi).\n\nDer gives \u00e9n samlet bed\u00f8mmelse p\u00e5 basis af pr\u00e6stationen til den\nmundtlige eksamen.",
-            "Krav til indstilling til eksamen": "Indstillingskrav til eksamen best\u00e5r af obligatorisk deltagelse i\neksperimentelle \u00f8velser, godkendte \u00f8velsesrapporter og best\u00e5ede\nindividuelle opgaver.",
-            "Hj\u00e6lpemidler": "Uden hj\u00e6lpemidler",
-            "Bed\u00f8mmelsesform": "7-trins skala",
-            "Censurform": "Ekstern censur",
-            "Reeksamen": "Samme som ordin\u00e6r eksamen.Best\u00e5ede elementer fra ordin\u00e6r eksamen kan genbruges.Ikke best\u00e5ede elementer skal genaflereves/best\u00e5s senest to uger\nf\u00f8r reeksamen."
-        },
-        "Kriterier for bed\u00f8mmelse",
-        "Se m\u00e5lbeskrivelsen WARNIGN DIV"
-    ]
+    "exams": "havent figured this one out yet"
 }

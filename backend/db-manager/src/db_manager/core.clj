@@ -21,7 +21,8 @@
    :dbname "admin"
    :host "localhost"
    :user "admin"
-   :password "admin"})
+   :password "admin"
+   :stringtype "unspecified"})
 
 (def data-dir "../../data/")
 
@@ -31,6 +32,7 @@
 
 ; read employed.json
 (def employees (json/read-str (slurp (str data-dir "employed.json")) :key-fn keyword))
+
 
 
 (defn app []
@@ -92,10 +94,24 @@
 (def courses (map read-json course-files))
 
 
+(def real (slurp (io/resource "NNEB18000U.json")))
+(def real-course (json/read-str real :key-fn keyword))
+
+
+(defn coerce-as-other [course-map]
+  ; make schedule_group into "as-other"
+  (-> course-map
+       (assoc :schedule_group (as-other (:schedule_group course-map)))
+       (assoc :start_block (as-other (:start_block course-map)))
+      ; workloads is a vector of maps with :workload_type and :hours
+      ; workload_types should have as-other
+        (update :workloads #(map (fn [workload]
+                                    (assoc workload :workload_type (as-other (:workload_type workload))))
+                                  %))))
+
 (defn -main []
   (nuke-db! db)
-  (insert-course-emp! db test-course)
-  (insert-course-emp! db another-test-course)
+  (populate-courses! db [(coerce-as-other real-course)])
   (println (jdbc/execute! db ["SELECT * FROM Employee"])))
 
 (defn merge-employees [employees]

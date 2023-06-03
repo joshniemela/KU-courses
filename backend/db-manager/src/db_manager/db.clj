@@ -13,12 +13,11 @@
     (jdbc/execute! tx [(slurp (io/resource "schema.sql"))])))
 
 
-
-
 (defn insert-course! [ds course-map]
   (let [course-schema [:course_id :title :course_language
                        :description :start_block :duration
-                       :schedule_group :credits :study_level]]
+                       :schedule_group :credits :study_level
+                       :url]]
 
     (jdbc.sql/insert! ds :course (select-keys course-map course-schema))))
 
