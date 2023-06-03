@@ -122,17 +122,3 @@
                    (first employees)
                    (rest employees)))
          grouped)))
-
-(comment 
-  ; some employees have multiple titles, so we need to group them
-   
-  
-  (println (merge-employees employees))
-  (println (count employees))
-  (println (count (merge-employees employees))
-   (nuke-replace-employees! db (merge-employees employees)))
-  (jdbc/execute! db ["drop table employees;"])
-  ; find person with email back@di.ku.dk
-  (println (jdbc/execute! db ["select * from employees;"])) 
-  (println (jdbc/execute! db ["select * from employees where email = 'back@di.ku.dk';"])))
-
