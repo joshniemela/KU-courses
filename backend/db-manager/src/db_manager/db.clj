@@ -31,22 +31,30 @@
                      do-nothing
                      (sql/format))))
 
-
-
 (defn insert-coordinates! [ds course-emp-map]
   ; associate course_id with each coordinator
 
   (let [cid (:course_id course-emp-map)]
     
     ; select only the email from the coordinators and associate with course_id
-    (jdbc.sql/insert-multi! ds :coordinates (map #(select-keys (assoc % :course_id cid) [:email :course_id]) (:coordinators course-emp-map)))))
-       
+    (jdbc.sql/insert-multi! ds :coordinates (map #(select-keys (assoc % :course_id cid) [:email 
+                                                                                         :course_id])
+                                                 (:coordinators course-emp-map)))))
+(defn insert-workloads! [ds course-emp-map]
+  (let [workloads (:workloads course-emp-map)]
+    (jdbc.sql/insert-multi! ds :workload (map #(select-keys (assoc % :course_id (:course_id course-emp-map))
+                                                            [:course_id :workload_type :hours]
+                                                            )
+                                                  workloads))))
+
+
 
 (defn insert-course-emp! [db course-emp-map]
   (jdbc/with-transaction [tx db]
     (insert-course! tx course-emp-map)
     (insert-employees! tx course-emp-map)
-    (insert-coordinates! tx course-emp-map)))
+    (insert-coordinates! tx course-emp-map)
+    (insert-workloads! tx course-emp-map)))
 
 
 

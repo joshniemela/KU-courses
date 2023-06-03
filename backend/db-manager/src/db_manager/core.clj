@@ -61,8 +61,25 @@
                   :schedule_group (as-other "A")
                   :credits 7.5
                   :study_level "test"
-                  :coordinators [{:email "josh@jniemela.dk" :full_name "Joshua Niemelä"} {:email "jhaudfa" :full_name "foobar"}]
-                  })
+                  :coordinators [{:email "josh@jniemela.dk" :full_name "Joshua Niemelä"} 
+                                 {:email "jhaudfa" :full_name "foobar"}]
+                  :workloads [{:workload_type (as-other "lectures") :hours 10} 
+                              {:workload_type (as-other "exercises") :hours 10}]})
+                  
+(def another-test-course {
+                  :course_id "blablabla1"
+                  :title "test2"
+                  :course_language "da"
+                  :description "test"
+                  :start_block (as-other 1)
+                  :duration (as-other 1)
+                  :schedule_group (as-other "A")
+                  :credits 7.5
+                  :study_level "test"
+                  :coordinators [{:email "josh@jniemela.dk" :full_name "Joshua Niemelä"} 
+                                 {:email "potato" :full_name "afafjaf"}]
+                  :workloads [{:workload_type (as-other "lectures") :hours 100} 
+                              {:workload_type (as-other "exercises") :hours 100}]})
 
 (defn -main []
   (nuke-db! db)
@@ -85,9 +102,9 @@
   (println (merge-employees employees))
   (println (count employees))
   (println (count (merge-employees employees))
-  (nuke-replace-employees! db (merge-employees employees)))
+   (nuke-replace-employees! db (merge-employees employees)))
   (jdbc/execute! db ["drop table employees;"])
   ; find person with email back@di.ku.dk
   (println (jdbc/execute! db ["select * from employees;"])) 
-  (println (jdbc/execute! db ["select * from employees where email = 'back@di.ku.dk';"]))
-)
+  (println (jdbc/execute! db ["select * from employees where email = 'back@di.ku.dk';"])))
+

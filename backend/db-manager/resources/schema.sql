@@ -36,6 +36,7 @@ CREATE TABLE IF NOT EXISTS coordinates (
 
 CREATE TABLE IF NOT EXISTS workload (
 	course_id char(10) NOT NULL,
+  hours int,
 	workload_type work_enum NOT NULL
 );
 
