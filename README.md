@@ -43,9 +43,35 @@ you want to import are in /queries):
 sudo docker cp queries/. <docker_container_id>:/var/lib/pgadmin/storage/admin_private.org/
 ```
 Alternatively you can run one of two bash scripts `docker_export_script.sh` that extracts the queries from the docker container or `docker_import_script.sh` that imports the queries to the container. Both need the container id to be provided as a command line argument. 
-## Initialize database
+#### Initialize database
 First run types.sql followed by schema.sql
 
-## Visualizing database schema
+#### Visualizing database schema
 You can do a nifty visualization by right clicking on "postgres" under "databases"
 and choosing "ERD for database".
+
+
+## API Endpoints
+### Overview
+In order to provide card-based overview of all the courses we are expecting data
+on the following form from the database:
+```
+[
+    {
+        "primary_title": string (max length 100, any additional letters replaced with "..."),
+        "course_id": string (length 10),
+        "course_language": string (length 2),
+        "faculty": string,
+        "study_level": string,
+        "credits": string,
+        "start_block": string,
+        "schedule_group": string,
+        "description": string,
+        "exam": string (containing the different exam types spaced with "-")
+    },
+    {
+            ...
+    }
+]
+```
+
