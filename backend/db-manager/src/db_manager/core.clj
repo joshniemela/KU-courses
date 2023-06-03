@@ -67,19 +67,18 @@
                               {:workload_type (as-other "exercises") :hours 10}]})
                   
 (def another-test-course {
-                  :course_id "blablabla1"
-                  :title "test2"
-                  :course_language "da"
-                  :description "test"
-                  :start_block (as-other 1)
-                  :duration (as-other 1)
-                  :schedule_group (as-other "A")
-                  :credits 7.5
-                  :study_level "test"
-                  :coordinators [{:email "josh@jniemela.dk" :full_name "Joshua Niemelä"} 
-                                 {:email "potato" :full_name "afafjaf"}]
-                  :workloads [{:workload_type (as-other "lectures") :hours 100} 
-                              {:workload_type (as-other "exercises") :hours 100}]})
+                          :course_id "blablabla1"
+                          :title "test2"
+                          :course_language "da"
+                          :description "test"
+                          :start_block (as-other 1)
+                          :schedule_group (as-other "A")
+                          :credits 7.5
+                          :study_level "test"
+                          :coordinators [{:email "josh@jniemela.dk" :full_name "Joshua Niemelä"} 
+                                         {:email "potato" :full_name "afafjaf"}]
+                          :workloads [{:workload_type (as-other "lectures") :hours 100} 
+                                      {:workload_type (as-other "exercises") :hours 100}]})
 
 (defn -main []
   (nuke-db! db)
