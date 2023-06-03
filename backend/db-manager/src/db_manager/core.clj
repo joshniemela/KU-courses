@@ -11,7 +11,7 @@
             [reitit.ring.middleware.parameters :as parameters]
             [org.httpkit.server :refer [run-server]]
             [db-manager.routes :refer [ping-route crud-routes]]
-            [db-manager.db :refer [nuke-replace-employees!]]
+            [db-manager.db :refer [init-db]]
             [next.jdbc :as jdbc]
             [honey.sql :as sql]))
                                              
@@ -50,7 +50,8 @@
 ;  (println (jdbc/execute! db ["select version();"])))
 ;  (run-server (app) {:port 3000})
 (defn -main []
-  (println (slurp  (io/resource "schema.sql"))))
+  (init-db db)
+  (println "nuked db"))
 
 (defn merge-employees [employees]
   (let [grouped (group-by :email employees)]
