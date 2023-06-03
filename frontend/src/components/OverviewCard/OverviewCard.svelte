@@ -21,6 +21,7 @@ export let data = {
 * Function to scale the font sizes of the course titles based on their length
 */
 function calcFontSize(string) {
+    
     return (1 + 12/string.length)*16 + "px"
 }
 
