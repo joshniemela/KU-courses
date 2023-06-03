@@ -38,9 +38,8 @@
 
   (let [cid (:course_id course-emp-map)]
     
-    (jdbc.sql/insert-multi! ds :coordinates (map (->
-                                                  #(assoc % :course_id cid)
-                                                  (select-keys % [:email :course_id])) (:coordinators course-emp-map)))))
+    ; select only the email from the coordinators and associate with course_id
+    (jdbc.sql/insert-multi! ds :coordinates (map #(select-keys (assoc % :course_id cid) [:email :course_id]) (:coordinators course-emp-map)))))
        
 
 (defn insert-course-emp! [db course-emp-map]
