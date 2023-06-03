@@ -4,7 +4,9 @@ import Navbar from "../components/Navbar/Navbar.svelte";
 
 <div class="main">
     <Navbar />
-    <slot />
+    <div class="slot-container">
+        <slot />
+    </div>
 </div>
 
 <style scoped>
@@ -17,4 +19,9 @@ import Navbar from "../components/Navbar/Navbar.svelte";
     align-items: center;
 }
 
+.slot-container {
+    width: 100%;
+    height: 100;
+    overflow: scroll;
+}
 </style>
