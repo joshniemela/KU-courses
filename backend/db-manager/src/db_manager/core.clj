@@ -1,5 +1,4 @@
 (ns db-manager.core 
-  (:refer-clojure :exclude [filter for into partition-by set update])
   (:require [clojure.core :as c]
             [clojure.data.json :as json]
             [clojure.java.io :as io]
@@ -11,7 +10,7 @@
             [reitit.ring.middleware.parameters :as parameters]
             [org.httpkit.server :refer [run-server]]
             [db-manager.routes :refer [ping-route crud-routes]]
-            [db-manager.db :refer [nuke-db! insert-course-emp!]]
+            [db-manager.db :refer [nuke-db! insert-course-emp! populate-courses!]]
             [next.jdbc :as jdbc]
             [next.jdbc.types :refer [as-other]]
             [honey.sql :as sql]))
@@ -25,6 +24,8 @@
    :password "admin"})
 
 (def data-dir "../../data/")
+
+(def json-dir (str data-dir "json_science/"))
 
 (def db (jdbc/get-datasource db-config))
 
@@ -79,6 +80,17 @@
                                          {:email "potato" :full_name "afafjaf"}]
                           :workloads [{:workload_type (as-other "lectures") :hours 100} 
                                       {:workload_type (as-other "exercises") :hours 100}]})
+
+; read every json in data-dir
+(defn read-json [file]
+  (json/read-str (slurp (str json-dir file)) :key-fn keyword))
+
+; find all jsons
+(def course-files (for [file (file-seq (io/file json-dir)) :when (.endsWith (.getName file) ".json")]
+                     (.getName file)))
+
+(def courses (map read-json course-files))
+
 
 (defn -main []
   (nuke-db! db)

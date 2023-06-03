@@ -1,4 +1,4 @@
-(ns db-manager.db 
+(ns db-manager.db
   (:refer-clojure :exclude [filter for group-by into partition-by set update])
   (:require [next.jdbc :as jdbc]
             [next.jdbc.sql :as jdbc.sql]
@@ -13,8 +13,6 @@
     (jdbc/execute! tx [(slurp (io/resource "schema.sql"))])))
 
 
-(defn emp-fields [emp]
-  (select-keys emp [:email :full_name]))
 
 
 (defn insert-course! [ds course-map]
@@ -22,30 +20,34 @@
                        :description :start_block :duration
                        :schedule_group :credits :study_level]]
 
-        (jdbc.sql/insert! ds :course (select-keys course-map course-schema))))
+    (jdbc.sql/insert! ds :course (select-keys course-map course-schema))))
+
+
+(defn emp-fields [emp]
+  (select-keys emp [:email :full_name]))
 
 (defn insert-employees! [ds emps-map]
   (jdbc/execute! ds (-> (insert-into :employee)
-                     (values (map emp-fields (:coordinators emps-map)))
-                     (on-conflict :email)
-                     do-nothing
-                     (sql/format))))
+                        (values (map emp-fields (:coordinators emps-map)))
+                        (on-conflict :email)
+                        do-nothing
+                        (sql/format))))
 
 (defn insert-coordinates! [ds course-emp-map]
   ; associate course_id with each coordinator
 
   (let [cid (:course_id course-emp-map)]
-    
+
     ; select only the email from the coordinators and associate with course_id
-    (jdbc.sql/insert-multi! ds :coordinates (map #(select-keys (assoc % :course_id cid) [:email 
+    (jdbc.sql/insert-multi! ds :coordinates (map #(select-keys (assoc % :course_id cid) [:email
                                                                                          :course_id])
                                                  (:coordinators course-emp-map)))))
 (defn insert-workloads! [ds course-emp-map]
   (let [workloads (:workloads course-emp-map)]
     (jdbc.sql/insert-multi! ds :workload (map #(select-keys (assoc % :course_id (:course_id course-emp-map))
-                                                            [:course_id :workload_type :hours]
-                                                            )
-                                                  workloads))))
+                                                            [:course_id :workload_type :hours])
+                                              workloads))))
+
 
 
 
@@ -58,4 +60,9 @@
 
 
 
-
+(defn populate-courses! [db courses]
+  (let [len (count courses)]
+    (println (str "Populating " len " courses"))
+    (doseq [course courses]
+      (insert-course-emp! db course)
+      (println (str "Inserted " (:course_id course))))))
