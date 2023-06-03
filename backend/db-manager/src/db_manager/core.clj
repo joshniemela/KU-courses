@@ -11,8 +11,9 @@
             [reitit.ring.middleware.parameters :as parameters]
             [org.httpkit.server :refer [run-server]]
             [db-manager.routes :refer [ping-route crud-routes]]
-            [db-manager.db :refer [init-db]]
+            [db-manager.db :refer [nuke-db! insert-employees! insert-course-emp! insert-course! insert-coordinates! emp-fields]]
             [next.jdbc :as jdbc]
+            [next.jdbc.types :refer [as-other]]
             [honey.sql :as sql]))
                                              
 
@@ -49,9 +50,24 @@
 ;(defn -main []
 ;  (println (jdbc/execute! db ["select version();"])))
 ;  (run-server (app) {:port 3000})
+
+(def test-course {
+                  :course_id "1234123412"
+                  :title "test"
+                  :course_language "da"
+                  :description "test"
+                  :start_block (as-other 1)
+                  :duration (as-other 1)
+                  :schedule_group (as-other "A")
+                  :credits 7.5
+                  :study_level "test"
+                  :coordinators [{:email "josh@jniemela.dk" :full_name "Joshua Niemelä"} {:email "jhaudfa" :full_name "foobar"}]
+                  })
+
 (defn -main []
-  (init-db db)
-  (println "nuked db"))
+  (nuke-db! db)
+  (insert-employees! db [{:email "josh@jniemela.dk" :full_name "josh"}])
+  (println (jdbc/execute! db ["SELECT * FROM Employee"])))
 
 (defn merge-employees [employees]
   (let [grouped (group-by :email employees)]
