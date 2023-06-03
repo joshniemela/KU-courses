@@ -36,6 +36,13 @@ The container id can be found via:
 sudo docker ps -a
 ```
 
+Conversely to import queries run the command in reverse (assuming the queries
+you want to import are in /queries):
+
+```
+sudo docker cp queries/. <docker_container_id>:/var/lib/pgadmin/storage/admin_private.org/
+```
+Alternatively you can run one of two bash scripts `docker_export_script.sh` that extracts the queries from the docker container or `docker_import_script.sh` that imports the queries to the container. Both need the container id to be provided as a command line argument. 
 ## Initialize database
 First run types.sql followed by schema.sql
 
