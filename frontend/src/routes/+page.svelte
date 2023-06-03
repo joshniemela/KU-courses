@@ -57,18 +57,6 @@ import FilterButton from '../components/FilterButton/FilterButton.svelte'
     width: 30vw;
 }
 
-.filter-button {
-    background: none;
-    font-size: 1.5rem;
-    border: 0;
-    padding-right: 1vw;
-    padding-left: 1vw;
-    border-color: var(--text-color);
-    color: var(--text-color);
-    height: 100%;
-    background-color: var(--bg-color);
-    transition: ease-in-out 0.1s;
-}
 
 .search {
     font-size: 1.5rem;
@@ -78,11 +66,6 @@ import FilterButton from '../components/FilterButton/FilterButton.svelte'
     padding-left: 1vw;
     color: var(--text-color);
     background-color: var(--search-bg-color);
-}
-
-.main-container {
-    display: flex;
-    flex-direction: row;
 }
 
 .view-all-button {
