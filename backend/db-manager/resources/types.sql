@@ -20,11 +20,11 @@ CREATE TYPE exam_enum AS ENUM (
 	'written_examination',
 	'written_assignment',
 	'continuous_assessment',
-    'practical_written_examination',
-    'practical_oral_examination',
-    'oral_defence',
-    'portfolio',
-    'other'
+  'practical_written_examination',
+  'practical_oral_examination',
+  'oral_defence',
+  'portfolio',
+  'other'
 );
 
 CREATE TYPE work_enum AS ENUM ( 
