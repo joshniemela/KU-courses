@@ -4,9 +4,11 @@ import requests
 from bs4 import BeautifulSoup
 import pandas as pd
 import re
+
 # this module is responsible for scraping the pages and caching them
 
 DIKU_URL = "https://di.ku.dk/english/staff/"
+
 
 def deobfuscate_email(soup):
     """
@@ -22,6 +24,7 @@ def deobfuscate_email(soup):
     except Exception as e:
         return "ERROR"
 
+
 def process_tr(tr):
     """
     Processes a tr tag from the staff table
@@ -34,7 +37,8 @@ def process_tr(tr):
     email = deobfuscate_email(tds[3])
     return {"name": name, "title": title, "phone": phone, "email": email}
 
-def get_diku_staff(url:str=DIKU_URL):
+
+def get_diku_staff(url: str = DIKU_URL):
     """
     Returns a table of all the staff at DIKU, with the following columns:
     - name
@@ -45,8 +49,7 @@ def get_diku_staff(url:str=DIKU_URL):
     soup = BeautifulSoup(requests.get(url).text, "html.parser")
     # find tbody
     tbody = soup.find("tbody")
-    
+
     # make table
     table = pd.DataFrame([process_tr(tr) for tr in tbody.find_all("tr")])
     return table
-

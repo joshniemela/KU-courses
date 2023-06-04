@@ -28,7 +28,7 @@
 
 (def data-dir "../../data/")
 
-(def json-dir (str data-dir "json_science/"))
+(def json-dir (str data-dir "json/"))
 
 (def db (jdbc/get-datasource db-config))
 
@@ -64,11 +64,6 @@
 
 (def courses (map read-json course-files))
 
-
-(def real (slurp (io/resource "NNEB18000U.json")))
-(def real-course (json/read-str real :key-fn keyword))
-
-
 (defn coerce-as-other [course-map]
   ; make schedule_group into "as-other"
   (-> course-map
@@ -88,8 +83,10 @@
                              (assoc exam :exam_type (as-other (:exam_type exam))))
                            %))))
 
+(def coerced-courses (map coerce-as-other courses))
+
 (defn -main []
   (nuke-db! db)
-  (populate-courses! db [(coerce-as-other real-course)])
+  (populate-courses! db coerced-courses)
   (println (jdbc/execute! db ["SELECT * FROM Employee"]))
   (run-server (app) {:port 3000}))
