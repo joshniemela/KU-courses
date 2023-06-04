@@ -32,11 +32,6 @@
 
 (def db (jdbc/get-datasource db-config))
 
-; read employed.json
-(def employees (json/read-str (slurp (str data-dir "employed.json")) :key-fn keyword))
-
-
-
 (defn app []
   (ring/ring-handler
    (ring/router
@@ -58,35 +53,6 @@
    (ring/routes
      (swagger-ui/create-swagger-ui-handler {:path "/swagger"})
      (ring/create-default-handler))))
-
-
-
-(def test-course {:course_id "1234123412"
-                  :title "test"
-                  :course_language "da"
-                  :description "test"
-                  :start_block (as-other 1)
-                  :duration (as-other 1)
-                  :schedule_group (as-other "A")
-                  :credits 7.5
-                  :study_level "test"
-                  :coordinators [{:email "josh@jniemela.dk" :full_name "Joshua Niemelä"}
-                                 {:email "jhaudfa" :full_name "foobar"}]
-                  :workloads [{:workload_type (as-other "lectures") :hours 10}
-                              {:workload_type (as-other "exercises") :hours 10}]})
-
-(def another-test-course {:course_id "blablabla1"
-                          :title "test2"
-                          :course_language "da"
-                          :description "test"
-                          :start_block (as-other 1)
-                          :schedule_group (as-other "A")
-                          :credits 7.5
-                          :study_level "test"
-                          :coordinators [{:email "josh@jniemela.dk" :full_name "Joshua Niemelä"}
-                                         {:email "potato" :full_name "afafjaf"}]
-                          :workloads [{:workload_type (as-other "lectures") :hours 100}
-                                      {:workload_type (as-other "exercises") :hours 100}]})
 
 ; read every json in data-dir
 (defn read-json [file]
