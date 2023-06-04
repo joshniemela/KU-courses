@@ -5,18 +5,18 @@ import FilterButton from "../../components/FilterButton/FilterButton.svelte";
 import { filters, filtersObj, jsonToString } from '../../stores';
 import overview from "../../mocking/overview.json";
 import OverviewCard from "../../components/OverviewCard/OverviewCard.svelte";
-
-
 /**
 * Event handler for submit on search 
 */
 function submit(event) {
+    console.log(event)
     if (event.key === 'Enter') {
         $filters = jsonToString({
             'search': event.target.value 
         })
     }
 }
+
 </script>
 <div class="browse-container">
     <div class="control-container">

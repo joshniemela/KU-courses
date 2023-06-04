@@ -33,7 +33,6 @@ function submit(event) {
                 --text-color: {theme.colors.brand[200]};
                 --search-bg-color: {theme.colors.neutral[800]}
                 "
-                value={$filtersObj.search.length > 0 ? $filtersObj.search : ''}
                 on:keydown={submit}
             />
             <a class="search-icon-ref" href="/browse">
