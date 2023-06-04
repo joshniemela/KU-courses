@@ -88,11 +88,6 @@
                              (assoc exam :exam_type (as-other (:exam_type exam))))
                            %))))
 
-
-
-;(defn -main []
-;  (println (jdbc/execute! db ["select version();"])))
-;  
 (defn -main []
   (nuke-db! db)
   (populate-courses! db [(coerce-as-other real-course)])
