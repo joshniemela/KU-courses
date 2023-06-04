@@ -2,16 +2,32 @@
 import theme from "../../theme";
 import SearchIcon from "../../assets/SearchIcon.svelte";
 import FilterButton from "../../components/FilterButton/FilterButton.svelte";
-import Dk from "../../assets/Dk.svelte";
+import { filters, filtersObj, jsonToString } from '../../stores';
 import overview from "../../mocking/overview.json";
 import OverviewCard from "../../components/OverviewCard/OverviewCard.svelte";
-console.log(overview)
+
+
+/**
+* Event handler for submit on search 
+*/
+function submit(event) {
+    if (event.key === 'Enter') {
+        $filters = jsonToString({
+            'search': event.target.value 
+        })
+    }
+}
 </script>
 <div class="browse-container">
     <div class="control-container">
         <FilterButton paddingLR={"2vw"} fontSize={"1.25rem"} />
-        <input class="search" type="search" placeholder="Search" 
-            style="--bg-color: {theme.colors.neutral[800]}"
+        <input class="search" type="search" placeholder={$filtersObj.search.length > 0 ? $filtersObj.search : 'Search'}
+            style="
+            --text-color: {theme.colors.brand[200]};
+            --search-bg-color: {theme.colors.neutral[800]}
+            "
+            value={$filtersObj.search.length > 0 ? $filtersObj.search : ''}
+            on:keydown={submit}
         />
         <SearchIcon />
     </div>
@@ -49,8 +65,13 @@ console.log(overview)
     font-size: 1.25rem;
     padding-left: 1vw;
     border: 0;
-    background-color: var(--bg-color);
+    color: var(--text-color);
+    background-color: var(--search-bg-color);
+}
 
+.search:focus {
+    outline: none !important;
+    border:2px solid var(--text-color);
 }
 
 .card-container {

@@ -3,14 +3,19 @@ import theme from '../theme'
 import SearchIcon from '../assets/SearchIcon.svelte';
 import FilterButton from '../components/FilterButton/FilterButton.svelte';
 import { navigate } from 'svelte-navigator';
+import { filters, filtersObj, jsonToString } from '../stores';
 /**
-* navigates to the /browse route.
+* navigates to the /browse route and updates the search value.
 * @function submit 
 * @param {event} event event: the event emitted by the component on click / enter
 */
 function submit(event) {
     if (event.key === 'Enter') {
         console.log("Submit")
+        console.log(event)
+        $filters = jsonToString({
+            'search': event.target.value 
+        })
         navigate('/browse')
         location.reload()
     }
@@ -23,11 +28,12 @@ function submit(event) {
         <!-- Container responsible for the search area --> 
         <div class="search-container">
             <FilterButton />
-            <input class="search" type="search" placeholder="Search"
+            <input class="search" type="search" placeholder={$filtersObj.search.length > 0 ? $filtersObj.search : 'Search'}
                 style="
                 --text-color: {theme.colors.brand[200]};
                 --search-bg-color: {theme.colors.neutral[800]}
                 "
+                value={$filtersObj.search.length > 0 ? $filtersObj.search : ''}
                 on:keydown={submit}
             />
             <a class="search-icon-ref" href="/browse">
