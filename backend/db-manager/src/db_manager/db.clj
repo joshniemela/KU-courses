@@ -71,7 +71,7 @@
 
 (defn populate-courses! [db courses]
   (let [len (count courses)]
-    (println (str "Populating " len " courses"))
+    (println (str "Populating database with " len " courses"))
     (doseq [course courses]
       (insert-course-emp! db course)
       (println (str "Inserted " (:course_id course))))))

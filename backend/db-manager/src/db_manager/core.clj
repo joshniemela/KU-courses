@@ -13,6 +13,7 @@
             [org.httpkit.server :refer [run-server]]
             [db-manager.routes :refer [ping-route crud-routes]]
             [db-manager.db :refer [nuke-db! insert-course-emp! populate-courses!]]
+            [db-manager.cli :refer [parse-cli]]
             [next.jdbc :as jdbc]
             [next.jdbc.types :refer [as-other]]
             [honey.sql :as sql]))
@@ -85,8 +86,20 @@
 
 (def coerced-courses (map coerce-as-other courses))
 
-(defn -main []
-  (nuke-db! db)
-  (populate-courses! db coerced-courses)
-  (println (jdbc/execute! db ["SELECT * FROM Employee"]))
-  (run-server (app) {:port 3000}))
+; do nothing, not implemented yet
+(defn scrape-courses! [data-dir]
+  (println "Scraping courses from" data-dir))
+
+(defn -main [& args]
+  (let [args (parse-cli args)] 
+    (when (:scrape args)
+      (do (println "Scraping courses from" data-dir)
+          (scrape-courses! data-dir)))
+    
+    (if (:force args) 
+      (do (println "Nuking database and repopulating with courses from" json-dir)
+            (nuke-db! db)
+            (populate-courses! db coerced-courses)) 
+      (println "Not forcing reset of database")) 
+    (println (jdbc/execute! db ["SELECT * FROM Employee"])) 
+    (run-server (app) {:port 3000})))

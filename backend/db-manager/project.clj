@@ -12,7 +12,8 @@
                  [ring "1.10.0"]
                  [metosin/reitit "0.6.0"]
                  [metosin/muuntaja "0.6.8"]
-                 [metosin/reitit-swagger-ui "0.7.0-alpha4"]]
+                 [metosin/reitit-swagger-ui "0.7.0-alpha4"]
+                 [org.clojure/tools.cli "1.0.214"]]
   :main ^:skip-aot db-manager.core
   :resource-path "resources"
   :target-path "target/%s"
