@@ -1,0 +1,33 @@
+{
+    "course_id": "NNEB18000U",
+    "url": "http://kurser.ku.dk/course/NNEB18000U",
+    "title": "NNEB18000U\u00a0Funktionel anatomi, muskel-\nog neurofysiologi",
+    "course_language": "Dansk",
+    "credits": 15.0,
+    "study_level": "Bachelor",
+    "start_block": 3,
+    "duration": 2,
+    "schedule_group": "B",
+    "coordinators": [
+        {"full_name": "Pia Grethe Sandfeld Melcher", "email": "placeholder"}
+    ],
+    "description":
+        "Kurset starter med en introduktion til kroppens grundl\u00e6ggende\nfysiologi og anatomi, samt biomekaniske principper. Dette danner\nbasis for det videre arbejde med bev\u00e6geapparatets funktion\nanalyseret ud fra en biomekanisk og funktionel anatomisk vinkel og\nfor arbejdet med det neurofysiologiske grundlag for bev\u00e6gelse \u2013\nherunder det motoriske og sensoriske systems funktion, opbygning og\nplasticitet. 
+        Emner p\u00e5 kurset inkluderer:,
+        *    Cellers opbygning, funktion og metabolisme,
+        *    Transportprocesser,
+        *    Nervesystemets celler og signalering imellem dem,
+        *    Nervesystemets overordnede anatomi,
+        *    Det motoriske og sensoriske systems funktion, opbygning og\nplasticitet,
+        *    Bev\u00e6geapparatets funktionelle anatomi og\nbev\u00e6gelsesanalyser,
+        *    Kroppens anatomi (herunder knogler, led og muskler)\nog\u00a0antropometri,
+        *    Biomekaniske grundbegreber og Newtons love,
+        *    Line\u00e6r og angul\u00e6r kinematik og\u00a0kinetik, samt\nhydro/aerodynamik",
+    "workloads": [
+            {"workload_type": "lectures", "hours": 56},
+            {"workload_type": "preparation", "hours": 200},
+            {"workload_type": "exercises", "hours": 60},
+            {"workload_type": "exam", "hours": 40}
+    ],
+    "exams": "havent figured this one out yet"
+}

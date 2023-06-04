@@ -240,3 +240,17 @@ def get_all_info(url):
 
 
     return all_info_en
+
+
+# THIS IS USED TO DEOBFUSCATE TAGS IN COURSE COORDINATORS
+def deobfuscate(s):
+    s = s.split('-')
+    if len(s) == 1:
+        return s
+    m = (len(s[1]) // 2) % 4 + 2
+    p = ''
+    for i in range(0, len(s[1]), 2):
+        # convert two hex digits and subtract by m
+        value = int(s[1][i:i+2], 16) - m
+        p += chr(value)
+    return p
