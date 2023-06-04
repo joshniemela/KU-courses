@@ -643,19 +643,9 @@ def get_all_info(url):
     return site
 
 
-<<<<<<< HEAD
 
 
 
-=======
-<<<<<<< HEAD
-
-    return all_info_en
-
-
-=======
->>>>>>> refs/remotes/origin/main
->>>>>>> refs/remotes/origin/main
 # THIS IS USED TO DEOBFUSCATE TAGS IN COURSE COORDINATORS
 def deobfuscate(s):
     s = s.split('-')
