@@ -470,6 +470,7 @@ def type_of_assessmentfixer(c):
             'Praktisk skriftlig prøve': 'Practical written examination',
             'Praktisk mundtlig prøve': 'Practical oral examination', # findes ikke på engelsk
             'Løbende bedømmelse med opsyn.': 'Continuous assessment',
+            'Continuous assessment under invigilation': 'Continuous assessment',
             'Praktisk mundtlig prøve med opsyn.': 'Practical oral examination', # findes ikke på engelsk
             'Mundtligt forsvar': 'Oral defence',
             # Other og Portfolio er engelsk
@@ -625,6 +626,55 @@ def fix_schedule_group(c):
         del c['schedule']
     return c
 
+def final_cleanup(c):
+#fix exam:
+    final_list = []
+    exams = c['exam']['Type of assessment']
+    for exam in exams:
+        this_exam = {}
+        if exam:
+            this_exam['exam_type'] = exam.pop(0)
+        if exam:
+            if exam[0]:
+                this_exam['minutes'] = exam.pop(0)
+        final_list.append(this_exam)
+    c['exam'] = final_list
+    
+#fix workload:
+    final_list = []
+    workloads:dict = c['Workload']
+    for typ, dur in workloads.items():
+        if typ != 'Total':
+            final_list.append({'workload_type': typ, 'hours':dur})
+    c['Workload'] = final_list
+
+# remove None duration
+    if 'duration' in c.keys():
+        if not c['duration']:
+            del c['duration']
+
+# Let's rename stuff
+    def renamekey(course:dict, fromthis:str, tothis:str) -> dict:
+        if fromthis in course.keys():
+            v = course[fromthis]
+            del course[fromthis]
+            c[tothis] = v
+        return course
+
+
+    rename = [('course code', 'course_id'),
+             ('primary title', 'title'),
+             ('language', 'course_language'),
+             ('Content', 'description'),
+             ('Workload', 'workload'),
+             ('credit', 'credits'),
+             ('course coordinators', 'course_coordinators')]
+
+    for fromthis, tothis in rename:
+        c = renamekey(c, fromthis, tothis)
+    # aaand we're done!
+    return c
+
 def get_all_info(url):
 
     site = {
@@ -661,7 +711,8 @@ def get_all_info(url):
         normalise_examkeys,
         type_of_assessmentfixer,
         course_start_and_duration,
-        fix_schedule_group
+        fix_schedule_group,
+        final_cleanup
     ]
 
     for func in pipeline:
