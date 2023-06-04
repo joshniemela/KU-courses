@@ -653,17 +653,24 @@ def get_all_info(url):
 
 
 
-
-
 # THIS IS USED TO DEOBFUSCATE TAGS IN COURSE COORDINATORS
-def deobfuscate(s):
+def attempt_deobfuscate(s, mod, offset):
     s = s.split('-')
     if len(s) == 1:
         return s
-    m = (len(s[1]) // 2) % 4 + 2
+    m = (len(s[1]) // 2) % mod + offset
     p = ''
     for i in range(0, len(s[1]), 2):
         # convert two hex digits and subtract by m
         value = int(s[1][i:i+2], 16) - m
         p += chr(value)
     return p
+
+def deobfuscate(mail):
+    for i in range(1, 10):
+        for j in range(1, 10):
+            attempt_combination = attempt_deobfuscate(mail, i, j)
+            if attempt_combination[-5:] == "ku.dk":
+                return attempt_combination
+    return None
+
