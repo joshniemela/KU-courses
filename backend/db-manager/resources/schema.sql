@@ -3,6 +3,7 @@ BEGIN;
 
 CREATE TABLE IF NOT EXISTS course (
 	course_id char(10) PRIMARY KEY,
+  url text NOT NULL,
 	title text NOT NULL,
 	course_language text,
 	description text NOT NULL,

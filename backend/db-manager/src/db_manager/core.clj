@@ -1,5 +1,4 @@
 (ns db-manager.core 
-  (:refer-clojure :exclude [filter for into partition-by set update])
   (:require [clojure.core :as c]
             [clojure.data.json :as json]
             [clojure.java.io :as io]
@@ -11,7 +10,7 @@
             [reitit.ring.middleware.parameters :as parameters]
             [org.httpkit.server :refer [run-server]]
             [db-manager.routes :refer [ping-route crud-routes]]
-            [db-manager.db :refer [nuke-db! insert-employees! insert-course-emp! insert-course! insert-coordinates! emp-fields]]
+            [db-manager.db :refer [nuke-db! insert-course-emp! populate-courses!]]
             [next.jdbc :as jdbc]
             [next.jdbc.types :refer [as-other]]
             [honey.sql :as sql]))
@@ -22,14 +21,18 @@
    :dbname "admin"
    :host "localhost"
    :user "admin"
-   :password "admin"})
+   :password "admin"
+   :stringtype "unspecified"})
 
 (def data-dir "../../data/")
+
+(def json-dir (str data-dir "json_science/"))
 
 (def db (jdbc/get-datasource db-config))
 
 ; read employed.json
 (def employees (json/read-str (slurp (str data-dir "employed.json")) :key-fn keyword))
+
 
 
 (defn app []
@@ -80,9 +83,35 @@
                           :workloads [{:workload_type (as-other "lectures") :hours 100} 
                                       {:workload_type (as-other "exercises") :hours 100}]})
 
+; read every json in data-dir
+(defn read-json [file]
+  (json/read-str (slurp (str json-dir file)) :key-fn keyword))
+
+; find all jsons
+(def course-files (for [file (file-seq (io/file json-dir)) :when (.endsWith (.getName file) ".json")]
+                     (.getName file)))
+
+(def courses (map read-json course-files))
+
+
+(def real (slurp (io/resource "NNEB18000U.json")))
+(def real-course (json/read-str real :key-fn keyword))
+
+
+(defn coerce-as-other [course-map]
+  ; make schedule_group into "as-other"
+  (-> course-map
+       (assoc :schedule_group (as-other (:schedule_group course-map)))
+       (assoc :start_block (as-other (:start_block course-map)))
+      ; workloads is a vector of maps with :workload_type and :hours
+      ; workload_types should have as-other
+        (update :workloads #(map (fn [workload]
+                                    (assoc workload :workload_type (as-other (:workload_type workload))))
+                                  %))))
+
 (defn -main []
   (nuke-db! db)
-  (insert-employees! db [{:email "josh@jniemela.dk" :full_name "josh"}])
+  (populate-courses! db [(coerce-as-other real-course)])
   (println (jdbc/execute! db ["SELECT * FROM Employee"])))
 
 (defn merge-employees [employees]
@@ -93,17 +122,3 @@
                    (first employees)
                    (rest employees)))
          grouped)))
-
-(comment 
-  ; some employees have multiple titles, so we need to group them
-   
-  
-  (println (merge-employees employees))
-  (println (count employees))
-  (println (count (merge-employees employees))
-   (nuke-replace-employees! db (merge-employees employees)))
-  (jdbc/execute! db ["drop table employees;"])
-  ; find person with email back@di.ku.dk
-  (println (jdbc/execute! db ["select * from employees;"])) 
-  (println (jdbc/execute! db ["select * from employees where email = 'back@di.ku.dk';"])))
-

@@ -2,6 +2,12 @@ from bs4 import BeautifulSoup
 from scraper import get_page
 # this module is responsible for parsing and extracting information from the html pages
 
+def fixstring(string):
+    return string.replace('\n', ' ').replace('\xa0',' ')
+def snakecase(string):
+    return string.lower().replace(' ', '_')
+
+
 def get_panel_info(url:str) -> dict:
     """
     This function attempts to grab:
@@ -18,7 +24,8 @@ def get_panel_info(url:str) -> dict:
 
     # Grabbing top elements
     dl = panel_body.find("dl", class_="dl-horizontal")
-    top_elements = {dt.text: dd.text for dt, dd in zip(dl.find_all("dt"), dl.find_all("dd"))}
+    #top_elements = {dt.text: dd.text for dt, dd in zip(dl.find_all("dt"), dl.find_all("dd"))} # This is the one that processes schedule
+    top_elements = {dt.text: checkdiv(dd) for dt, dd in zip(dl.find_all("dt"), dl.find_all("dd"))} # This is the one that processes schedule
 
 
     # Grabbing bottom elements
@@ -125,14 +132,17 @@ def process_course_div(course_soup):
 
     return {key: value}
 
+def checkdiv(tag):
+    divs = tag.find_all('div')
+    if divs:
+        
+        return '__DIV__'.join((d.text or '').strip() for d in divs)
+        #return '__DIV__'.join(d.text.strip() for d in divs)
+    else:
+        return tag.text.strip()
+        #return ' '.join(tag.stripped_strings)
+
 def process_course_item(course_soup):
-    def checkdiv(tag):
-        divs = tag.find_all('div')
-        if divs:
-            
-            return [d.text.strip() for d in divs]
-        else:
-            return tag.text.strip()
         
     match course_soup.name:
         case "p":
@@ -146,7 +156,7 @@ def process_course_item(course_soup):
         case "a":
             return course_soup.text.strip()
         case "div":
-            return course_soup.text.strip() + " WARNIGN DIV"
+            return course_soup.text.strip()
 """
 def process_course_item(course_soup):
     match course_soup.name:
@@ -184,6 +194,119 @@ def get_course_items2(url:str) -> dict:
     return out_dict
 
 
+def rename_examkey(course):
+    # Correctly name exam key
+    for key in course.keys():
+        if (key.startswith('Exam')) or key.startswith('Eksa'):
+            examkey = key
+            oldexam = course[key]
+    del course[examkey]
+    course['Exam'] = oldexam
+    return course
+
+def rename_exam_subkey(course):
+    # Translate exam keys
+    dk_en_exam_dict = {
+        'Reeksamen': 'Re-exam',
+        'Hjælpemidler': 'Aid',
+        'Eksamensperiode': 'Exam period',
+        'Bedømmelsesform': 'Marking scale',
+        'Prøveformsdetaljer': 'Type of assessment details',
+        'Prøveform': 'Type of assessment',
+        'Krav til indstilling til eksamen': 'Exam registration requirements',
+        'Point': 'Credit',
+        'Censurform': 'Censorship form',
+    }
+    if isinstance(course['Exam'], dict):
+        keylist = list(course['Exam'].keys())
+        for key in keylist:
+            if key in dk_en_exam_dict.keys():
+                thisvalue = course['Exam'][key]
+                del course['Exam'][key]
+                course['Exam'][dk_en_exam_dict[key]] = thisvalue
+    return course
+
+## Få workload fra en liste med en liste med key value pairs (efter header "category", "hours")
+import string 
+def dictify_workload(course):
+    workdict = {}
+    worklist = course['Workload'][0][2:]
+    while worklist:
+        key = worklist.pop(0)
+        value = worklist.pop(0)
+        workdict[key]=float(value.replace(",", "."))
+    course['Workload'] = workdict
+    return course
+
+def translate_workkeys(course):
+    workload_dictionary = {'E-læring': 'E-Learning',
+        'Eksamen': 'Exam',
+        'Laboratorie': 'Laboratory',
+        'Studiegrupper': 'Study Groups',
+        'Teoretiske øvelser': 'Theory exercises',
+        'Feltarbejde': 'Field Work',
+        'Forberedelse (anslået)': 'Preparation',
+        'Eksamensforberedelse': 'Exam Preparation',
+        'Ekskursioner': 'Excursions',
+        'Forelæsninger': 'Lectures',
+        'Praktiske øvelser': 'Practical exercises',
+        'Projektarbejde': 'Project work',
+        'Øvelser': 'Exercises',
+        'Vejledning': 'Guidance',
+        'Holdundervisning': 'Class Instruction',
+        'Praktik': 'Practical Training',
+        'I alt': 'Total'} # Seminar is Seminar
+
+    keylist = list(course['Workload'].keys())
+    for key in keylist:
+        if key in workload_dictionary.keys():
+            thisvalue = course['Workload'][key]
+            del course['Workload'][key]
+            course['Workload'][workload_dictionary[key]] = thisvalue
+    return course
+
+
+def fix_primary_title(course):
+    course['primary title'] = fixstring(course['primary title'][11:])
+    return course
+
+def normalise_language(c):
+    # normalize language codes from 
+    # {'Dansk', 'Engelsk', 'English', 'English - Partially in Danish'} 
+    # to 'en' or 'da'
+    l = c['language'].lower()
+    if l.startswith('da'):
+        c['language'] = 'da'
+    elif l.startswith('en'):
+        c['language'] = 'en'
+    return c
+
+def tidy_content(c):
+    def replace_chars(lst):
+        while None in lst:
+            lst.remove(None)
+        while "" in lst:
+            lst.remove("")
+        for i in range(len(lst)):
+            if isinstance(lst[i], list):
+                replace_chars(lst[i])
+            elif isinstance(lst[i], str):
+                lst[i] = fixstring(lst[i])
+            else:
+                print('undetermined content type', type(lst[i]))
+                print(lst[i])
+        return lst
+
+    c['Content']=replace_chars(c['Content'])
+    c['Learning Outcome'] = replace_chars(c['Learning Outcome'])
+    return c
+
+def floatify_credit(c):
+    l = c['credit'].lower()
+    l = fixstring(l).replace(',','.').replace(' ects', '')
+    l = float(l)
+    c['credit'] = l
+    return c
 
 def get_all_info(url):
 
@@ -220,28 +343,50 @@ def get_all_info(url):
             'Det Sundhedsvidenskabelige Fakultet': 'Faculty of Health and Medical Sciences',
             'Det Natur- og Biovidenskabelige Fakultet': 'Faculty of Science',
             'Det Samfundsvidenskabelige Fakultet': 'Faculty of Social Sciences'}
-    all_info = {
+    site = {
         **get_panel_info(url),
         **get_course_items2(url)
     }
     # Translate keys to english
-    all_info_en = {dk_to_en_keys.get(k, k): v for k, v in all_info.items()}
+    site = {dk_to_en_keys.get(k, k): v for k, v in site.items()}
 
     # Translate faculties to english
-    faculty = all_info_en['contracting faculty'][0]  
+    faculty = site['contracting faculty'][0]  
 
     # only attempt to translate if the danish_name is in the translation dictionary
     if faculty in dk_to_en_faculties:
         english_name = dk_to_en_faculties[faculty] 
-        all_info_en['contracting faculty'] = english_name  
+        site['contracting faculty'] = english_name  
     else:
-        all_info_en['contracting faculty'] = faculty
+        site['contracting faculty'] = faculty
+
+    # Only keep the science dept:
+    if not site['contracting faculty'] == 'Faculty of Science':
+        return None
+
+    pipeline = [
+        rename_examkey,
+        rename_exam_subkey,
+        dictify_workload,
+        translate_workkeys,
+        fix_primary_title,
+        normalise_language,
+        tidy_content,
+        floatify_credit
+    ]
+
+    for func in pipeline:
+        site = func(site)
+    return site
 
 
+<<<<<<< HEAD
 
     return all_info_en
 
 
+=======
+>>>>>>> refs/remotes/origin/main
 # THIS IS USED TO DEOBFUSCATE TAGS IN COURSE COORDINATORS
 def deobfuscate(s):
     s = s.split('-')
