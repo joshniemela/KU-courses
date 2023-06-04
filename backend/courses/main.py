@@ -10,7 +10,8 @@ json_dir = f"{DATA_DIR}/json"
 
 def main():
     nltk_packages = ['words',
-                     'averaged_perceptron_tagger']
+                     'averaged_perceptron_tagger',
+                     'universal_tagset']
     cache_pages()
     sitemap_urls = get_sitemap_urls()
     ensure_dir_exists(json_dir)
