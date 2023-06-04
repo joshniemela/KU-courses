@@ -20,6 +20,8 @@ uvicorn = {extras = ["standard"], version = "*"}
 starlette = "*"
 pydantic = "*"
 python-decouple = "*"
+nltk = "*"
+regex = "*"
 
 [dev-packages]
 
