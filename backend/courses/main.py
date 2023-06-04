@@ -9,7 +9,6 @@ def main():
     cache_pages()
     sitemap_urls = get_sitemap_urls()
     ensure_dir_exists(json_dir)
-    ensure_dir_exists(science_dir)
     with mp.Pool(8) as p:
         p.map(convert_to_json, sitemap_urls)
 
