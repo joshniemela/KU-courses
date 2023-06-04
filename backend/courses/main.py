@@ -4,7 +4,6 @@ import json
 import multiprocessing as mp
 DATA_DIR = "../../data" # where to store the data
 json_dir = f"{DATA_DIR}/json"
-science_dir = f"{DATA_DIR}/json_science"
 
 def main():
     cache_pages()
@@ -22,7 +21,7 @@ def convert_to_json(url:str):
     course = get_all_info(url)
     if course:
         try:
-            with open(f"{science_dir}/{url.split('/')[-1]}.json", "w") as f:
+            with open(f"{json_dir}/{url.split('/')[-1]}.json", "w") as f:
                 json.dump(course, f)
             print(f"Parsed {url}")
         except Exception as e:
