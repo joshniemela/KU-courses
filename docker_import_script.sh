@@ -7,5 +7,5 @@ if [ -z "$1" ]; then
 fi
 
 # Execute the docker cp command
-sudo docker cp queries/. "$1":/var/lib/pgadmin/storage/admin_private.org/
+docker cp queries/. "$1":/var/lib/pgadmin/storage/admin_private.org/
 
