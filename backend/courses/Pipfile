@@ -22,6 +22,7 @@ pydantic = "*"
 python-decouple = "*"
 nltk = "*"
 regex = "*"
+black = "*"
 
 [dev-packages]
 
