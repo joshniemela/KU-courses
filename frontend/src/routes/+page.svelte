@@ -3,8 +3,11 @@ import theme from '../theme'
 import SearchIcon from '../assets/SearchIcon.svelte';
 import FilterButton from '../components/FilterButton/FilterButton.svelte';
 import { navigate } from 'svelte-navigator';
-
-
+/**
+* navigates to the /browse route.
+* @function submit 
+* @param {event} event event: the event emitted by the component on click / enter
+*/
 function submit(event) {
     if (event.key === 'Enter') {
         console.log("Submit")
@@ -12,6 +15,7 @@ function submit(event) {
         location.reload()
     }
 }
+
 </script>
     <div class="content">
         <h1 class="title" style="--font-color: {theme.colors.brand[500]}">KU Courses (WIP)</h1>
