@@ -11,7 +11,8 @@
                  [http-kit "2.3.0"]
                  [ring "1.10.0"]
                  [metosin/reitit "0.6.0"]
-                 [metosin/muuntaja "0.6.8"]]
+                 [metosin/muuntaja "0.6.8"]
+                 [metosin/reitit-swagger-ui "0.7.0-alpha4"]]
   :main ^:skip-aot db-manager.core
   :resource-path "resources"
   :target-path "target/%s"
