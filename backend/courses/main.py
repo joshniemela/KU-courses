@@ -1,7 +1,10 @@
 from parsing import get_all_info
 from scraper import get_sitemap_urls, cache_pages, ensure_dir_exists
+import os
 import json
 import multiprocessing as mp
+import nltk
+nltk_path = '../../data/nltk_resources'
 DATA_DIR = "../../data" # where to store the data
 json_dir = f"{DATA_DIR}/json"
 
@@ -9,6 +12,10 @@ def main():
     cache_pages()
     sitemap_urls = get_sitemap_urls()
     ensure_dir_exists(json_dir)
+    ensure_dir_exists(nltk_path)
+    delete_files_in_directory(json_dir)
+    nltk.download(info_or_id="words", download_dir=nltk_path)
+    nltk.data.path.append(nltk_path)
     with mp.Pool(8) as p:
         p.map(convert_to_json, sitemap_urls)
 
@@ -26,6 +33,12 @@ def convert_to_json(url:str):
         except Exception as e:
             print(f"Error with {url}")
             print(e)
+
+def delete_files_in_directory(directory):
+    for filename in os.listdir(directory):
+        file_path = os.path.join(directory, filename)
+        if os.path.isfile(file_path):
+            os.remove(file_path)
 
 if __name__ == '__main__':
     main()

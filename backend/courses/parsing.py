@@ -76,16 +76,33 @@ def get_panel_info(url:str) -> dict:
     def getmail(soup):
         coordinators = []
         for person in soup:
-            uglymail = person.find('span', onclick=True)['onclick']
-            uglymail = uglymail.split("'")[1]
-            name = person.find(string=True, recursive=False)
-            email = deobfuscate(uglymail)
-            coordinators.append({'full_name': name, 'email': email})
+            try:
+                # try to find spans
+                spans = person.find('span', onclick=True)
+                if not spans:
+                    #print(top_elements)
+                    #print(soup)
+                    pass
+                uglymail = spans['onclick']
+                uglymail = uglymail.split("'")[1]
+                name = person.find(string=True, recursive=False)
+                email = deobfuscate(uglymail)
+                coordinators.append({'full_name': name, 'email': email})
+            except:
+                pass
+                #print('ERROR IN:')
+                #print(top_elements)
+                #print(soup)
+                #print()
+                #print(coordinators)
+                #print()
         return coordinators
 
     coord_names = ('kursusansvarlige', dk_to_en_keys['kursusansvarlige'] )
+    coord_people = []
     
     bottom_elements = {}
+    
     for i,h5 in enumerate(h5s):
         key = h5.text.lower()
         if key in coord_names:
@@ -667,10 +684,11 @@ def attempt_deobfuscate(s, mod, offset):
     return p
 
 def deobfuscate(mail):
-    for i in range(1, 10):
-        for j in range(1, 10):
+    pattern = "(.+@.+\..+)"
+    for i in range(1, 20):
+        for j in range(1, 20):
             attempt_combination = attempt_deobfuscate(mail, i, j)
-            if attempt_combination[-5:] == "ku.dk":
+            if re.fullmatch(pattern, attempt_combination):
                 return attempt_combination
     return None
 
