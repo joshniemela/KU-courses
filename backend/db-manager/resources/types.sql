@@ -8,7 +8,7 @@ CREATE TYPE block_enum AS ENUM (
 	'4'
 );
 
-CREATE TYPE sch_group AS ENUM (
+CREATE TYPE schedule_enum AS ENUM (
 	'A',
 	'B',
 	'C',
