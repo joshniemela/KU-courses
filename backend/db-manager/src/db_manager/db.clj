@@ -15,9 +15,8 @@
 
 (defn insert-course! [ds course-map]
   (let [course-schema [:course_id :title :course_language
-                       :description :start_block :duration
-                       :schedule_group :credits :study_level
-                       :url]]
+                       :description :start_block :duration 
+                       :credits :study_level :url]]
 
     (jdbc.sql/insert! ds :course (select-keys course-map course-schema))))
 
@@ -47,7 +46,16 @@
                                                             [:course_id :workload_type :hours])
                                               workloads))))
 
-
+(defn insert-schedule-groups! [ds course-emp-map]
+  (let [schedule-groups (:schedules course-emp-map)]
+    (jdbc.sql/insert-multi! ds :schedule (map #(select-keys (assoc % :course_id (:course_id course-emp-map))
+                                                            [:course_id :schedule_type :minutes])
+                                              schedule-groups))))
+(defn insert-exams! [ds course-emp-map]
+  (let [exams (:exams course-emp-map)]
+    (jdbc.sql/insert-multi! ds :exam (map #(select-keys (assoc % :course_id (:course_id course-emp-map))
+                                                            [:course_id :exam_type :minutes])
+                                              exams))))
 
 
 (defn insert-course-emp! [db course-emp-map]
@@ -55,7 +63,9 @@
     (insert-course! tx course-emp-map)
     (insert-employees! tx course-emp-map)
     (insert-coordinates! tx course-emp-map)
-    (insert-workloads! tx course-emp-map)))
+    (insert-workloads! tx course-emp-map)
+    (insert-schedule-groups! tx course-emp-map)
+    (insert-exams! tx course-emp-map)))
 
 
 

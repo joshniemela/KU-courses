@@ -1,4 +1,4 @@
-(ns db-manager.core 
+(ns db-manager.core
   (:require [clojure.core :as c]
             [clojure.data.json :as json]
             [clojure.java.io :as io]
@@ -14,7 +14,7 @@
             [next.jdbc :as jdbc]
             [next.jdbc.types :refer [as-other]]
             [honey.sql :as sql]))
-                                             
+
 
 (def db-config
   {:dbtype "postgresql"
@@ -54,8 +54,7 @@
 ;  (println (jdbc/execute! db ["select version();"])))
 ;  (run-server (app) {:port 3000})
 
-(def test-course {
-                  :course_id "1234123412"
+(def test-course {:course_id "1234123412"
                   :title "test"
                   :course_language "da"
                   :description "test"
@@ -64,13 +63,12 @@
                   :schedule_group (as-other "A")
                   :credits 7.5
                   :study_level "test"
-                  :coordinators [{:email "josh@jniemela.dk" :full_name "Joshua Niemelä"} 
+                  :coordinators [{:email "josh@jniemela.dk" :full_name "Joshua Niemelä"}
                                  {:email "jhaudfa" :full_name "foobar"}]
-                  :workloads [{:workload_type (as-other "lectures") :hours 10} 
+                  :workloads [{:workload_type (as-other "lectures") :hours 10}
                               {:workload_type (as-other "exercises") :hours 10}]})
-                  
-(def another-test-course {
-                          :course_id "blablabla1"
+
+(def another-test-course {:course_id "blablabla1"
                           :title "test2"
                           :course_language "da"
                           :description "test"
@@ -78,9 +76,9 @@
                           :schedule_group (as-other "A")
                           :credits 7.5
                           :study_level "test"
-                          :coordinators [{:email "josh@jniemela.dk" :full_name "Joshua Niemelä"} 
+                          :coordinators [{:email "josh@jniemela.dk" :full_name "Joshua Niemelä"}
                                          {:email "potato" :full_name "afafjaf"}]
-                          :workloads [{:workload_type (as-other "lectures") :hours 100} 
+                          :workloads [{:workload_type (as-other "lectures") :hours 100}
                                       {:workload_type (as-other "exercises") :hours 100}]})
 
 ; read every json in data-dir
@@ -89,7 +87,7 @@
 
 ; find all jsons
 (def course-files (for [file (file-seq (io/file json-dir)) :when (.endsWith (.getName file) ".json")]
-                     (.getName file)))
+                    (.getName file)))
 
 (def courses (map read-json course-files))
 
@@ -101,24 +99,23 @@
 (defn coerce-as-other [course-map]
   ; make schedule_group into "as-other"
   (-> course-map
-       (assoc :schedule_group (as-other (:schedule_group course-map)))
-       (assoc :start_block (as-other (:start_block course-map)))
+      (assoc :schedule_group (as-other (:schedule_group course-map)))
+      (assoc :start_block (as-other (:start_block course-map)))
       ; workloads is a vector of maps with :workload_type and :hours
       ; workload_types should have as-other
-        (update :workloads #(map (fn [workload]
-                                    (assoc workload :workload_type (as-other (:workload_type workload))))
-                                  %))))
+      (update :workloads #(map (fn [workload]
+                                 (assoc workload :workload_type (as-other (:workload_type workload))))
+                               %))
+      ; exact same thing with schedule_groups
+      (update :schedules #(map (fn [schedule_group]
+                                 (assoc schedule_group :schedule_type (as-other (:schedule_type schedule_group))))
+                               %))
+      ; same with exams
+      (update :exams #(map (fn [exam]
+                             (assoc exam :exam_type (as-other (:exam_type exam))))
+                           %))))
 
 (defn -main []
   (nuke-db! db)
   (populate-courses! db [(coerce-as-other real-course)])
   (println (jdbc/execute! db ["SELECT * FROM Employee"])))
-
-(defn merge-employees [employees]
-  (let [grouped (group-by :email employees)]
-    (map (fn [[email employees]]
-           (reduce (fn [acc employee]
-                     (assoc acc :title (str (:title acc) ", " (:title employee))))
-                   (first employees)
-                   (rest employees)))
-         grouped)))

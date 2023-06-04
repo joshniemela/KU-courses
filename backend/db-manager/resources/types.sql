@@ -31,7 +31,7 @@ CREATE TYPE work_enum AS ENUM (
 	'lectures',
 	'exercises',
 	'preparation',
-	'project_work',
+	'project',
 	'exam',
 	'other' -- Catch all
 );

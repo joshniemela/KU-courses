@@ -16,7 +16,7 @@ CREATE TABLE IF NOT EXISTS course (
 CREATE TABLE IF NOT EXISTS exam (
 	course_id char(10) NOT NULL,
 	exam_type exam_enum NOT NULL,
-	duration_minutes int
+	minutes int
 );
 
 CREATE TABLE IF NOT EXISTS employee (

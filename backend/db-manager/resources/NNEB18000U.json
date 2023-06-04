@@ -7,7 +7,7 @@
     "study_level": "Bachelor",
     "start_block": 3,
     "duration": 2,
-    "schedule_groups": [{"schedule_type": "A"}, {"schedule_type": "B"}],
+    "schedule": [{"schedule_type": "A"}, {"schedule_type": "B"}],
     "coordinators": [
         {"full_name": "Pia Grethe Sandfeld Melcher", "email": "placeholder"}
     ],
@@ -29,5 +29,7 @@
             {"workload_type": "exercises", "hours": 60},
             {"workload_type": "exam", "hours": 40}
     ],
-    "exams": "havent figured this one out yet"
+    "exams": [
+        {"exam_type": "written_examination", "minutes": 25}
+    ]
 }
