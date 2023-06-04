@@ -9,12 +9,15 @@ DATA_DIR = "../../data" # where to store the data
 json_dir = f"{DATA_DIR}/json"
 
 def main():
+    nltk_packages = ['words',
+                     'averaged_perceptron_tagger']
     cache_pages()
     sitemap_urls = get_sitemap_urls()
     ensure_dir_exists(json_dir)
     ensure_dir_exists(nltk_path)
     delete_files_in_directory(json_dir)
-    nltk.download(info_or_id="words", download_dir=nltk_path)
+    for package in nltk_packages:
+        nltk.download(info_or_id=package, download_dir=nltk_path)
     nltk.data.path.append(nltk_path)
     with mp.Pool(8) as p:
         p.map(convert_to_json, sitemap_urls)
