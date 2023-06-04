@@ -1,6 +1,5 @@
 (ns db-manager.routes
-  (:require [clojure.data.json :as json] 
-            ))
+  (:require [clojure.data.json :as json] ))
 
 (def ping-route
   ["/ping"

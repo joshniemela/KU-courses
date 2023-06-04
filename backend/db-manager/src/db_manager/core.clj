@@ -7,7 +7,9 @@
             [reitit.coercion.spec]
             [reitit.ring.coercion :as rrc]
             [reitit.ring.middleware.muuntaja :as muuntaja]
-            [reitit.ring.middleware.parameters :as parameters]
+            [reitit.ring.middleware.parameters :as parameters] 
+            [reitit.swagger-ui :as swagger-ui]
+            [reitit.swagger :as swagger]
             [org.httpkit.server :refer [run-server]]
             [db-manager.routes :refer [ping-route crud-routes]]
             [db-manager.db :refer [nuke-db! insert-course-emp! populate-courses!]]
@@ -38,7 +40,12 @@
 (defn app []
   (ring/ring-handler
    (ring/router
-    [["/api"
+    [["/swagger.json"
+      {:get {:no-doc true
+             :swagger {:info {:title "DISKU backend API"}
+                       :basePath "/"} ;; prefix for all paths
+             :handler (swagger/create-swagger-handler)}}]
+     ["/api"
       ping-route
       crud-routes]]
     {:data {:coercion reitit.coercion.spec/coercion
@@ -47,12 +54,12 @@
                          muuntaja/format-middleware
                          rrc/coerce-exceptions-middleware
                          rrc/coerce-request-middleware
-                         rrc/coerce-response-middleware]}})))
+                         rrc/coerce-response-middleware]}})
+   (ring/routes
+     (swagger-ui/create-swagger-ui-handler {:path "/swagger"})
+     (ring/create-default-handler))))
 
 
-;(defn -main []
-;  (println (jdbc/execute! db ["select version();"])))
-;  (run-server (app) {:port 3000})
 
 (def test-course {:course_id "1234123412"
                   :title "test"
@@ -115,7 +122,13 @@
                              (assoc exam :exam_type (as-other (:exam_type exam))))
                            %))))
 
+
+
+;(defn -main []
+;  (println (jdbc/execute! db ["select version();"])))
+;  
 (defn -main []
   (nuke-db! db)
   (populate-courses! db [(coerce-as-other real-course)])
-  (println (jdbc/execute! db ["SELECT * FROM Employee"])))
+  (println (jdbc/execute! db ["SELECT * FROM Employee"]))
+  (run-server (app) {:port 3000}))
