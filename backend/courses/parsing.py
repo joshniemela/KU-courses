@@ -1,4 +1,7 @@
 from bs4 import BeautifulSoup
+import nltk
+from nltk import pos_tag
+import re
 from scraper import get_page
 # this module is responsible for parsing and extracting information from the html pages
 
@@ -308,6 +311,261 @@ def floatify_credit(c):
     c['credit'] = l
     return c
 
+def ba_or_ma(c):
+    l = c['level'].lower()
+    if 'master' in l or 'kandidat' in l:
+        c['study_level'] = 'Master'
+    elif 'bachelor' in l:
+        c['study_level'] = 'Bachelor'
+    else:
+        raise ValueError(f'Course Level undetermined: {l}')
+    del c['level']
+    return c
+
+def rename_topkeys(c):
+    keytrans = {'course code': 'course_id',
+                'primary title': 'title',
+                'language': 'course_language',
+                'Content': 'description',
+                'credit': 'credits',
+               }
+    for k,v in keytrans.items():
+        value = c[k]
+        del c[k]
+        c[v] = value
+    return c
+
+def normalise_examkeys(c):
+    # Let's take the exam out of list:
+    val = c['Exam'][0]
+    c['exam'] = val
+    del c['Exam']
+
+    dk_en_exam_dict = {
+        'Reeksamen': 'Re-exam',
+        'Hjælpemidler': 'Aid',
+        'Eksamensperiode': 'Exam period',
+        'Bedømmelsesform': 'Marking scale',
+        'Prøveformsdetaljer': 'Type of assessment details',
+        'Prøveform': 'Type of assessment',
+        'Krav til indstilling til eksamen': 'Exam registration requirements',
+        'Point': 'Credit',
+        'Censurform': 'Censorship form',
+    }
+    # Translating the exam keys:
+    keylist = list(c['exam'].keys())
+    for key in keylist:
+        if key in dk_en_exam_dict.keys():
+            thisvalue = c['exam'][key]
+            del c['exam'][key]
+            c['exam'][dk_en_exam_dict[key]] = thisvalue
+    return c
+
+
+def type_of_assessmentfixer(c):
+    def convert_to_minutes(s):
+        # dictionary to store units and their conversion to minutes
+        time_units = {
+            "(min|minutes|minutter|minuts?)\.?": 1,
+            "(h|hour|timer|time)\.?": 60,
+            "(d|day|dage)\.?": 24*60,
+            "(w|week|uger)\.?": 24*7*60
+        }
+        # dictionary to convert words to numbers
+        word_to_num = {
+            "one": 1, "two": 2, "three": 3, "four": 4, "five": 5,
+            "six": 6, "seven": 7, "eight": 8, "nine": 9, "ten": 10
+        }
+        # regex to handle multipliers and decimals
+        match_decimal = re.search(r'(\d+\.\d+)', s)
+        match_mul_hour = re.search(r'(\d+)\*(\d+)', s)
+        match_gange = re.search(r'(\d+) gange (\d+)', s)
+
+        if match_decimal:
+            return round(float(match_decimal.group(1))*60)
+        elif match_mul_hour:
+            return round(int(match_mul_hour.group(1)) * int(match_mul_hour.group(2))*60)
+        elif match_gange:
+            return round(int(match_gange.group(1)) * int(match_gange.group(2)))
+        else:
+            for unit, factor in time_units.items():
+                # regex for numerical and textual number with unit
+                match_num_unit = re.search(rf'(\d+) ?{unit}', s)
+                match_word_unit = re.search(rf'(?i)({"|".join(word_to_num.keys())}) ?{unit}', s)
+                if match_num_unit:
+                    return round(int(match_num_unit.group(1)) * factor)
+                elif match_word_unit:
+                    return round(word_to_num[match_word_unit.group(1).lower()] * factor)
+
+            # If only a number is given, assume it's minutes
+            match_num = re.search(r'^(\d+)$', s)
+            if match_num:
+                return round(int(match_num.group(1)))
+
+        return None
+
+    examtrans = {'Mundtlig prøve': 'Oral examination',
+            'Skriftlig prøve': 'Written examination',
+            'Skriftlig aflevering': 'Written assignment',
+            'Løbende bedømmelse': 'Continuous assessment',
+            'Praktisk skriftlig prøve': 'Practical written examination',
+            'Praktisk mundtlig prøve': 'Practical oral examination', # findes ikke på engelsk
+            'Løbende bedømmelse med opsyn.': 'Continuous assessment',
+            'Praktisk mundtlig prøve med opsyn.': 'Practical oral examination', # findes ikke på engelsk
+            'Mundtligt forsvar': 'Oral defence',
+            # Other og Portfolio er engelsk
+    }
+
+
+    examlist = c['exam']['Type of assessment'].split('__DIV__')
+    for i, e in enumerate(examlist):
+        exam_time = e.split(',')
+        if exam_time[0] in examtrans.keys():
+            exam_time[0] = examtrans[exam_time[0]]
+        if len(exam_time) > 1:
+            exam_time[1] = convert_to_minutes(fixstring(exam_time[1]).strip()) # These are the times
+        examlist[i] = exam_time[:2]
+    c['exam']['Type of assessment'] = examlist
+
+    # snakecase exam types
+    newlist = []
+    for e in c['exam']['Type of assessment']:
+        e[0] = snakecase(e[0])
+        newlist += [e]
+    c['exam']['Type of assessment'] = newlist
+    # exams done!!
+    return c
+
+def course_start_and_duration(c):
+    def extract_starting_block(s):
+        # Convert to lowercase for consistency
+        s = s.lower()
+        s = fixstring(s)
+
+        # translate some Danish words
+        danish_to_english = {
+            "blok": "block",
+            "forår": "spring",
+            "sommer": "summer",
+            "efterår": "autumn",
+            "eller": "or"
+        }
+        for dk, en in danish_to_english.items():
+            s = s.replace(dk, en)
+
+        # Regex pattern to find block numbers
+        pattern = re.compile(r'block (\d)')
+
+        # Regex pattern to find multioption coursestarts inside parenthesis
+        parenthesis_pattern = re.compile(r'\(block ((\d+\+\d+, )*(\d+\+\d+ or \d+\+\d+))\)')
+
+        p_matches = parenthesis_pattern.findall(s)
+        if p_matches: # Multioption start detected. Starttime ambiguous
+            return None
+        # Find all block numbers
+        matches = pattern.findall(s)
+
+        if matches:
+            return int(matches[0])
+
+        # If no block numbers, map semester names to starting block
+        semester_to_block = {
+            "spring": 3,
+            "summer": 5,
+            "autumn": 1
+        }
+
+        # For each semester name
+        for semester, block in semester_to_block.items():
+            # If the semester name is in the string, return the associated block
+            if semester in s:
+                return block
+
+        return None
+
+    def extract_duration(s):
+        # Convert to lowercase for consistency
+        s = s.lower()
+        # Replace all newline characters and multiple whitespaces with a single space
+        s = re.sub(r'\s+', ' ', s)
+        # Replace "blok" with "block" for consistency
+        s = re.sub(r'blok', 'block', s)
+        # Remove all non-alphanumeric characters except comma and space
+        s = re.sub(r'[^a-z0-9, ]', '', s)
+
+        # Try to extract block number
+        match = re.search(r'(\d) block', s)
+        if match:
+            return int(match.group(1))
+
+        # If there's no block number, check for semesters
+        match = re.search(r'(\d) semester', s)
+        if match:
+            return int(match.group(1)) * 2
+
+        return None
+
+
+    if 'duration' in c.keys():
+        c['duration'] = extract_duration(c['duration'])
+    if 'placement' in c.keys():
+        c['start_block'] = extract_starting_block(c['placement'])
+        del c['placement']
+    return c
+
+def fix_schedule_group(c):
+    def extract_schedule_groups(l):
+        s = l.split('__DIV__')[0]
+        s = fixstring(s)
+        #Find all normal BCD
+        matches = []
+        matches += re.findall(r'\b([BCD])\d?\b', s)
+        s = re.sub(r'\b([BCD])\d?\b','', s)
+
+        # Find A2 with digits
+        matches += re.findall(r'\b(A)\d\b', s)
+        s = re.sub(r'\b(A)\d\b','', s)
+
+        # Find A with punctuation
+        matches += re.findall(r'\b(A)[.,!?]', s)
+        s = re.sub(r'\b(A)[.,!?]','', s)
+
+        # Find A with word afterwards:
+        matches += re.findall(r'\b(A)\s([a-z]+)', s)
+        s = re.sub(r'\b(A)\s[a-z]+','', s)
+
+        # I think I covered my bases. Let's find the A's and the following word
+        matches += re.findall(r'\b(A)\b', s)
+        s = re.sub(r'\b(A)\b','', s)
+
+        # Now let's check if for any tuples, and accept if the last word is conjunction, preposition, or an unknown word
+        w = nltk.corpus.words.words()
+        accepted_classes = ['ADP', 'CONJ']
+        were_good = False
+        for i,match in enumerate(matches):
+            if isinstance(match, tuple):
+                #print('found', match)
+                letter, word = match
+                _, tag = pos_tag([word], tagset='universal')[0]
+                if tag in accepted_classes:
+                    were_good = True
+                if tag == 'NOUN':
+                    if word not in w:
+                        were_good = True
+                if were_good:
+                    matches[i] = letter
+                    #print('accepting')
+                else:
+                    del matches[i]
+                    #print('rejecting')
+        m = set(matches)
+        return sorted(list(m))
+
+    if 'schedule' in c.keys():
+        c['schedule_group'] = extract_schedule_groups(c['schedule'])
+        del c['schedule']
+    return c
+
 def get_all_info(url):
 
     dk_to_en_keys = {'varighed': 'duration',
@@ -372,12 +630,20 @@ def get_all_info(url):
         fix_primary_title,
         normalise_language,
         tidy_content,
-        floatify_credit
+        floatify_credit,
+        ba_or_ma,
+        normalise_examkeys,
+        type_of_assessmentfixer,
+        course_start_and_duration,
+        fix_schedule_group
     ]
 
     for func in pipeline:
         site = func(site)
     return site
+
+
+
 
 
 # THIS IS USED TO DEOBFUSCATE TAGS IN COURSE COORDINATORS
