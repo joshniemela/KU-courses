@@ -1,2 +1,4 @@
 data/*
 .direnv
+.lsp
+.clj-kondo
