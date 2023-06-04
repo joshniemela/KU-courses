@@ -4,6 +4,39 @@ from nltk import pos_tag
 import re
 from scraper import get_page
 # this module is responsible for parsing and extracting information from the html pages
+dk_to_en_keys = {'varighed': 'duration',
+    'kursuskapacitet': 'course capacity',
+    'udbydende institutter': 'contracting departments', #
+    'contracting department': 'contracting departments', #
+    'udbydende institut': 'contracting departments',    # These map to the same.
+    'studienævn': 'study board',
+    'kursuskode': 'course code',
+    'niveau': 'level',
+    'sprog': 'language',
+    'Formelle krav': 'Formal requirements',
+    'skemagruppe': 'schedule',
+    'undervisere': 'lecturers',
+    'Anbefalede faglige forudsætninger': 'Recommended Academic Qualifications',
+    'Arbejdsbelastning': 'Workload',
+    'Feedbackform': 'Feedback form',
+    'Bemærkninger': 'Remarks',
+    'Kursusindhold': 'Content',
+    'Målbeskrivelser': 'Learning Outcome',
+    'Undervisningsmateriale': 'Literature',
+    'kursusansvarlige': 'course coordinators',
+    'Uddannelse': 'Education',
+    'placering': 'placement',
+    'Undervisningsform': 'Teaching and learning methods',
+    'point': 'credit',
+    'udbydende fakultet': 'contracting faculty',
+    'Tilmelding': 'Sign up'}
+dk_to_en_faculties = {
+        'Det Juridiske Fakultet': 'Faculty of Law',
+        'Det Humanistiske Fakultet': 'Faculty of Humanities',
+        'Det Teologiske Fakultet': 'Faculty of Theology',
+        'Det Sundhedsvidenskabelige Fakultet': 'Faculty of Health and Medical Sciences',
+        'Det Natur- og Biovidenskabelige Fakultet': 'Faculty of Science',
+        'Det Samfundsvidenskabelige Fakultet': 'Faculty of Social Sciences'}
 
 def fixstring(string):
     return string.replace('\n', ' ').replace('\xa0',' ')
@@ -40,18 +73,27 @@ def get_panel_info(url:str) -> dict:
     siblings = [s.find_all("li") if s.name == "ul" else s for s in siblings]
 
     # bottom elements are the 5(?) in the h5s
-    def remove_spans(soup):
-        """
-        Removes all span tags from a soup, used to remove the mailto links
-        """
-        try:
-            for span in soup.find_all("span"):
-                span.decompose()
-        except AttributeError:
-            pass
-        return soup
+    def getmail(soup):
+        coordinators = []
+        for person in soup:
+            uglymail = person.find('span', onclick=True)['onclick']
+            uglymail = uglymail.split("'")[1]
+            name = person.find(string=True, recursive=False)
+            email = deobfuscate(uglymail)
+            coordinators.append({'full_name': name, 'email': email})
+        return coordinators
 
-    bottom_elements = {h5.text: [remove_spans(sibling).text.strip() for sibling in siblings[i]] for i, h5 in enumerate(h5s)}
+    coord_names = ('kursusansvarlige', dk_to_en_keys['kursusansvarlige'] )
+    
+    bottom_elements = {}
+    for i,h5 in enumerate(h5s):
+        key = h5.text.lower()
+        if key in coord_names:
+            bottom_elements[key] = getmail(siblings[i])
+        else:
+            bottom_elements[key] = [sibling.text.strip() for sibling in siblings[i]]
+
+#    bottom_elements = {h5.text: [getmail(sibling).text.strip() for sibling in siblings[i]] for i, h5 in enumerate(h5s)}
     final_dict = {
         "URL": url,
         **top_elements,
@@ -568,39 +610,6 @@ def fix_schedule_group(c):
 
 def get_all_info(url):
 
-    dk_to_en_keys = {'varighed': 'duration',
-        'kursuskapacitet': 'course capacity',
-        'udbydende institutter': 'contracting departments', #
-        'contracting department': 'contracting departments', #
-        'udbydende institut': 'contracting departments',    # These map to the same.
-        'studienævn': 'study board',
-        'kursuskode': 'course code',
-        'niveau': 'level',
-        'sprog': 'language',
-        'Formelle krav': 'Formal requirements',
-        'skemagruppe': 'schedule',
-        'undervisere': 'lecturers',
-        'Anbefalede faglige forudsætninger': 'Recommended Academic Qualifications',
-        'Arbejdsbelastning': 'Workload',
-        'Feedbackform': 'Feedback form',
-        'Bemærkninger': 'Remarks',
-        'Kursusindhold': 'Content',
-        'Målbeskrivelser': 'Learning Outcome',
-        'Undervisningsmateriale': 'Literature',
-        'kursusansvarlige': 'course coordinators',
-        'Uddannelse': 'Education',
-        'placering': 'placement',
-        'Undervisningsform': 'Teaching and learning methods',
-        'point': 'credit',
-        'udbydende fakultet': 'contracting faculty',
-        'Tilmelding': 'Sign up'}
-    dk_to_en_faculties = {
-            'Det Juridiske Fakultet': 'Faculty of Law',
-            'Det Humanistiske Fakultet': 'Faculty of Humanities',
-            'Det Teologiske Fakultet': 'Faculty of Theology',
-            'Det Sundhedsvidenskabelige Fakultet': 'Faculty of Health and Medical Sciences',
-            'Det Natur- og Biovidenskabelige Fakultet': 'Faculty of Science',
-            'Det Samfundsvidenskabelige Fakultet': 'Faculty of Social Sciences'}
     site = {
         **get_panel_info(url),
         **get_course_items2(url)
