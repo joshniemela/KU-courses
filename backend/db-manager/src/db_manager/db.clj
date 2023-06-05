@@ -51,8 +51,14 @@
     (jdbc.sql/insert-multi! ds :schedule (map #(select-keys (assoc % :course_id (:course_id course-emp-map))
                                                             [:course_id :schedule_type :minutes])
                                               schedule-groups))))
+
+; add null minutes to exams if not present
+(defn add-null-minutes [exam]
+  (if (:minutes exam)
+    exam
+    (assoc exam :minutes nil)))
 (defn insert-exams! [ds course-emp-map]
-  (let [exams (:exams course-emp-map)]
+  (let [exams (map add-null-minutes (:exams course-emp-map))]
     (jdbc.sql/insert-multi! ds :exam (map #(select-keys (assoc % :course_id (:course_id course-emp-map))
                                                             [:course_id :exam_type :minutes])
                                               exams))))
@@ -63,7 +69,7 @@
     (insert-course! tx course-emp-map)
     (insert-employees! tx course-emp-map)
     (insert-coordinates! tx course-emp-map)
-    (insert-workloads! tx course-emp-map)
+    ;(insert-workloads! tx course-emp-map)
     (insert-schedule-groups! tx course-emp-map)
     (insert-exams! tx course-emp-map)))
   
