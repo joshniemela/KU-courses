@@ -54,17 +54,20 @@
              :swagger {:info {:title "DISKU backend API"}
                        :basePath "/"} ;; prefix for all paths
              :handler (swagger/create-swagger-handler)}}]
-     ["/api"
+     ["/api" {:middleware [remove-namespace-keywords-in-response-middleware]}
       ping-route
-      (api-routes db)]]
+      (api-routes db)
+      ]]
     {:data {:coercion reitit.coercion.spec/coercion
             :muuntaja m/instance
-            :middleware [parameters/parameters-middleware
+            :middleware [
+                         
+                         parameters/parameters-middleware
                          muuntaja/format-middleware
                          rrc/coerce-exceptions-middleware
                          rrc/coerce-request-middleware
                          rrc/coerce-response-middleware
-                         remove-namespace-keywords-in-response-middleware]}})
+                         ]}})
    (ring/routes
     (swagger-ui/create-swagger-ui-handler {:path "/swagger"})
     (ring/create-default-handler))))
