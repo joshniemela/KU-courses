@@ -32,6 +32,21 @@
 
 (def db (jdbc/get-datasource db-config))
 
+
+; https://andersmurphy.com/2022/03/27/clojure-removing-namespace-from-keywords-in-response-middleware.html
+(defn transform-keys
+  [t coll]
+  (clojure.walk/postwalk (fn [x] (if (map? x) (update-keys x t) x)) coll))
+
+(defn remove-namespace-keywords-in-response-middleware [handler & _]
+  (fn [req]
+    (let [resp (handler req)]
+      (cond-> resp
+        (comp map? :body) (update :body
+                                  (partial transform-keys
+                                           (comp keyword name)))))))
+
+
 (defn app []
   (ring/ring-handler
    (ring/router
@@ -49,7 +64,8 @@
                          muuntaja/format-middleware
                          rrc/coerce-exceptions-middleware
                          rrc/coerce-request-middleware
-                         rrc/coerce-response-middleware]}})
+                         rrc/coerce-response-middleware
+                         remove-namespace-keywords-in-response-middleware]}})
    (ring/routes
     (swagger-ui/create-swagger-ui-handler {:path "/swagger"})
     (ring/create-default-handler))))

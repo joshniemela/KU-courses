@@ -87,15 +87,11 @@
 ; ORDER BY search_similarity DESC
 ; LIMIT 1;"
 (defn find-email-by-name [db name]
-  (->
-   (jdbc/execute! db ["SELECT email, full_name, similarity(full_name, ?) AS search_similarity
+  (jdbc/execute-one! db ["SELECT email, full_name, similarity(full_name, ?) AS search_similarity
                           FROM employee
                           ORDER BY search_similarity DESC
-                          LIMIT 1;" name])
-   first
+                          LIMIT 1;" name]))
    ; rename the keys
-   (set/rename-keys {:employee/email :email
-                     :employee/full_name :full_name})))
 
 ; use honeysql
 (defn get-courses [db]
