@@ -96,7 +96,9 @@ onMount(async () => {
                     <h3 class="side-card-heading">Info</h3>
                     <p class="side-card-name">Bachelor's course</p>
                     <p class="side-card-name">15 ECTS</p>
+                    <a href="https://kurser.ku.dk/course/ndab15009u">
                     <p class="side-card-clickable">https://kurser.ku.dk/course/ndab15009u</p>
+                    </a>
                 </div>
                 <div class="side-card"
                     style="
