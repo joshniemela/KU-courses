@@ -66,6 +66,7 @@
     (insert-workloads! tx course-emp-map)
     (insert-schedule-groups! tx course-emp-map)
     (insert-exams! tx course-emp-map)))
+  
 
 
 
@@ -73,5 +74,6 @@
   (let [len (count courses)]
     (println (str "Populating database with " len " courses"))
     (doseq [course courses]
+      (println (str "Inserting " (:course_id course)))
       (insert-course-emp! db course)
       (println (str "Inserted " (:course_id course))))))
