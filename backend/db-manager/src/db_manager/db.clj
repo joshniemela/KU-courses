@@ -16,7 +16,7 @@
 
 (defn insert-course! [ds course-map]
   (let [course-schema [:course_id :title :course_language
-                       :description :start_block :duration 
+                       :description :start_block :duration
                        :credits :study_level :url
                        :raw_description]]
 
@@ -62,8 +62,8 @@
 (defn insert-exams! [ds course-emp-map]
   (let [exams (map add-null-minutes (:exams course-emp-map))]
     (jdbc.sql/insert-multi! ds :exam (map #(select-keys (assoc % :course_id (:course_id course-emp-map))
-                                                            [:course_id :exam_type :minutes])
-                                              exams))))
+                                                        [:course_id :exam_type :minutes])
+                                          exams))))
 
 
 (defn insert-course-emp! [db course-emp-map]
@@ -74,35 +74,38 @@
     (insert-workloads! tx course-emp-map)
     (insert-schedule-groups! tx course-emp-map)
     (insert-exams! tx course-emp-map)))
-  
 
 
 
 (defn populate-courses! [db courses]
-  (let [len (count courses)]
-    (println (str "Populating database with " len " courses"))
-    (doseq [course courses]
-      (println (str "Inserting " (:course_id course)))
-      (insert-course-emp! db course)
-      (println (str "Inserted " (:course_id course))))))
+  (println (str "Populating database with " (count courses) " courses"))
+  ; TODO, fix print race condition
+  (doall (pmap #(do (insert-course-emp! db %)
+                    (println (str "Inserted course " (:course_id %))))
+               courses))
+  (println "Done populating database"))
 
 
-;SELECT full_name, similarity(full_name, '<name here>') AS search_similarity
+; queries section begins here
+
+; SELECT full_name, similarity(full_name, '<name here>') AS search_similarity
 ; FROM employee
 ; ORDER BY search_similarity DESC
 ; LIMIT 1;"
-
-; return as a map
 (defn find-email-by-name [db name]
-  (-> 
-   (jdbc/execute! db [
-                         "SELECT email, full_name, similarity(full_name, ?) AS search_similarity
+  (->
+   (jdbc/execute! db ["SELECT email, full_name, similarity(full_name, ?) AS search_similarity
                           FROM employee
                           ORDER BY search_similarity DESC
                           LIMIT 1;" name])
    first
    ; rename the keys
-    (set/rename-keys {:employee/email :email
-                      :employee/full_name :full_name})))
-   
-  
+   (set/rename-keys {:employee/email :email
+                     :employee/full_name :full_name})))
+
+; use honeysql
+(defn get-courses [db]
+  (jdbc/execute! db (-> (select :course-id)
+                        (from :course)
+                        (sql/format))))
+

@@ -84,23 +84,23 @@
                              (assoc exam :exam_type (as-other (:exam_type exam))))
                            %))))
 
-(def coerced-courses (map coerce-as-other courses))
+(def coerced-courses (pmap coerce-as-other courses))
+
+
+(def main-config {:port 3000})
 
 (defn -main [& args]
   (let [args (parse-cli args)] 
+    ; this runs if -s is passed
     (when (:scrape args) 
-      (println "Scraping courses from the web") 
+      (println "Scraping courses from the web... (this may take a while)") 
       (scrape-courses!))
     
+    ; this runs if -f is passed
     (if (:force args) 
       (do (println "Nuking database and repopulating with courses from" json-dir)
             (nuke-db! db)
             (populate-courses! db coerced-courses)) 
-      (println "Not forcing reset of database")) 
-    (println (jdbc/execute! db ["SELECT * FROM Employee"])) 
-    (println "starting server on port 3000")
-    (run-server (app) {:port 3000})))
-
-
-(comment
-  (find-email-by-name db "steff summer"))
+      (println "Starting database with existing data...")) 
+    (println "Starting server on port " (:port main-config))
+    (run-server (app) main-config)))
