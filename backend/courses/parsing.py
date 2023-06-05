@@ -219,22 +219,6 @@ def process_course_item(course_soup):
             return course_soup.text.strip()
         case "div":
             return course_soup.text.strip()
-"""
-def process_course_item(course_soup):
-    match course_soup.name:
-        case "p":
-            return course_soup.text.strip()
-        case "h5":
-            return course_soup.text.strip()
-        case "ul":
-            return [li.text.strip() for li in course_soup.find_all("li")]
-        case "dl":
-            return {dt.text.strip(): dd.text.strip() for dt, dd in zip(course_soup.find_all("dt"), course_soup.find_all("dd"))} # TODO FIX THIS: this calling .text collapses listed structures such as stacks of divs into a single text, 2 exams get merged etc.
-        case "a":
-            return course_soup.text.strip()
-        case "div":
-            return course_soup.text.strip() + " WARNIGN DIV"
-"""
 
 def get_course_items2(url:str) -> dict:
     # Find a div with regex class * main-content
@@ -666,13 +650,28 @@ def final_cleanup(c):
              ('primary title', 'title'),
              ('language', 'course_language'),
              ('Content', 'description'),
-             ('Workload', 'workload'),
+             ('Workload', 'workloads'),
              ('credit', 'credits'),
-             ('course coordinators', 'course_coordinators')]
+             ('course coordinators', 'coordinators'),
+             ('schedule_group', 'schedules'),
+             ('exam', 'exams')]
 
     for fromthis, tothis in rename:
         c = renamekey(c, fromthis, tothis)
     # aaand we're done!
+
+    # TEMPORARY STUFF
+    # recursively flatten lists of strings to a single newline separated string
+    def flatten(lst):
+        if isinstance(lst, list):
+            return '\n'.join([flatten(item) for item in lst])
+        else:
+            return lst
+    c['description'] = flatten(c['description'])
+    # every element in schedules should be a dict
+    if "schedules" in c.keys():
+        c['schedules'] = [{'schedule_type': s} for s in c['schedules']]
+
     return c
 
 def get_all_info(url):

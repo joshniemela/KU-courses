@@ -5,7 +5,8 @@ CREATE TYPE block_enum AS ENUM (
 	'1',
 	'2',
 	'3',
-	'4'
+	'4',
+	'5'
 );
 
 CREATE TYPE schedule_enum AS ENUM (

@@ -7,7 +7,7 @@ CREATE TABLE IF NOT EXISTS course (
 	title text NOT NULL,
 	course_language text,
 	description text NOT NULL,
-	start_block block_enum NOT NULL,
+	start_block block_enum, -- TODO: add not null
 	duration int,
 	credits numeric(3, 1),
 	study_level text
@@ -42,7 +42,7 @@ CREATE TABLE IF NOT EXISTS workload (
 
 CREATE TABLE IF NOT EXISTS schedule (
 	course_id char(10) NOT NULL,
-  schedule_type schedule_enum NOT NULL
+	schedule_type schedule_enum NOT NULL
 );
 
 -- Add constraints

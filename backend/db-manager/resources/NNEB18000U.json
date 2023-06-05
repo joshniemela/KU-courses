@@ -7,7 +7,7 @@
     "study_level": "Bachelor",
     "start_block": 3,
     "duration": 2,
-    "schedule": [{"schedule_type": "A"}, {"schedule_type": "B"}],
+    "schedules": [{"schedule_type": "A"}, {"schedule_type": "B"}],
     "coordinators": [
         {"full_name": "Pia Grethe Sandfeld Melcher", "email": "placeholder"}
     ],
