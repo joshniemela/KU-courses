@@ -118,10 +118,22 @@
                           FROM course
                           WHERE course_id = ?" course-id]))
 
-(defn get-course-combined [db course-id]
+(comment (defn get-course-combined [db course-id]
   (->
    (get-course db course-id)
    (assoc :exams (get-exams db course-id))
    (assoc :workloads (get-workloads db course-id))
    (assoc :schedules (get-schedules db course-id))
-   (assoc :coordinators (get-coordinators db course-id))))
+   (assoc :coordinators (get-coordinators db course-id)))))
+
+
+(defn get-course-combined [db course-id]
+  (let [course       (future (get-course db course-id))
+        exams        (future (get-exams db course-id))
+        workloads    (future (get-workloads db course-id))
+        schedules    (future (get-schedules db course-id))
+        coordinators (future (get-coordinators db course-id))]
+    (assoc @course :exams @exams
+           :workloads @workloads
+           :schedules @schedules
+           :coordinators @coordinators)))
