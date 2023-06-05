@@ -1,4 +1,5 @@
 from bs4 import BeautifulSoup
+import json
 import nltk
 from nltk import pos_tag
 import re
@@ -715,7 +716,8 @@ def final_cleanup(c):
         merged[snakecase(d)] = c[d]
         del c[d]
     full_description = fixstring(remove_none_elements(merged))
-    c['description'] = {key: flatten_and_format(value, depthlist) for key,value in full_description.items()}
+    description = {key: flatten_and_format(value, depthlist) for key,value in full_description.items()}
+    c['description'] = json.dumps(description)
 
 
     # every element in schedules should be a dict
