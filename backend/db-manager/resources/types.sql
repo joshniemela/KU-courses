@@ -44,7 +44,7 @@ CREATE TYPE work_enum AS ENUM (
     'exercises',
     'guidance',
     'class_instruction',
-    'practical_traning',
+    'practical_training',
     'seminar'
 );
 
