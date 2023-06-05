@@ -7,6 +7,7 @@ CREATE TABLE IF NOT EXISTS course (
 	title text NOT NULL,
 	course_language text,
 	description text NOT NULL,
+	raw_description text NOT NULL,
 	start_block block_enum, -- TODO: add not null (JAKUP HERE, we can't because some are missing)
 	duration int,
 	credits numeric(3, 1),
