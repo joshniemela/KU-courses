@@ -42,7 +42,7 @@ CREATE TABLE IF NOT EXISTS workload (
 
 CREATE TABLE IF NOT EXISTS schedule (
 	course_id char(10) NOT NULL,
-  schedule_type schedule_enum NOT NULL
+	schedule_type schedule_enum NOT NULL
 );
 
 -- Add constraints
