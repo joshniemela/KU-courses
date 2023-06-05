@@ -5,7 +5,8 @@
             [honey.sql :as sql]
             [clojure.java.io :as io]
             [honey.sql.helpers :refer :all :as h]
-            [clojure.set :as set]))
+            [clojure.set :as set]
+            [clojure.data.json :as json]))
 
 (defn nuke-db! [db]
   (jdbc/with-transaction [tx db]
@@ -99,3 +100,28 @@
                         (from :course)
                         (sql/format))))
 
+(defn get-exams [db course-id]
+  (jdbc/execute! db ["SELECT exam_type, minutes FROM exam WHERE course_id = ?" course-id]))
+
+(defn get-workloads [db course-id]
+  (jdbc/execute! db ["SELECT workload_type, hours FROM workload WHERE course_id = ?" course-id]))
+
+(defn get-schedules [db course-id]
+  (jdbc/execute! db ["SELECT schedule_type FROM schedule WHERE course_id = ?" course-id]))
+
+(defn get-coordinators [db course-id]
+  (jdbc/execute! db ["SELECT * FROM employee
+                      WHERE email IN (SELECT email FROM coordinates WHERE course_id = ?)" course-id]))
+
+(defn get-course [db course-id]
+  (jdbc/execute-one! db ["SELECT url, course_id, title, course_language, description, start_block, duration, credits, study_level
+                          FROM course
+                          WHERE course_id = ?" course-id]))
+
+(defn get-course-combined [db course-id]
+  (->
+   (get-course db course-id)
+   (assoc :exams (get-exams db course-id))
+   (assoc :workloads (get-workloads db course-id))
+   (assoc :schedules (get-schedules db course-id))
+   (assoc :coordinators (get-coordinators db course-id))))

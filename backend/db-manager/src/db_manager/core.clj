@@ -12,7 +12,8 @@
             [reitit.swagger :as swagger]
             [org.httpkit.server :refer [run-server]]
             [db-manager.routes :refer [ping-route api-routes]]
-            [db-manager.db :refer [nuke-db! populate-courses! find-email-by-name]]
+            [db-manager.db :refer [nuke-db! populate-courses! find-email-by-name
+                                   get-course-combined]]
             [db-manager.cli :refer [parse-cli scrape-courses!]]
             [next.jdbc :as jdbc]
             [next.jdbc.types :refer [as-other]]
@@ -32,7 +33,6 @@
 
 (def db (jdbc/get-datasource db-config))
 
-
 ; https://andersmurphy.com/2022/03/27/clojure-removing-namespace-from-keywords-in-response-middleware.html
 (defn transform-keys
   [t coll]
@@ -45,7 +45,6 @@
         (comp map? :body) (update :body
                                   (partial transform-keys
                                            (comp keyword name)))))))
-
 
 (defn app []
   (ring/ring-handler
@@ -118,3 +117,9 @@
       (println "Starting database with existing data..."))
     (println "Starting server on port " (:port main-config))
     (run-server (app) main-config)))
+
+(comment
+  (def pop-id "NDAB15009U")
+  (-> (get-course-combined db pop-id)
+      println)
+  (def course (get-course-combined db pop-id)))
