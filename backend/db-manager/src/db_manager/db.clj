@@ -16,7 +16,8 @@
 (defn insert-course! [ds course-map]
   (let [course-schema [:course_id :title :course_language
                        :description :start_block :duration 
-                       :credits :study_level :url]]
+                       :credits :study_level :url
+                       :raw_description]]
 
     (jdbc.sql/insert! ds :course (select-keys course-map course-schema))))
 
@@ -69,7 +70,7 @@
     (insert-course! tx course-emp-map)
     (insert-employees! tx course-emp-map)
     (insert-coordinates! tx course-emp-map)
-    ;(insert-workloads! tx course-emp-map)
+    (insert-workloads! tx course-emp-map)
     (insert-schedule-groups! tx course-emp-map)
     (insert-exams! tx course-emp-map)))
   
