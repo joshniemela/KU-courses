@@ -73,17 +73,17 @@ onMount(async () => {
                         "
                 >
                     <h3 class="side-card-heading">Coordinators</h3>
-                    <div class="coordinator-name-title">
-                        <p class="coordinator-name">Jon Sporring</p>
-                        <p class="coordinator-title">(Professor)</p>
+                    <div class="side-card-name-title">
+                        <p class="side-card-name">Jon Sporring</p>
+                        <p class="side-card-title">(Professor)</p>
                     </div>
-                    <p class="coordinator-email">sporring@di.ku.dk</p>
+                    <p class="side-card-clickable">sporring@di.ku.dk</p>
 
-                    <div class="coordinator-name-title">
-                        <p class="coordinator-name">Josh Niemela</p>
-                        <p class="coordinator-title">(baller)</p>
+                    <div class="side-card-name-title">
+                        <p class="side-card-name">Josh Niemela</p>
+                        <p class="side-card-title">(baller)</p>
                     </div>
-                    <p class="coordinator-email">rick@roll.com</p>
+                    <p class="side-card-clickable">rick@roll.com</p>
                 </div>
                 <div class="side-card"
                     style="
@@ -94,6 +94,9 @@ onMount(async () => {
                         "
                 >
                     <h3 class="side-card-heading">Info</h3>
+                    <p class="side-card-name">Bachelor's course</p>
+                    <p class="side-card-name">15 ECTS</p>
+                    <p class="side-card-clickable">https://kurser.ku.dk/course/ndab15009u</p>
                 </div>
                 <div class="side-card"
                     style="
@@ -104,6 +107,8 @@ onMount(async () => {
                         "
                 >
                     <h3 class="side-card-heading">Schedule</h3>
+                    <p class="side-card-name">Block: 1</p>
+                    <p class="side-card-name">Group: A</p>
                 </div>
                 <div class="side-card"
                     style="
@@ -114,6 +119,11 @@ onMount(async () => {
                         "
                 >
                     <h3 class="side-card-heading">Workload</h3>
+                    <p class="side-card-name">Lectures: 54h</p>
+                    <p class="side-card-name">Preparation: 106h</p>
+                    <p class="side-card-name">Project: 144h</p>
+                    <p class="side-card-name">Exercises: 108h</p>
+                    <p class="side-card-clickable">Total: 412h</p>
                 </div>
                 <div class="side-card"
                     style="
@@ -124,6 +134,7 @@ onMount(async () => {
                         "
                 >
                     <h3 class="side-card-heading">Exam</h3>
+                    <p class="side-card-name">Ongoing evaluation</p>
                 </div>
             </div>
         </div>
@@ -152,7 +163,7 @@ onMount(async () => {
     height: 100%;
     width: 100%;
     display: grid;
-    grid-template: 1fr / 3fr 1fr;
+    grid-template: 1fr / 4fr 1fr;
 }
 
 .content-container-right {
@@ -184,23 +195,23 @@ onMount(async () => {
     font-size: 1.5rem;
     color: var(--text-color);
 }
-.coordinator-name-title {
+.side-card-name-title {
     display: flex;
     flex-direction: row;
     justify-content: start;
 }
-.coordinator-name {
+.side-card-name {
     font-size: 1rem;
     color: var(--text-color);
 }
 
-.coordinator-title {
+.side-card-title {
     font-size: 1rem;
     color: var(--sub-title-color);
     margin-left: 0.5vw;
 }
 
-.coordinator-email {
+.side-card-clickable {
     font-size: 1rem;
     color: var(--brand-color);
     margin-bottom: 1vh;
