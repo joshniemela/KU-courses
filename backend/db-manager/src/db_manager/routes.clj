@@ -1,5 +1,6 @@
 (ns db-manager.routes
-  (:require [clojure.data.json :as json] ))
+  (:require [clojure.data.json :as json]
+            [db-manager.db :refer [find-email-by-name]]))
 
 (def ping-route
   ["/ping"
@@ -8,7 +9,7 @@
            {:status 200
             :body "pong"})}])
 
-(def crud-routes
+(defn api-routes [db]
   ; make a route that takes json body with values "x" and "y", and returns the sum
   [["/post" {:post {:parameters {:body {:x int?
                                        :y int?}}
@@ -22,4 +23,10 @@
                    :responses {200 {:body {:json map?}}}
                    :handler (fn [{{{:keys [json]} :body} :parameters}]
                               {:status 200
-                               :body {:json json}})}}]])
+                               :body {:json json}})}}]
+   ; find email of coordinator in query
+   ["/find-email" {:get {:parameters {:query {:name string?}}
+                         :responses {200 {:body {:email string?}}}
+                         :handler (fn [{{{:keys [name]} :query} :parameters}]
+                                    {:status 200
+                                     :body (find-email-by-name db name)})}}]])

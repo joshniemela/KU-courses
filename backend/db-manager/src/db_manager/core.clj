@@ -11,8 +11,8 @@
             [reitit.swagger-ui :as swagger-ui]
             [reitit.swagger :as swagger]
             [org.httpkit.server :refer [run-server]]
-            [db-manager.routes :refer [ping-route crud-routes]]
-            [db-manager.db :refer [nuke-db! insert-course-emp! populate-courses!]]
+            [db-manager.routes :refer [ping-route api-routes]]
+            [db-manager.db :refer [nuke-db! populate-courses! find-email-by-name]]
             [db-manager.cli :refer [parse-cli scrape-courses!]]
             [next.jdbc :as jdbc]
             [next.jdbc.types :refer [as-other]]
@@ -43,7 +43,7 @@
              :handler (swagger/create-swagger-handler)}}]
      ["/api"
       ping-route
-      crud-routes]]
+      (api-routes db)]]
     {:data {:coercion reitit.coercion.spec/coercion
             :muuntaja m/instance
             :middleware [parameters/parameters-middleware
@@ -100,3 +100,7 @@
     (println (jdbc/execute! db ["SELECT * FROM Employee"])) 
     (println "starting server on port 3000")
     (run-server (app) {:port 3000})))
+
+
+(comment
+  (find-email-by-name db "steff summer"))

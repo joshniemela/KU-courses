@@ -4,7 +4,8 @@
             [next.jdbc.sql :as jdbc.sql]
             [honey.sql :as sql]
             [clojure.java.io :as io]
-            [honey.sql.helpers :refer :all :as h]))
+            [honey.sql.helpers :refer :all :as h]
+            [clojure.set :as set]))
 
 (defn nuke-db! [db]
   (jdbc/with-transaction [tx db]
@@ -84,3 +85,24 @@
       (println (str "Inserting " (:course_id course)))
       (insert-course-emp! db course)
       (println (str "Inserted " (:course_id course))))))
+
+
+;SELECT full_name, similarity(full_name, '<name here>') AS search_similarity
+; FROM employee
+; ORDER BY search_similarity DESC
+; LIMIT 1;"
+
+; return as a map
+(defn find-email-by-name [db name]
+  (-> 
+   (jdbc/execute! db [
+                         "SELECT email, full_name, similarity(full_name, ?) AS search_similarity
+                          FROM employee
+                          ORDER BY search_similarity DESC
+                          LIMIT 1;" name])
+   first
+   ; rename the keys
+    (set/rename-keys {:employee/email :email
+                      :employee/full_name :full_name})))
+   
+  
