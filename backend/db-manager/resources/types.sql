@@ -21,20 +21,31 @@ CREATE TYPE exam_enum AS ENUM (
 	'written_examination',
 	'written_assignment',
 	'continuous_assessment',
-  'practical_written_examination',
-  'practical_oral_examination',
-  'oral_defence',
-  'portfolio',
-  'other'
+    'practical_written_examination',
+    'practical_oral_examination',
+    'oral_defence',
+    'portfolio',
+    'other'
 );
 
 CREATE TYPE work_enum AS ENUM ( 
-	'lectures',
-	'exercises',
-	'preparation',
-	'project',
+	'e_learning',
 	'exam',
-	'other' -- Catch all
+	'laboratory',
+	'study_groups',
+	'theory_exercises',
+    'field_work',
+    'preparation',
+    'exam_preparation',
+    'excursions',
+    'lectures',
+    'practical_exercises',
+    'project_work',
+    'exercises',
+    'guidance',
+    'class_instruction',
+    'practical_training',
+    'seminar'
 );
 
 END;

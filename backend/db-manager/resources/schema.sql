@@ -3,11 +3,12 @@ BEGIN;
 
 CREATE TABLE IF NOT EXISTS course (
 	course_id char(10) PRIMARY KEY,
-  url text NOT NULL,
+    url text NOT NULL,
 	title text NOT NULL,
 	course_language text,
 	description text NOT NULL,
-	start_block block_enum, -- TODO: add not null
+	raw_description text NOT NULL,
+	start_block block_enum, -- TODO: add not null (JAKUP HERE, we can't because some are missing)
 	duration int,
 	credits numeric(3, 1),
 	study_level text

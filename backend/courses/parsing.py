@@ -1,4 +1,5 @@
 from bs4 import BeautifulSoup
+import json
 import nltk
 from nltk import pos_tag
 import re
@@ -38,10 +39,17 @@ dk_to_en_faculties = {
         'Det Natur- og Biovidenskabelige Fakultet': 'Faculty of Science',
         'Det Samfundsvidenskabelige Fakultet': 'Faculty of Social Sciences'}
 
-def fixstring(string):
-    return string.replace('\n', ' ').replace('\xa0',' ')
+def fixstring(sld):
+    if isinstance(sld, str):
+        return sld.replace('\n', ' ').replace('\xa0',' ').strip()
+    if isinstance(sld, list):
+        return [fixstring(s) for s in sld]
+    if isinstance(sld, dict):
+        return {fixstring(key): fixstring(value) for key,value in sld.items()}
+    return sld
+
 def snakecase(string):
-    return string.lower().replace(' ', '_')
+    return string.lower().replace(' ', '_').replace('-', '_')
 
 
 def get_panel_info(url:str) -> dict:
@@ -87,7 +95,7 @@ def get_panel_info(url:str) -> dict:
                 uglymail = uglymail.split("'")[1]
                 name = person.find(string=True, recursive=False)
                 email = deobfuscate(uglymail)
-                coordinators.append({'full_name': name, 'email': email})
+                coordinators.append({'full_name': fixstring(name), 'email': fixstring(email)})
             except:
                 pass
                 #print('ERROR IN:')
@@ -309,6 +317,14 @@ def translate_workkeys(course):
             thisvalue = course['Workload'][key]
             del course['Workload'][key]
             course['Workload'][workload_dictionary[key]] = thisvalue
+
+    # Now workload keys are normalised. Next, let's snakecase them:
+    keylist = list(course['Workload'].keys())
+    for key in keylist:
+        thisvalue = course['Workload'][key]
+        del course['Workload'][key]
+        course['Workload'][snakecase(key)] = thisvalue
+
     return course
 
 
@@ -628,7 +644,7 @@ def final_cleanup(c):
     final_list = []
     workloads:dict = c['Workload']
     for typ, dur in workloads.items():
-        if typ != 'Total':
+        if typ != 'total':
             final_list.append({'workload_type': typ, 'hours':dur})
     c['Workload'] = final_list
 
@@ -636,6 +652,11 @@ def final_cleanup(c):
     if 'duration' in c.keys():
         if not c['duration']:
             del c['duration']
+# also remove None from start_block
+    if 'start_block' in c.keys():
+        if not c['start_block']:
+            del c['start_block']
+
 
 # Let's rename stuff
     def renamekey(course:dict, fromthis:str, tothis:str) -> dict:
@@ -658,16 +679,47 @@ def final_cleanup(c):
 
     for fromthis, tothis in rename:
         c = renamekey(c, fromthis, tothis)
-    # aaand we're done!
 
-    # TEMPORARY STUFF
-    # recursively flatten lists of strings to a single newline separated string
+    # Some helper functions for description manipulation
     def flatten(lst):
         if isinstance(lst, list):
-            return '\n'.join([flatten(item) for item in lst])
-        else:
+            return ' '.join([flatten(item) for item in lst if item is not None])
+        elif isinstance(lst, str):
             return lst
-    c['description'] = flatten(c['description'])
+
+    def flatten_and_format(data, depthlist, depth = 0):
+        result = []
+        for element in data:
+            if isinstance(element, str):
+                result.append({'type': depthlist[depth], 'string': element})
+            elif isinstance(element, list):
+                nested_result = flatten_and_format(element, depthlist, depth = depth+1)
+                result.extend(nested_result)
+        return result
+
+    def remove_none_elements(dictionary):
+        for key, value in dictionary.items():
+            if isinstance(value, list):
+                dictionary[key] = [v for v in value if v is not None]
+            elif isinstance(value, dict):
+                remove_none_elements(value)
+        return dictionary
+
+    relevant_desc = ['description', 'Learning Outcome', 'Recommended Academic Qualifications']
+    relevant_and_present = list(filter(lambda x: x in c.keys(), relevant_desc))
+    c['raw_description'] = flatten([c[v] for v in relevant_and_present])
+
+
+    depthlist = ['p', 'li', 'li_two', 'li_three', 'li_four']
+    merged = {}
+    for d in relevant_and_present:
+        merged[snakecase(d)] = c[d]
+        del c[d]
+    full_description = fixstring(remove_none_elements(merged))
+    description = {key: flatten_and_format(value, depthlist) for key,value in full_description.items()}
+    c['description'] = json.dumps(description)
+
+
     # every element in schedules should be a dict
     if "schedules" in c.keys():
         c['schedules'] = [{'schedule_type': s} for s in c['schedules']]
