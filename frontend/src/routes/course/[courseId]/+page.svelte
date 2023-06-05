@@ -32,6 +32,64 @@ onMount(async () => {
 {#if loading}
     <p>loading</p>
 {:else}
-    <h1>{course.primary_title}</h1>
-    <p>not loading</p>
+    <div class="main-container">
+        <div class="header-container">
+            <h1>{course.primary_title}</h1>
+            <h2>{course.course_id}</h2>
+        </div>
+        <div class="content-container">
+            <div class="content-container-left">
+                <p>Description</p>
+            </div>
+            <div class="content-container-right">
+                <p>Workload</p>
+                <p>Coordinators (with title)</p>
+                <p>ECTS</p>
+                <p>Schedule group</p>
+                <p>Block</p>
+                <p>Faculty</p>
+                <p>Level</p>
+                <p>Exam</p>
+            </div>
+        </div>
+    </div>
 {/if}
+
+<style scoped>
+.main-container {
+    display: flex;
+    width: 100%;
+    height: 100vh;
+    flex-direction: column;
+    justify-content: start;
+    align-items: center;
+    background-color: yellow;
+}
+
+.header-container {
+    display: flex;
+    width: 100%;
+    flex-direction: column;
+    justify-content: start;
+    align-items: start;
+}
+
+.content-container {
+    height: 100%;
+    width: 100%;
+    display: grid;
+    grid-template: 1fr / 3fr 2fr;
+}
+
+.content-container-right {
+    height: 100%;
+    width: 100%;
+    background-color: red;
+}
+
+.content-container-left {
+    height: 100%;
+    width: 100%;
+    background-color: grey;
+}
+</style>

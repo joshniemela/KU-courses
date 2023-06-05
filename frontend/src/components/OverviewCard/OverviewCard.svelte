@@ -23,7 +23,6 @@ export let data = {
 * @function calcFontSize
 */
 function calcFontSize(string) {
-    
     return (1 + 12/string.length)*16 + "px"
 }
 
@@ -47,13 +46,16 @@ function navigateToCourse() {
         <div class="card-header-container">
             <div class="card-title-container">
                 <div class="title-container">
-                <h1 class="card-title" 
-                    style="
-                        --text-color: {theme.colors.neutral[200]};
-                        --text-size: {calcFontSize(data.primary_title)}
-                        "
-                >
-                    {data.primary_title}</h1>
+                    <a href={`/course/${data.course_id}`}>
+                        <h1 class="card-title" 
+                            style="
+                                --text-color: {theme.colors.neutral[200]};
+                                --text-size: {calcFontSize(data.primary_title)}
+                                "
+                        >
+                            {data.primary_title}
+                        </h1>
+                    </a>
                 </div>
                 <h2 class="card-subtitle" style="--text-color: {theme.colors.neutral[600]}">{data.course_id} - {data.faculty}</h2>
             </div>
