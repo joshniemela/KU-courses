@@ -49,7 +49,7 @@ def fixstring(sld):
     return sld
 
 def snakecase(string):
-    return string.lower().replace(' ', '_')
+    return string.lower().replace(' ', '_').replace('-', '_')
 
 
 def get_panel_info(url:str) -> dict:
