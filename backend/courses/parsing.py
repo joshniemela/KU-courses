@@ -95,7 +95,7 @@ def get_panel_info(url:str) -> dict:
                 uglymail = uglymail.split("'")[1]
                 name = person.find(string=True, recursive=False)
                 email = deobfuscate(uglymail)
-                coordinators.append({'full_name': name, 'email': email})
+                coordinators.append({'full_name': fixstring(name), 'email': fixstring(email)})
             except:
                 pass
                 #print('ERROR IN:')
