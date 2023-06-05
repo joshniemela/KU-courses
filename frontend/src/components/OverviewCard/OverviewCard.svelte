@@ -1,4 +1,5 @@
 <script>
+    import { navigate } from "svelte-navigator";
 import Dk from "../../assets/Dk.svelte";
 import Gb from "../../assets/Gb.svelte";
 import theme from "../../theme.js";
@@ -19,14 +20,24 @@ export let data = {
 
 /**
 * Function to scale the font sizes of the course titles based on their length
+* @function calcFontSize
 */
 function calcFontSize(string) {
     
     return (1 + 12/string.length)*16 + "px"
 }
 
+/**
+* Function to navigate to the course corresponding with the course_id
+* @function navigateToCourse
+*/
+function navigateToCourse() {
+    navigate(`/course/${data.course_id}`);
+    location.reload();
+}
+
 </script>
-<div class="card-container">
+<div class="card-container" on:click={navigateToCourse}>
     <div class="card"
         style="
             --bg-color: {theme.colors.neutral[800]};
