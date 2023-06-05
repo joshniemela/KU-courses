@@ -7,7 +7,7 @@
             [reitit.coercion.spec]
             [reitit.ring.coercion :as rrc]
             [reitit.ring.middleware.muuntaja :as muuntaja]
-            [reitit.ring.middleware.parameters :as parameters] 
+            [reitit.ring.middleware.parameters :as parameters]
             [reitit.swagger-ui :as swagger-ui]
             [reitit.swagger :as swagger]
             [org.httpkit.server :refer [run-server]]
@@ -17,7 +17,6 @@
             [next.jdbc :as jdbc]
             [next.jdbc.types :refer [as-other]]
             [honey.sql :as sql]))
-
 
 (def db-config
   {:dbtype "postgresql"
@@ -52,8 +51,8 @@
                          rrc/coerce-request-middleware
                          rrc/coerce-response-middleware]}})
    (ring/routes
-     (swagger-ui/create-swagger-ui-handler {:path "/swagger"})
-     (ring/create-default-handler))))
+    (swagger-ui/create-swagger-ui-handler {:path "/swagger"})
+    (ring/create-default-handler))))
 
 ; read every json in data-dir
 (defn read-json [file]
@@ -86,21 +85,20 @@
 
 (def coerced-courses (pmap coerce-as-other courses))
 
-
 (def main-config {:port 3000})
 
 (defn -main [& args]
-  (let [args (parse-cli args)] 
+  (let [args (parse-cli args)]
     ; this runs if -s is passed
-    (when (:scrape args) 
-      (println "Scraping courses from the web... (this may take a while)") 
+    (when (:scrape args)
+      (println "Scraping courses from the web... (this may take a while)")
       (scrape-courses!))
-    
+
     ; this runs if -f is passed
-    (if (:force args) 
+    (if (:force args)
       (do (println "Nuking database and repopulating with courses from" json-dir)
-            (nuke-db! db)
-            (populate-courses! db coerced-courses)) 
-      (println "Starting database with existing data...")) 
+          (nuke-db! db)
+          (populate-courses! db coerced-courses))
+      (println "Starting database with existing data..."))
     (println "Starting server on port " (:port main-config))
     (run-server (app) main-config)))

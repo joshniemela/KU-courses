@@ -2,7 +2,6 @@
   (:require [clojure.tools.cli :refer [parse-opts]])
   (:import [java.io File]))
 
-
 (def cli-options
   [["-f" "--force" "Force reset the database and delete all harvested data"]
    ["-s" "--scrape" "Scrape the data from the web"]
@@ -41,7 +40,6 @@ Options:
         errfut   (future (print-return-stream stderr))
         proc-ret (.waitFor proc)]
     [proc-ret @outfut @errfut]))
-
 
 (defn scrape-courses! []
   ; run exec stream and occasionally force an output

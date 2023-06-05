@@ -13,7 +13,6 @@
     (jdbc/execute! tx [(slurp (io/resource "types.sql"))])
     (jdbc/execute! tx [(slurp (io/resource "schema.sql"))])))
 
-
 (defn insert-course! [ds course-map]
   (let [course-schema [:course_id :title :course_language
                        :description :start_block :duration
@@ -21,7 +20,6 @@
                        :raw_description]]
 
     (jdbc.sql/insert! ds :course (select-keys course-map course-schema))))
-
 
 (defn emp-fields [emp]
   (select-keys emp [:email :full_name]))
@@ -65,7 +63,6 @@
                                                         [:course_id :exam_type :minutes])
                                           exams))))
 
-
 (defn insert-course-emp! [db course-emp-map]
   (jdbc/with-transaction [tx db]
     (insert-course! tx course-emp-map)
@@ -75,8 +72,6 @@
     (insert-schedule-groups! tx course-emp-map)
     (insert-exams! tx course-emp-map)))
 
-
-
 (defn populate-courses! [db courses]
   (println (str "Populating database with " (count courses) " courses"))
   ; TODO, fix print race condition
@@ -84,7 +79,6 @@
                     (println (str "Inserted course " (:course_id %))))
                courses))
   (println "Done populating database"))
-
 
 ; queries section begins here
 
