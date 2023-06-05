@@ -2,6 +2,7 @@
 import theme from "../../theme";
 import SearchIcon from "../../assets/SearchIcon.svelte";
 import FilterButton from "../../components/FilterButton/FilterButton.svelte";
+import Loader from "../../components/Loader/Loader.svelte";
 import { filters, filtersObj, jsonToString } from '../../stores';
 import { onMount } from 'svelte';
 import overview from "../../mocking/overview.json";
@@ -49,7 +50,7 @@ onMount(async () => {
         <SearchIcon />
     </div>
     {#if loading}
-        <p>loading ...</p>
+        <Loader />
     {:else}
         <div class="card-container">
             {#each courses as card, i}
@@ -67,7 +68,6 @@ onMount(async () => {
     flex-direction: column;
     align-items: center;
 }
-
 .control-container {
     margin-top: 1vh;
     height: 4vh;
