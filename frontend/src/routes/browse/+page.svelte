@@ -2,9 +2,16 @@
 import theme from "../../theme";
 import SearchIcon from "../../assets/SearchIcon.svelte";
 import FilterButton from "../../components/FilterButton/FilterButton.svelte";
+import Loader from "../../components/Loader/Loader.svelte";
 import { filters, filtersObj, jsonToString } from '../../stores';
+import { onMount } from 'svelte';
 import overview from "../../mocking/overview.json";
 import OverviewCard from "../../components/OverviewCard/OverviewCard.svelte";
+
+let loading = true;
+
+let courses = [];
+
 /**
 * Event handler for submit on search 
 */
@@ -16,6 +23,17 @@ function submit(event) {
         })
     }
 }
+
+const fetchCourses = async () => {
+    await new Promise(resolve => setTimeout(resolve, 1000));
+    loading = false;
+    courses = overview;
+}
+
+
+onMount(async () => {
+    await fetchCourses();
+})
 
 </script>
 <div class="browse-container">
@@ -31,11 +49,15 @@ function submit(event) {
         />
         <SearchIcon />
     </div>
-    <div class="card-container">
-        {#each overview as card, i}
-            <OverviewCard stagger={i} data={card} />
-        {/each}
-    </div>
+    {#if loading}
+        <Loader />
+    {:else}
+        <div class="card-container">
+            {#each courses as card, i}
+                <OverviewCard stagger={i} data={card} />
+            {/each}
+        </div>
+    {/if}
 </div>
 
 <style scoped>
@@ -46,7 +68,6 @@ function submit(event) {
     flex-direction: column;
     align-items: center;
 }
-
 .control-container {
     margin-top: 1vh;
     height: 4vh;
