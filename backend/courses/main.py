@@ -4,14 +4,14 @@ import os
 import json
 import multiprocessing as mp
 import nltk
-nltk_path = '../../data/nltk_resources'
-DATA_DIR = "../../data" # where to store the data
+
+nltk_path = "../../data/nltk_resources"
+DATA_DIR = "../../data"  # where to store the data
 json_dir = f"{DATA_DIR}/json"
 
+
 def main():
-    nltk_packages = ['words',
-                     'averaged_perceptron_tagger',
-                     'universal_tagset']
+    nltk_packages = ["words", "averaged_perceptron_tagger", "universal_tagset"]
     cache_pages()
     sitemap_urls = get_sitemap_urls()
     ensure_dir_exists(json_dir)
@@ -24,7 +24,7 @@ def main():
         p.map(convert_to_json, sitemap_urls)
 
 
-def convert_to_json(url:str):
+def convert_to_json(url: str):
     """
     Converts all the html files in ../data/html to json files in ../data/json
     """
@@ -38,11 +38,13 @@ def convert_to_json(url:str):
             print(f"Error with {url}")
             print(e)
 
+
 def delete_files_in_directory(directory):
     for filename in os.listdir(directory):
         file_path = os.path.join(directory, filename)
         if os.path.isfile(file_path):
             os.remove(file_path)
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     main()
