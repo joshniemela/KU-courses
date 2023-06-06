@@ -124,5 +124,16 @@
                           FROM course
                           WHERE course_id = ?" course-id]))
 
+
+(defn fix-jsons [course]
+  ; exams, schedules, workloads, and coordinators are text that needs to be parsed to json
+  (assoc course 
+         :exams (json/read-str (:exams course))
+         :schedules (json/read-str (:schedules course))
+         :workloads (json/read-str (:workloads course))
+         :employees (json/read-str (:employees course))
+         :course/description (json/read-str (:course/description course))))
+
 (defn get-courses [db predicates]
-  (jdbc/execute! db [(generate-courses-query predicates)]))
+  (let [courses (jdbc/execute! db [(generate-courses-query predicates)])]
+    (map fix-jsons courses)))

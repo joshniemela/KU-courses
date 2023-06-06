@@ -49,4 +49,5 @@
                                       {:status 200
                                        :body (let [courses (get-courses db predicates)]
                                                {:count (count courses)
+                                                :keys (keys (first courses))
                                                 :courses courses})})}}]])

@@ -40,10 +40,11 @@
 	course.study_level,
 	course.start_block,
 	course.credits,
-    jsonb_agg(DISTINCT to_jsonb(exam) - 'course_id') AS exams,
-    jsonb_agg(DISTINCT to_jsonb(employee)) AS employees,
-	jsonb_agg(DISTINCT to_jsonb(schedule) - 'course_id') AS schedules,
-    jsonb_agg(DISTINCT to_jsonb(workload) - 'course_id') AS workloads
+    course.description,
+    jsonb_agg(DISTINCT to_jsonb(exam) - 'course_id')::TEXT AS exams,
+    jsonb_agg(DISTINCT to_jsonb(employee))::TEXT AS employees,
+	jsonb_agg(DISTINCT to_jsonb(schedule) - 'course_id')::TEXT AS schedules,
+    jsonb_agg(DISTINCT to_jsonb(workload) - 'course_id')::TEXT AS workloads
 FROM 
     course
 JOIN 
