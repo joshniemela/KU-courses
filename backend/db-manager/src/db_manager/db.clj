@@ -128,6 +128,7 @@
 
 
 
+
 ; TODO: remove this later!!!!
 (defn get-course-combined [db course-id]
   (let [course       (future (get-course db course-id))

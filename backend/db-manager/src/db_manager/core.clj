@@ -149,3 +149,35 @@ WHERE " (clojure.string/join " AND " predicates)
   (json/read-str (.getValue (:workloads (first response))))
   
 )
+
+
+; input is a map with a key and a value which sohuld be destructured
+(defn equality-query [{key :predicate val :value}]
+    (case key
+      :schedule_type (str "schedule.schedule_type = '" val "'")
+      :email (str "coordinates.email = '" val "'")
+      :workload_type (str "workload.workload_type = '" val "'")
+      :exam_type (str "exam.exam_type = '" val "'")
+      :course_id (str "course.course_id = '" val "'")
+      :title (str "course.title = '" val "'")
+      :start_block (str "course.start_block = '" val "'")
+      :duration (str "course.duration = '" val "'")
+      :schedule_group (str "course.schedule_group = '" val "'")
+      :course_type (str "course.course_type = '" val "'")
+      :course_language (str "course.course_language = '" val "'")))
+
+
+; take a list of predicates and return a string of them joined by AND
+(defn merge-list-with-or [predicates] 
+  (str "(" (clojure.string/join " OR " (map equality-query predicates)) ")"))
+
+
+; take a list of list of predicates and return a string of them joined by AND
+(defn merge-lists-with-and [predicates]
+  (clojure.string/join " AND " (map merge-list-with-or predicates)))
+
+
+(def test-predicates [[{:predicate :schedule_type :value "A"} {:predicate :schedule_type :value "B"}]
+                      [{:predicate :exam_type :value "written_examination"} {:predicate :exam_type :value "oral_examination"}]])
+
+(println (merge-lists-with-and test-predicates))
