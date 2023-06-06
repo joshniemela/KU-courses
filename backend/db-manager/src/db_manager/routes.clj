@@ -1,8 +1,8 @@
 (ns db-manager.routes
   (:require [clojure.data.json :as json]
             [db-manager.db :refer [find-email-by-name
-                                   get-courses
-                                   get-course-combined]]))
+                                   get-course-ids
+                                   get-courses]]))
 
 (def ping-route
   ["/ping"
@@ -40,28 +40,13 @@
                              :responses {200 {:body [map?]}}
                              :handler (fn [_]
                                         {:status 200
-                                         :body (get-courses db)})}}]
+                                         :body (get-course-ids db)})}}]
 
-   ; grab all the details of one specific course
-   ["/get-course" {:get {:parameters {:query {:course_id string?}}
-                         :responses {200 {:body {:course_id string?
-                                                 :title string?
-                                                 :course_language string?
-                                                 :description map? ; todo fix to map
-                                                 :start_block string?
-                                                 :duration int?
-                                                 :credits number?
-                                                 :study_level string?
-                                                 :url string?
-                                                 :coordinators [map?]
-                                                 :workloads [map?]
-                                                 :schedules [map?]}}}
-                         :handler (fn [{{{:keys [course_id]} :query} :parameters}]
-                                    {:status 200
-                                     :body (->
-                                            (get-course-combined db course_id)
-                                               ; read the json in description
-                                            (update
-                                             :course/description
-                                             json/read-str))})}}]])
-
+    ; this takes a map of query params, and returns a list of courses
+    ["/get-courses" {:get {:parameters {:body {:predicates [[map?]]}}
+                           :responses {200 {:body map?}}
+                           :handler (fn [{{{:keys [predicates]} :body} :parameters}]
+                                      {:status 200
+                                       :body (let [courses (get-courses db predicates)]
+                                               {:count (count courses)
+                                                :courses courses})})}}]])

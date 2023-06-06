@@ -12,8 +12,7 @@
             [reitit.swagger :as swagger]
             [org.httpkit.server :refer [run-server]]
             [db-manager.routes :refer [ping-route api-routes]]
-            [db-manager.db :refer [nuke-db! populate-courses! find-email-by-name
-                                   get-course-combined]]
+            [db-manager.db :refer [nuke-db! populate-courses!]]
             [db-manager.cli :refer [parse-cli scrape-courses!]]
             [next.jdbc :as jdbc]
             [next.jdbc.types :refer [as-other]]
@@ -121,66 +120,4 @@
     (println "Starting server on port " (:port main-config))
     (run-server (app) main-config)))
 
-(comment
-  (defn query [predicates] (str "SELECT
-	course.title,
-    course.course_id, 
-    jsonb_agg(DISTINCT to_jsonb(exam) - 'course_id') AS exams,
-    jsonb_agg(DISTINCT to_jsonb(coordinates) - 'course_id') AS coordinators,
-	jsonb_agg(DISTINCT to_jsonb(schedule) - 'course_id') AS schedules,
-    jsonb_agg(DISTINCT to_jsonb(workload) - 'course_id') AS workloads
-FROM 
-    exam
-JOIN 
-    workload ON exam.course_id = workload.course_id
-JOIN 
-    coordinates ON exam.course_id = coordinates.course_id
-JOIN 
-    course ON exam.course_id = course.course_id
-JOIN
-	schedule ON exam.course_id = schedule.course_id
-WHERE " (clojure.string/join " AND " predicates) 
-                                "GROUP BY course.course_id, course.title"))
-  
-  (def predicate-list ["schedule.schedule_type = 'A'" "coordinates.email = 'jn@di.ku.dk'"])
-; use honeysql to apply predicate list
-  (def response (jdbc/execute! db [(query predicate-list)]))
-  ; read jsons in workloads field in response
-  (json/read-str (.getValue (:workloads (first response))))
-  
-)
 
-
-; input is a map with a key and a value which sohuld be destructured
-(defn equality-query [{key :predicate val :value}]
-  (str (case key
-         :schedule_type "schedule.schedule_type"
-         :email "coordinates.email"
-         :workload_type "workload.workload_type"
-         :exam_type "exam.exam_type"
-         :course_id "course.course_id"
-         :title "course.title"
-         :start_block "course.start_block"
-         :duration "course.duration"
-         :schedule_group "course.schedule_group"
-         :course_type "course.course_type"
-         :course_language "course.course_language")
-       " = '" val "'"))
-
-; take a list of predicates and return a string of them joined by AND
-(defn merge-list-with-or [predicates] 
-  (str "(" (clojure.string/join " OR " (map equality-query predicates)) ")"))
-
-
-; take a list of list of predicates and return a string of them joined by AND
-(defn merge-lists-with-and [predicates]
-  (clojure.string/join " AND " (map merge-list-with-or predicates)))
-
-
-(def test-predicates [[{:predicate :schedule_type :value "A"} 
-                       {:predicate :schedule_type :value "B"}]
-                      [{:predicate :exam_type :value "written_examination"}
-                       {:predicate :exam_type :value "oral_examination"}]
-                      [{:predicate :email :value "jn@di.ku.dk"}]])
-
- (merge-lists-with-and test-predicates)

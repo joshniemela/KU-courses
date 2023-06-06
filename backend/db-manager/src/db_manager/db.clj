@@ -6,7 +6,8 @@
             [clojure.java.io :as io]
             [honey.sql.helpers :refer :all :as h]
             [clojure.set :as set]
-            [clojure.data.json :as json]))
+            [clojure.data.json :as json]
+            [db-manager.querier :refer [generate-courses-query]]))
 
 (defn nuke-db! [db]
   (jdbc/with-transaction [tx db]
@@ -100,7 +101,7 @@
                           LIMIT 1;" name]))
 
 
-(defn get-courses [db]
+(defn get-course-ids [db]
   (jdbc/execute! db (-> (select :course-id)
                         (from :course)
                         (sql/format))))
@@ -123,29 +124,5 @@
                           FROM course
                           WHERE course_id = ?" course-id]))
 
-(comment (defn get-course-combined [db course-id]
-  (->
-   (get-course db course-id)
-   (assoc :exams (get-exams db course-id))
-   (assoc :workloads (get-workloads db course-id))
-   (assoc :schedules (get-schedules db course-id))
-   (assoc :coordinators (get-coordinators db course-id)))))
-
-
-
-
-; TODO: remove this later!!!!
-(defn get-course-combined [db course-id]
-  (let [course       (future (get-course db course-id))
-        exams        (future (get-exams db course-id))
-        workloads    (future (get-workloads db course-id))
-        schedules    (future (get-schedules db course-id))
-        coordinators (future (get-coordinators db course-id))]
-    (assoc @course :exams @exams
-           :workloads @workloads
-           :schedules @schedules
-           :coordinators @coordinators)))
-
-
-;(defn get-courses-combined [db predicate-list]
-;  (let [query 
+(defn get-courses [db predicates]
+  (jdbc/execute! db [(generate-courses-query predicates)]))
