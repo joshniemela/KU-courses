@@ -9,6 +9,20 @@
   ; psql has double dollar seprated strings, this is used to avoid injection, and therefore we need to remove any $ in the string
   (str "$$" (clojure.string/replace val #"\$" "") "$$"))
 
+(defn sanitise-op [op]
+  ;only allow =, <, >, <=, >=, <>, ~~, %>, %, %>>
+  (condp = op
+    "=" "="
+    "<" "<"
+    ">" ">"
+    "<=" "<="
+    ">=" ">="
+    "<>" "<>"
+    "~" "~"
+    "%>" "%>"
+    "%" "%"
+    "%>>" "%>>"))
+
 (defn generate-predicate [predicate]
   (str (case (:key predicate)
          "schedule_type" "schedule.schedule_type"
@@ -23,8 +37,9 @@
          "course_type" "course.course_type"
          "course_language" "course.course_language"
          "full_name" "employee.full_name"
+         "credits" "course.credits"
          "raw_desc" "course.raw_description")
-       " " (:op predicate) " " (sanitise (:value predicate))))
+       " " (sanitise-op (:op predicate)) " " (sanitise (:value predicate))))
 
 (defn generate-inner [predicates]
   (str "(" (clojure.string/join " OR " (map generate-predicate predicates)) ")"))
@@ -36,9 +51,10 @@
 (defn generate-courses-query [predicates]
   (str "SELECT
 	course.title,
-    course.course_id, 
+  course.course_id, 
 	course.study_level,
 	course.start_block,
+  course.course_language,
 	course.credits,
     course.description,
     jsonb_agg(DISTINCT to_jsonb(exam) - 'course_id')::TEXT AS exams,
