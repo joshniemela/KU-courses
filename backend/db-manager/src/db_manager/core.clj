@@ -153,19 +153,19 @@ WHERE " (clojure.string/join " AND " predicates)
 
 ; input is a map with a key and a value which sohuld be destructured
 (defn equality-query [{key :predicate val :value}]
-    (case key
-      :schedule_type (str "schedule.schedule_type = '" val "'")
-      :email (str "coordinates.email = '" val "'")
-      :workload_type (str "workload.workload_type = '" val "'")
-      :exam_type (str "exam.exam_type = '" val "'")
-      :course_id (str "course.course_id = '" val "'")
-      :title (str "course.title = '" val "'")
-      :start_block (str "course.start_block = '" val "'")
-      :duration (str "course.duration = '" val "'")
-      :schedule_group (str "course.schedule_group = '" val "'")
-      :course_type (str "course.course_type = '" val "'")
-      :course_language (str "course.course_language = '" val "'")))
-
+  (str (case key
+         :schedule_type "schedule.schedule_type"
+         :email "coordinates.email"
+         :workload_type "workload.workload_type"
+         :exam_type "exam.exam_type"
+         :course_id "course.course_id"
+         :title "course.title"
+         :start_block "course.start_block"
+         :duration "course.duration"
+         :schedule_group "course.schedule_group"
+         :course_type "course.course_type"
+         :course_language "course.course_language")
+       " = '" val "'"))
 
 ; take a list of predicates and return a string of them joined by AND
 (defn merge-list-with-or [predicates] 
@@ -177,7 +177,10 @@ WHERE " (clojure.string/join " AND " predicates)
   (clojure.string/join " AND " (map merge-list-with-or predicates)))
 
 
-(def test-predicates [[{:predicate :schedule_type :value "A"} {:predicate :schedule_type :value "B"}]
-                      [{:predicate :exam_type :value "written_examination"} {:predicate :exam_type :value "oral_examination"}]])
+(def test-predicates [[{:predicate :schedule_type :value "A"} 
+                       {:predicate :schedule_type :value "B"}]
+                      [{:predicate :exam_type :value "written_examination"}
+                       {:predicate :exam_type :value "oral_examination"}]
+                      [{:predicate :email :value "jn@di.ku.dk"}]])
 
-(println (merge-lists-with-and test-predicates))
+ (merge-lists-with-and test-predicates)

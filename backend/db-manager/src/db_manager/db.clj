@@ -92,9 +92,14 @@
                           FROM employee
                           ORDER BY search_similarity DESC
                           LIMIT 1;" name]))
-   ; rename the keys
 
-; use honeysql
+(defn find-course-by-name [db name]
+  (jdbc/execute-one! db ["SELECT course_id, title, similarity(title, ?) AS search_similarity
+                          FROM course
+                          ORDER BY search_similarity DESC
+                          LIMIT 1;" name]))
+
+
 (defn get-courses [db]
   (jdbc/execute! db (-> (select :course-id)
                         (from :course)
