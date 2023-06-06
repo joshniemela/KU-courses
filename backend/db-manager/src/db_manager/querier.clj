@@ -22,7 +22,8 @@
          "schedule_group" "course.schedule_group"
          "course_type" "course.course_type"
          "course_language" "course.course_language"
-         "full_name" "employee.full_name")
+         "full_name" "employee.full_name"
+         "raw_desc" "course.raw_description")
        " " (:op predicate) " " (sanitise (:value predicate))))
 
 (defn generate-inner [predicates]
