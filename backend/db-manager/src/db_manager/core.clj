@@ -122,7 +122,30 @@
     (run-server (app) main-config)))
 
 (comment
-  (def pop-id "NDAB15009U")
-  (-> (get-course-combined db pop-id)
-      println)
-  (def course (get-course-combined db pop-id)))
+  (defn query [predicates] (str "SELECT
+	course.title,
+    course.course_id, 
+    jsonb_agg(DISTINCT to_jsonb(exam) - 'course_id') AS exams,
+    jsonb_agg(DISTINCT to_jsonb(coordinates) - 'course_id') AS coordinators,
+	jsonb_agg(DISTINCT to_jsonb(schedule) - 'course_id') AS schedules,
+    jsonb_agg(DISTINCT to_jsonb(workload) - 'course_id') AS workloads
+FROM 
+    exam
+JOIN 
+    workload ON exam.course_id = workload.course_id
+JOIN 
+    coordinates ON exam.course_id = coordinates.course_id
+JOIN 
+    course ON exam.course_id = course.course_id
+JOIN
+	schedule ON exam.course_id = schedule.course_id
+WHERE " (clojure.string/join " AND " predicates) 
+                                "GROUP BY course.course_id, course.title"))
+  
+  (def predicate-list ["schedule.schedule_type = 'A'" "coordinates.email = 'jn@di.ku.dk'"])
+; use honeysql to apply predicate list
+  (def response (jdbc/execute! db [(query predicate-list)]))
+  ; read jsons in workloads field in response
+  (json/read-str (.getValue (:workloads (first response))))
+  
+)

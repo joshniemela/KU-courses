@@ -127,6 +127,8 @@
    (assoc :coordinators (get-coordinators db course-id)))))
 
 
+
+; TODO: remove this later!!!!
 (defn get-course-combined [db course-id]
   (let [course       (future (get-course db course-id))
         exams        (future (get-exams db course-id))
@@ -137,3 +139,7 @@
            :workloads @workloads
            :schedules @schedules
            :coordinators @coordinators)))
+
+
+;(defn get-courses-combined [db predicate-list]
+;  (let [query 
