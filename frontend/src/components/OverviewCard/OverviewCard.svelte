@@ -276,12 +276,15 @@ function convertExamToString(inputString) {
         <div class="card-exam-text-container"
             style="--bg-color: {theme.colors.neutral[300]}"
         >
-            <p class="card-exam-text"
-            style="--text-color: {theme.colors.neutral[900]}"
+            {#each data.exams as exam }
+                <p class="card-exam-text"
+                style="--text-color: {theme.colors.neutral[900]}"
 
-            >
-                {convertExamToString(data.exams[0].exam_type)} - {data.exams[0].minutes} min
-            </p>
+                >
+                    {convertExamToString(exam.exam_type)} {#if exam.minutes} ({exam.minutes}m) {/if}
+                    {#if exam != data.exams[data.exams.length - 1] && data.exams.length > 1} -  &nbsp {/if}
+                </p>
+            {/each}
             {#if data.course_language == "da"}
                 <Dk />
             {:else}
