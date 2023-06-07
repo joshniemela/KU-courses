@@ -16,7 +16,8 @@
             [db-manager.cli :refer [parse-cli scrape-courses!]]
             [next.jdbc :as jdbc]
             [next.jdbc.types :refer [as-other]]
-            [honey.sql :as sql]))
+            [honey.sql :as sql])
+  (:gen-class))
 
 (def db-config
   {:dbtype "postgresql"
