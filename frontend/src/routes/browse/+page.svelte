@@ -25,9 +25,26 @@ function submit(event) {
 }
 
 const fetchCourses = async () => {
-    await new Promise(resolve => setTimeout(resolve, 1000));
+    const filters = {
+        "predicates": [
+            [
+                {}
+            ]
+        ]
+    };
+    const res = await fetch('http://localhost:3000/api/find-courses', {
+        method: 'POST',
+        headers: {
+            'accept': 'application/json',
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(filters)
+    })
+		
+	const json = await res.json();
+    console.log(json.courses[0]);
     loading = false;
-    courses = overview;
+    courses = json.courses;
 }
 
 
