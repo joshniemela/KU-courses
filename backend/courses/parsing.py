@@ -719,12 +719,13 @@ def final_cleanup(c):
         if isinstance(lst, list):
             return " ".join([flatten_and_lower(item) for item in lst if item is not None])
         elif isinstance(lst, str):
-            return lst.lower()
+            return fixstring(lst.lower())
 
     def flatten_and_format(data, depthlist, depth=0):
         result = []
         for element in data:
             if isinstance(element, str):
+                depth = min(depth, len(depthlist)-1) # limit formatting to last element of depthlist
                 result.append({"type": depthlist[depth], "string": element})
             elif isinstance(element, list):
                 nested_result = flatten_and_format(element, depthlist, depth=depth + 1)
