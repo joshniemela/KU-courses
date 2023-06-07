@@ -46,6 +46,21 @@
                                   (partial transform-keys
                                            (comp keyword name)))))))
 
+(def cors {:headers ["Content-Type"
+                     "Accept"
+                     "Authorization"
+                     "X-Requested-With"
+                     "Access-Control-Request-Method"
+                     "Access-Control-Request-Headers"]
+           :methods [:get :put :post :delete :options]
+           :credentials true
+           :max-age 86400})
+
+(defn cors-handler [handler]
+  (fn [request]
+    (let [response (handler request)]
+      (assoc-in response [:headers "Access-Control-Allow-Origin"] "*"))))
+
 (defn app []
   (ring/ring-handler
    (ring/router
@@ -66,7 +81,8 @@
                          muuntaja/format-middleware
                          rrc/coerce-exceptions-middleware
                          rrc/coerce-request-middleware
-                         rrc/coerce-response-middleware
+                         rrc/coerce-response-middleware 
+                         cors-handler
                          ]}})
    (ring/routes
     (swagger-ui/create-swagger-ui-handler {:path "/swagger"})
