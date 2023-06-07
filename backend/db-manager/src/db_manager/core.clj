@@ -46,15 +46,12 @@
                                   (partial transform-keys
                                            (comp keyword name)))))))
 
-(def cors {:headers ["Content-Type"
-                     "Accept"
-                     "Authorization"
-                     "X-Requested-With"
-                     "Access-Control-Request-Method"
-                     "Access-Control-Request-Headers"]
-           :methods [:get :put :post :delete :options]
-           :credentials true
-           :max-age 86400})
+(def cors {"Access-Control-Allow-Origin" "*"
+           "Access-Control-Allow-Headers" "Origin, Accept, Access-Control-Request-Method, Access-Control-Allow-Headers, Content-Type, *"})
+
+(defn cors-handler
+  [_]
+  {:headers cors :status 200})
 
 (defn cors-handler [handler]
   (fn [request]
@@ -69,7 +66,9 @@
              :swagger {:info {:title "DISKU backend API"}
                        :basePath "/"} ;; prefix for all paths
              :handler (swagger/create-swagger-handler)}}]
-     ["/api" {:middleware [remove-namespace-keywords-in-response-middleware]}
+     ["/api" {:middleware [remove-namespace-keywords-in-response-middleware]
+              :options {:cors true
+                        :handler cors-handler}}
       ping-route
       (api-routes db)
       ]]
@@ -82,7 +81,6 @@
                          rrc/coerce-exceptions-middleware
                          rrc/coerce-request-middleware
                          rrc/coerce-response-middleware 
-                         cors-handler
                          ]}})
    (ring/routes
     (swagger-ui/create-swagger-ui-handler {:path "/swagger"})
