@@ -82,8 +82,3 @@ JOIN
       ""
       (str "\nWHERE " prepared-predicate))
     " GROUP BY course.course_id;")))
-
-
-(def predicate [[{} {}]])
-
-(println (generate-courses-query predicate))
