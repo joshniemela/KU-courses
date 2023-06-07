@@ -17,8 +17,7 @@
             [next.jdbc :as jdbc]
             [next.jdbc.types :refer [as-other]]
             [honey.sql :as sql]
-            ; wrap cors
-            [ring.middleware.cors :refer [wrap-cors]]
+            [ring.middleware.cors :refer [wrap-cors]])
   (:gen-class))
 
 (def db-config
@@ -63,14 +62,14 @@
       ]]
     {:data {:coercion reitit.coercion.spec/coercion
             :muuntaja m/instance
-            :middleware [
-                         
+            :middleware [[wrap-cors
+                          :access-control-allow-origin [#".*"]
+                          :access-control-allow-methods [:get :put :post :delete]]
                          parameters/parameters-middleware
                          muuntaja/format-middleware
                          rrc/coerce-exceptions-middleware
                          rrc/coerce-request-middleware
                          rrc/coerce-response-middleware 
-                         wrap-cors
                          ]}})
    (ring/routes
     (swagger-ui/create-swagger-ui-handler {:path "/swagger"})
