@@ -42,9 +42,9 @@ const fetchCourses = async () => {
     })
 		
 	const json = await res.json();
-    console.log(json);
+    console.log(json.courses[0]);
     loading = false;
-    courses = overview;
+    courses = json.courses;
 }
 
 
