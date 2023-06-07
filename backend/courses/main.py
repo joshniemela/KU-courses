@@ -31,8 +31,8 @@ def convert_to_json(url: str):
     course = get_all_info(url)
     if course:
         try:
-            with open(f"{json_dir}/{url.split('/')[-1]}.json", "w") as f:
-                json.dump(course, f)
+            with open(f"{json_dir}/{url.split('/')[-1]}.json", "w", encoding='utf8') as f:
+                json.dump(course, f, ensure_ascii=False)
             print(f"Parsed {url}")
         except Exception as e:
             print(f"Error with {url}")

@@ -757,7 +757,7 @@ def final_cleanup(c):
         key: flatten_and_format(value, depthlist)
         for key, value in full_description.items()
     }
-    c["description"] = json.dumps(description)
+    c["description"] = json.dumps(description, ensure_ascii=False)
 
     # every element in schedules should be a dict
     if "schedules" in c.keys():
