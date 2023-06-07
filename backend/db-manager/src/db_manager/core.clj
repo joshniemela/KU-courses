@@ -16,7 +16,9 @@
             [db-manager.cli :refer [parse-cli scrape-courses!]]
             [next.jdbc :as jdbc]
             [next.jdbc.types :refer [as-other]]
-            [honey.sql :as sql])
+            [honey.sql :as sql]
+            ; wrap cors
+            [ring.middleware.cors :refer [wrap-cors]]
   (:gen-class))
 
 (def db-config
@@ -46,12 +48,6 @@
                                   (partial transform-keys
                                            (comp keyword name)))))))
 
-(def cors {"Access-Control-Allow-Origin" "*"
-           "Access-Control-Allow-Headers" "Origin, Accept, Access-Control-Request-Method, Access-Control-Allow-Headers, Content-Type, *"})
-
-(defn cors-handler
-  [_]
-  {:headers cors :status 200})
 
 (defn app []
   (ring/ring-handler
@@ -61,9 +57,7 @@
              :swagger {:info {:title "DISKU backend API"}
                        :basePath "/"} ;; prefix for all paths
              :handler (swagger/create-swagger-handler)}}]
-     ["/api" {:middleware [remove-namespace-keywords-in-response-middleware]
-              :options {:cors true
-                        :handler cors-handler}}
+     ["/api" {:middleware [remove-namespace-keywords-in-response-middleware]}
       ping-route
       (api-routes db)
       ]]
@@ -76,6 +70,7 @@
                          rrc/coerce-exceptions-middleware
                          rrc/coerce-request-middleware
                          rrc/coerce-response-middleware 
+                         wrap-cors
                          ]}})
    (ring/routes
     (swagger-ui/create-swagger-ui-handler {:path "/swagger"})
