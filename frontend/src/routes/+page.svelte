@@ -3,7 +3,17 @@ import theme from '../theme'
 import SearchIcon from '../assets/SearchIcon.svelte';
 import FilterButton from '../components/FilterButton/FilterButton.svelte';
 import { navigate } from 'svelte-navigator';
-import { filters, filtersObj, jsonToString } from '../stores';
+import { filters, filtersObj, jsonToString, SearchTypes } from '../stores';
+
+let searches = $filtersObj.searches
+let currentType = 'title';
+
+console.log($filtersObj)
+
+function switchType(newType) {
+    console.log('click')
+    currentType = newType
+}
 /**
 * navigates to the /browse route and updates the search value.
 * @function submit 
@@ -11,11 +21,20 @@ import { filters, filtersObj, jsonToString } from '../stores';
 */
 function submit(event) {
     if (event.key === 'Enter') {
-        console.log("Submit")
-        console.log(event)
-        $filters = jsonToString({
-            'search': event.target.value 
-        })
+        if (event.target.value.length > 0) {
+            $filters = jsonToString({
+                ...$filtersObj,
+                'searches': [
+                    ...$filtersObj.searches,
+                    {
+                        'search': event.target.value.split(','),
+                        'type': currentType
+                    }
+                ]
+            })
+            navigate('/browse')
+            location.reload()
+        }
         navigate('/browse')
         location.reload()
     }
@@ -28,7 +47,7 @@ function submit(event) {
         <!-- Container responsible for the search area --> 
         <div class="search-container">
             <FilterButton />
-            <input class="search" type="search" placeholder={$filtersObj.search.length > 0 ? $filtersObj.search : 'Search'}
+            <input class="search" type="search" placeholder={searches.length > 0 ? searches[searches.length-1].search.join() : 'Search'}
                 style="
                 --text-color: {theme.colors.brand[200]};
                 --search-bg-color: {theme.colors.neutral[800]}
@@ -39,7 +58,27 @@ function submit(event) {
             <SearchIcon />
             </a>
         </div>
-
+        <div class="type-button-container">
+            {#each SearchTypes as type}
+                {#if type == currentType}
+                    <button
+                        class="type-button"
+                        style="--text-color: {theme.colors.brand[200]}; --bg-color: {theme.colors.brand[800]}"
+                        on:click={() => switchType(type)}
+                    >
+                        { type }
+                    </button>
+                {:else}
+                    <button
+                        class="type-button"
+                        style="--text-color: {theme.colors.neutral[200]}; --bg-color: {theme.colors.neutral[800]}"
+                        on:click={() => switchType(type)}
+                    >
+                        { type }
+                    </button>
+                {/if}
+            {/each}
+        </div>
         <a href="/browse">
         <button class="view-all-button"
             style="
@@ -48,6 +87,9 @@ function submit(event) {
             "
         >View all (WIP)</button>
         </a>
+        {#each $filtersObj.searches as searchElem}
+            <p>{searchElem.search} - {searchElem.type}</p>
+        {/each}
 </div>
 
 <style scoped>
@@ -104,5 +146,15 @@ function submit(event) {
 
 .search-icon-ref {
     height: 5vh;
+}
+
+.type-button {
+    background: none;
+    border: 0;
+    border-color: var(--text-color);
+    color: var(--text-color);
+    height: 100%;
+    background-color: var(--bg-color);
+    transition: ease-in-out 0.1s;
 }
 </style>
