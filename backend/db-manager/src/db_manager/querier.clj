@@ -23,6 +23,9 @@
     "%" "%"
     "%>>" "%>>"))
 
+(defn rm-empty [predicates]
+  (filter #(seq %) predicates))
+
 (defn generate-predicate [predicate]
   (str (case (:key predicate)
          "schedule_type" "schedule.schedule_type"
@@ -42,14 +45,15 @@
        " " (sanitise-op (:op predicate)) " " (sanitise (:value predicate))))
 
 (defn generate-inner [predicates]
-  (str "(" (clojure.string/join " OR " (map generate-predicate predicates)) ")"))
+  (str "(" (clojure.string/join " OR " (map generate-predicate (rm-empty predicates))) ")"))
 
 (defn generate-outer [predicates]
-  (clojure.string/join "\nAND " (map generate-inner predicates)))
+  (clojure.string/join "\nAND " (map generate-inner (rm-empty predicates))))
 
 
 (defn generate-courses-query [predicates]
-  (str "SELECT
+  (let [prepared-predicate (generate-outer predicates)]
+    (str "SELECT
 	course.title,
   course.course_id, 
 	course.study_level,
@@ -73,7 +77,12 @@ JOIN
 	schedule ON course.course_id = schedule.course_id
 JOIN 
 	employee ON employee.email = coordinates.email"
-       (if (empty? predicates)
-         ""
-         (str "\nWHERE " (generate-outer predicates)))
-       "\nGROUP BY course.course_id"))
+    (if (empty? (str/replace prepared-predicate #"\(|\)" ""))
+      ""
+      (str "\nWHERE " prepared-predicate))
+    " GROUP BY course.course_id;")))
+
+
+(def predicate [[{} {}]])
+
+(println (generate-courses-query predicate))
