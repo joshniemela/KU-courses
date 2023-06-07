@@ -7,6 +7,29 @@ import theme from "../../theme.js";
 
 export let stagger = 0;
 export let data = overviewCardDefault;
+
+/** 
+* Function to extracct the first <charLimit> letters from the paragraphs to 
+use for the summary.
+* @function extractSummary
+*/
+function extractSummary(charLimit) {
+    let summaryArray = []
+    for (var i in data.description) {
+        if (summaryArray.join().length <  charLimit) {
+            let elem = data.description[i]
+            if (elem.type == 'p') {
+                summaryArray.push(elem.string)
+            } 
+        } else {
+            console.log("returns: " + summaryArray.join())
+            let summ = summaryArray.join()
+            return (summ.slice(0, charLimit) + "...")
+        }
+    }
+}
+let summary = extractSummary(390);
+
 /**
 * Function to scale the font sizes of the course titles based on their length
 * @function calcFontSize
@@ -14,7 +37,6 @@ export let data = overviewCardDefault;
 function calcFontSize(string) {
     return (1 + 12/string.length)*16 + "px"
 }
-
 /**
 * Function to navigate to the course corresponding with the course_id
 * @function navigateToCourse
@@ -65,7 +87,7 @@ function convertExamToString(inputString) {
             </table>
         </div>
         <div class="card-description-container">
-            <p class="card-description">qweqweqweqweqweqweqweqweqwe</p>
+            <p class="card-description">{ summary }</p>
         </div>
         <div class="card-exam-text-container"
             style="--bg-color: {theme.colors.neutral[300]}"
