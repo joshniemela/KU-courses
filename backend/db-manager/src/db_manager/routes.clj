@@ -43,7 +43,7 @@
                                          :body (get-course-ids db)})}}]
 
     ; this takes a map of query params, and returns a list of courses
-    ["/get-courses" {:get {:parameters {:body {:predicates [[map?]]}}
+    ["/find-courses" {:post {:parameters {:body {:predicates [[map?]]}}
                            :responses {200 {:body map?}}
                            :handler (fn [{{{:keys [predicates]} :body} :parameters}]
                                       {:status 200
