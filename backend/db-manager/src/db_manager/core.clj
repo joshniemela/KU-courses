@@ -53,11 +53,6 @@
   [_]
   {:headers cors :status 200})
 
-(defn cors-handler [handler]
-  (fn [request]
-    (let [response (handler request)]
-      (assoc-in response [:headers "Access-Control-Allow-Origin"] "*"))))
-
 (defn app []
   (ring/ring-handler
    (ring/router
