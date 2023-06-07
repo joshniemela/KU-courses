@@ -65,7 +65,6 @@ onMount(async () => {
         />
         <SearchIcon />
     </div>
-    <p> {$joshMagic} </p>
     {#if loading}
         <Loader />
     {:else}
