@@ -3,7 +3,7 @@ import theme from "../../theme";
 import SearchIcon from "../../assets/SearchIcon.svelte";
 import FilterButton from "../../components/FilterButton/FilterButton.svelte";
 import Loader from "../../components/Loader/Loader.svelte";
-import { filters, filtersObj, jsonToString } from '../../stores';
+import { filters, filtersObj, jsonToString, joshMagic } from '../../stores';
 import { onMount } from 'svelte';
 import overview from "../../mocking/overview.json";
 import OverviewCard from "../../components/OverviewCard/OverviewCard.svelte";
@@ -25,9 +25,25 @@ function submit(event) {
 }
 
 const fetchCourses = async () => {
-    await new Promise(resolve => setTimeout(resolve, 1000));
+    const filters = {
+        "predicates": [
+                // [{"op": "~~", "key": "raw_desc", "value": "%Haskell%"}],
+                // [{"op": "=", "key": "study_level", "value": "Bachelor"}]
+        ]
+    };
+    const res = await fetch('http://localhost:3000/api/find-courses', {
+        method: 'POST',
+        headers: {
+            'accept': 'application/json',
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(filters)
+    })
+		
+	const json = await res.json();
+    console.log(json.courses[0]);
     loading = false;
-    courses = overview;
+    courses = json.courses;
 }
 
 
@@ -39,12 +55,12 @@ onMount(async () => {
 <div class="browse-container">
     <div class="control-container">
         <FilterButton paddingLR={"2vw"} fontSize={"1.25rem"} />
-        <input class="search" type="search" placeholder={$filtersObj.search.length > 0 ? $filtersObj.search : 'Search'}
+        <input class="search" type="search" placeholder={$filtersObj.searches.length > 0 ? $filtersObj.searches[0].search.join() : 'Search'}
             style="
             --text-color: {theme.colors.brand[200]};
             --search-bg-color: {theme.colors.neutral[800]}
             "
-            value={$filtersObj.search.length > 0 ? $filtersObj.search : ''}
+            value={$filtersObj.searches.length > 0 ? $filtersObj.searches[$filtersObj.searches.length - 1].search.join() : ''}
             on:keydown={submit}
         />
         <SearchIcon />
@@ -106,7 +122,6 @@ onMount(async () => {
     align-items: center;
     gap: 2vh;
 }
-
 </style>
 
 

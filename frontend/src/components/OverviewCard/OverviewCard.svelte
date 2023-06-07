@@ -2,21 +2,33 @@
     import { navigate } from "svelte-navigator";
 import Dk from "../../assets/Dk.svelte";
 import Gb from "../../assets/Gb.svelte";
+import overviewCardDefault from "./overviewCardDefault.json";
 import theme from "../../theme.js";
 
 export let stagger = 0;
-export let data = {
-    "primary_title": "High Performance Programming and Systems (HPPS)",
-    "course_id": "NDAB20001U",
-    "course_language": "en",
-    "faculty": "SCIENCE",
-    "study_level": "Bachelor",
-    "credits": "7.5",
-    "start_block": "2",
-    "schedule_group": "A",
-    "description": "Kurset introducerer de studerende til emnerne computerarkitektur og datanetværk, hukommelsesarkitektur, styresystemer, task-parallelisme og samtidighed, samt til massivt data-paralleliserede arkitekturer. Der vil være fokus på effektiv data-processering (big data) og effektive beregninger (big compute).",
-    "exam": "Skriftlig aflevering, 51 timer"
+export let data = overviewCardDefault;
+
+/** 
+* Function to extracct the first <charLimit> letters from the paragraphs to 
+use for the summary.
+* @function extractSummary
+*/
+function extractSummary(charLimit) {
+    let summaryArray = []
+    for (var i in data.description) {
+        if (summaryArray.join().length <  charLimit) {
+            let elem = data.description[i]
+            if (elem.type == 'p') {
+                summaryArray.push(elem.string)
+            } 
+        } else {
+            console.log("returns: " + summaryArray.join())
+            let summ = summaryArray.join()
+            return (summ.slice(0, charLimit) + "...")
+        }
+    }
 }
+let summary = extractSummary(390);
 
 /**
 * Function to scale the font sizes of the course titles based on their length
@@ -25,7 +37,6 @@ export let data = {
 function calcFontSize(string) {
     return (1 + 12/string.length)*16 + "px"
 }
-
 /**
 * Function to navigate to the course corresponding with the course_id
 * @function navigateToCourse
@@ -33,6 +44,11 @@ function calcFontSize(string) {
 function navigateToCourse() {
     navigate(`/course/${data.course_id}`);
     location.reload();
+}
+
+
+function convertExamToString(inputString) {
+    return inputString.replace(/(\w)_(\w)/g, "$1 $2");
 }
 
 </script>
@@ -50,14 +66,14 @@ function navigateToCourse() {
                         <h1 class="card-title" 
                             style="
                                 --text-color: {theme.colors.neutral[200]};
-                                --text-size: {calcFontSize(data.primary_title)}
+                                --text-size: {calcFontSize(data.title)}
                                 "
                         >
-                            {data.primary_title}
+                            {data.title}
                         </h1>
                     </a>
                 </div>
-                <h2 class="card-subtitle" style="--text-color: {theme.colors.neutral[600]}">{data.course_id} - {data.faculty}</h2>
+                <h2 class="card-subtitle" style="--text-color: {theme.colors.neutral[600]}">{data.course_id} - SCIENCE</h2>
             </div>
             <table class="card-info-table">
                 <tr>
@@ -66,22 +82,25 @@ function navigateToCourse() {
                 </tr>
                 <tr>
                     <td class="card-td-left-bot">Block {data.start_block}</td>
-                    <td> Group {data.schedule_group}</td>
+                    <td> Group: SCHEDULES</td>
                 </tr>
             </table>
         </div>
         <div class="card-description-container">
-            <p class="card-description">{data.description}</p>
+            <p class="card-description">{ summary }</p>
         </div>
         <div class="card-exam-text-container"
             style="--bg-color: {theme.colors.neutral[300]}"
         >
-            <p class="card-exam-text"
-            style="--text-color: {theme.colors.neutral[900]}"
+            {#each data.exams as exam }
+                <p class="card-exam-text"
+                style="--text-color: {theme.colors.neutral[900]}"
 
-            >
-                {data.exam}
-            </p>
+                >
+                    {convertExamToString(exam.exam_type)} {#if exam.minutes} ({exam.minutes}m) {/if}
+                    {#if exam != data.exams[data.exams.length - 1] && data.exams.length > 1} -  &nbsp {/if}
+                </p>
+            {/each}
             {#if data.course_language == "da"}
                 <Dk />
             {:else}

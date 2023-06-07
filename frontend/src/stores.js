@@ -1,11 +1,25 @@
 import { writable, derived } from 'svelte/store';
 import { browser } from "$app/environment"
+
+// Currently supported search types
+export const SearchTypes = ['title', 'coordinator']
 /*
 FILTER STORE.
 Responsible for keeping track of all the currently applied filters.
 */
 const initialFilters = {
-    'search': '',
+    'searches': [
+        {
+            'search': ['LinAlg', 'Problem'],
+            'type': 'title',
+        },
+        {
+            'search': ['Jakob', 'Henrik'],
+            'type': 'employee'
+        }
+    ],
+    'study_level': [''],
+    'block': ['']
 }
 
 // Helper functions to allow us to store our objects as strings
@@ -53,3 +67,15 @@ export const filtersObj = derived(
     $filters => toObj($filters)
 );
 
+/**
+ * Derived store responsible converting our state to Josh' magical querying
+ * language
+ * @function joshMagic
+*/
+export const joshMagic = derived(
+    filters,
+    $filters => {
+        let obj = toObj($filters);
+        return obj.search;
+    }
+)

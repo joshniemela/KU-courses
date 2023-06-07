@@ -19,6 +19,7 @@
     ">=" ">="
     "<>" "<>"
     "~" "~"
+    "~~" "~~"
     "%>" "%>"
     "%" "%"
     "%>>" "%>>"))
@@ -37,7 +38,7 @@
          "start_block" "course.start_block"
          "duration" "course.duration"
          "schedule_group" "course.schedule_group"
-         "course_type" "course.course_type"
+         "study_level" "course.study_level"
          "course_language" "course.course_language"
          "full_name" "employee.full_name"
          "credits" "course.credits"
@@ -81,8 +82,3 @@ JOIN
       ""
       (str "\nWHERE " prepared-predicate))
     " GROUP BY course.course_id;")))
-
-
-(def predicate [[{} {}]])
-
-(println (generate-courses-query predicate))
