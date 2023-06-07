@@ -123,5 +123,3 @@
       (println "Starting database with existing data..."))
     (println "Starting server on port " (:port main-config))
     (run-server (app) main-config)))
-
-
