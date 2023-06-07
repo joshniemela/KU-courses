@@ -715,11 +715,11 @@ def final_cleanup(c):
         c = renamekey(c, fromthis, tothis)
 
     # Some helper functions for description manipulation
-    def flatten(lst):
+    def flatten_and_lower(lst):
         if isinstance(lst, list):
-            return " ".join([flatten(item) for item in lst if item is not None])
+            return " ".join([flatten_and_lower(item) for item in lst if item is not None])
         elif isinstance(lst, str):
-            return lst
+            return lst.lower()
 
     def flatten_and_format(data, depthlist, depth=0):
         result = []
@@ -731,33 +731,38 @@ def final_cleanup(c):
                 result.extend(nested_result)
         return result
 
-    def remove_none_elements(dictionary):
-        for key, value in dictionary.items():
-            if isinstance(value, list):
-                dictionary[key] = [v for v in value if v is not None]
-            elif isinstance(value, dict):
-                remove_none_elements(value)
-        return dictionary
+    def remove_none_elements(data):
+        if isinstance(data, dict):
+            for key in list(data.keys()):
+                value = data[key]
+                if value is None:
+                    del data[key]
+                else:
+                    data[key] = remove_none_elements(value)
+        elif isinstance(data, list):
+            data[:] = [remove_none_elements(item) for item in data if item is not None]
+        return data
 
     relevant_desc = [
         "description",
         "Learning Outcome",
         "Recommended Academic Qualifications",
     ]
-    relevant_and_present = list(filter(lambda x: x in c.keys(), relevant_desc))
-    c["raw_description"] = flatten([c[v] for v in relevant_and_present])
+    relevant_dict = {'description': 'Course Description',
+                     'Learning Outcome': 'Learning Outcome',
+                     'Recommended Academic Qualifications': 'Recommended Academic Qualifications'}
 
-    depthlist = ["p", "li", "li_two", "li_three", "li_four"]
-    merged = {}
+    relevant_and_present = list(filter(lambda x: x in c.keys(), relevant_desc))
+    c["raw_description"] = flatten_and_lower([c[v] for v in relevant_and_present])
+
+
+    depthlist = ["h1", "p", "li", "li_two", "li_three", "li_four"]
+    merged = []
     for d in relevant_and_present:
-        merged[snakecase(d)] = c[d]
+        merged.extend([ relevant_dict[d], fixstring(remove_none_elements(c[d])) ])
         del c[d]
-    full_description = fixstring(remove_none_elements(merged))
-    description = {
-        key: flatten_and_format(value, depthlist)
-        for key, value in full_description.items()
-    }
-    c["description"] = json.dumps(description, ensure_ascii=False)
+    description = flatten_and_format(merged, depthlist)
+    c['description'] = json.dumps(description, ensure_ascii=False)
 
     # every element in schedules should be a dict
     if "schedules" in c.keys():
