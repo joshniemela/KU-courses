@@ -6,7 +6,7 @@ import { navigate } from 'svelte-navigator';
 import { filters, filtersObj, jsonToString, SearchTypes, queryStore, initialFilters } from '../stores';
 
 let searches = $filtersObj.searches
-let currentType = 'course_title';
+let currentType = SearchTypes.courseTitle;
 
 function consoleJosh() {
     console.log($queryStore)
@@ -61,7 +61,7 @@ function submit(event) {
         </div>
         <div class="type-button-container">
             <button on:click={() => $filters = jsonToString(initialFilters)}>Clear filters </button>
-            {#each SearchTypes as type}
+            {#each Object.entries(SearchTypes) as [_, type]}
                 {#if type == currentType}
                     <button
                         class="type-button"

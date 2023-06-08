@@ -2,7 +2,15 @@ import { writable, derived } from 'svelte/store';
 import { browser } from "$app/environment"
 
 // Currently supported search types
-export const SearchTypes = ['course_title', 'employee_name']
+export const SearchTypes = {
+    courseTitle: 'course_title',
+    employeeName: 'employeeName'
+}
+
+export const StudyLevelTypes = {
+    bachelor: 'Bachelor',
+    master: 'Master'
+}
 
 /*
 FILTER STORE.
@@ -11,7 +19,7 @@ Responsible for keeping track of all the currently applied filters.
 export const initialFilters = {
     'searches': [
     ],
-    'study_level': [''],
+    'study_level': [StudyLevelTypes.master],
     'block': ['']
 }
 
@@ -90,6 +98,10 @@ function searchToPredicate(searchItem, key) {
     return constructPredicate('%>', key, searchItem)
 }
 
+function equalityToPredicate(value, key) {
+    return constructPredicate('=', key, value)
+}
+
 function convertToQueryStructure(state) {
     let query = {
         'predicates': [
@@ -111,7 +123,17 @@ function convertToQueryStructure(state) {
             ]
         }
     }
-    console.log(query)
+
+    // Add study level 
+    let studyLevelList = [];
+    state.study_level.map(x => studyLevelList.push(equalityToPredicate(x, 'study_level')))
+    query = {
+        ...query,
+        'predicates': [
+            ...query.predicates,
+            studyLevelList
+        ]
+    }
     return query
 }
 
