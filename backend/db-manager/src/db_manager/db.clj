@@ -119,12 +119,7 @@
   (jdbc/execute! db ["SELECT * FROM employee
                       WHERE email IN (SELECT email FROM coordinates WHERE course_id = ?)" course-id]))
 
-(defn get-course [db course-id]
-  (jdbc/execute-one! db ["SELECT url, course_id, title, course_language, description, start_block, duration, credits, study_level
-                          FROM course
-                          WHERE course_id = ?" course-id]))
-
-(defn fix-jsons [course]
+(defn fix-json [course]
   ; exams, schedules, workloads, and coordinators are text that needs to be parsed to json
   (assoc course
          :exams (json/read-str (:exams course))
@@ -135,4 +130,9 @@
 
 (defn get-courses [db predicates]
   (let [courses (jdbc/execute! db [(generate-courses-query predicates)])]
-    (map fix-jsons courses)))
+    (map fix-json courses)))
+
+(defn get-course-by-id [db course-id]
+  (first (get-courses db [[{:op "=" 
+                            :key "course_id" 
+                            :value course-id}]])))

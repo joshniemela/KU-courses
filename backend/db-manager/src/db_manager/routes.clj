@@ -2,6 +2,7 @@
   (:require [clojure.data.json :as json]
             [db-manager.db :refer [find-email-by-name
                                    get-course-ids
+                                   get-course-by-id
                                    get-courses]]))
 
 (def ping-route
@@ -50,4 +51,9 @@
                                         :body (let [courses (get-courses db predicates)]
                                                 {:count (count courses)
                                                  :keys (keys (first courses))
-                                                 :courses courses})})}}]])
+                                                 :courses courses})})}}]
+   ["/get-course" {:get {:parameters {:query {:id string?}}
+                         :responses {200 {:body map?}}
+                         :handler (fn [{{{:keys [id]} :query} :parameters}]
+                                    {:status 200
+                                     :body (get-course-by-id db id)})}}]])
