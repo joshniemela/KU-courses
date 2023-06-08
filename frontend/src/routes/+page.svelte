@@ -59,6 +59,7 @@ function submit(event) {
             </a>
         </div>
         <div class="type-button-container">
+            <button on:click={() => $filters = ''}>Clear filters </button>
             {#each SearchTypes as type}
                 {#if type == currentType}
                     <button
@@ -157,4 +158,5 @@ function submit(event) {
     background-color: var(--bg-color);
     transition: ease-in-out 0.1s;
 }
+
 </style>
