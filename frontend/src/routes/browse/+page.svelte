@@ -12,6 +12,8 @@ let loading = true;
 
 let courses = [];
 
+let API_URL = import.meta.env.PROD ? 'https://disku.jniemela/api' : 'http://localhost:3000';
+
 /**
 * Event handler for submit on search 
 */
@@ -27,7 +29,7 @@ function submit(event) {
 const fetchCourses = async () => {
     const filters = $queryStore;
     console.log(filters);
-    const res = await fetch('http://localhost:3000/api/find-courses', {
+    const res = await fetch(`${API_URL}/find-courses`, {
         method: 'POST',
         headers: {
             'accept': 'application/json',
