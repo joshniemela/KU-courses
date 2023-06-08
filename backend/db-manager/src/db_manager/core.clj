@@ -50,7 +50,7 @@
 (defn app []
   (ring/ring-handler
    (ring/router
-    [["/swagger.json"
+    [["/api/swagger.json"
       {:get {:no-doc true
              :swagger {:info {:title "DISKU backend API"}
                        :basePath "/"} ;; prefix for all paths
@@ -75,7 +75,8 @@
                          rrc/coerce-request-middleware
                          rrc/coerce-response-middleware]}})
    (ring/routes
-    (swagger-ui/create-swagger-ui-handler {:path "/api"})
+    (swagger-ui/create-swagger-ui-handler {:path "/api"
+                                           :url "/api/swagger.json"})
     (ring/create-default-handler))))
 
 ; read every json in data-dir
