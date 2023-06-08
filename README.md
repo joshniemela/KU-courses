@@ -52,8 +52,6 @@ you want to import are in /queries):
 sudo docker cp queries/. <docker_container_id>:/var/lib/pgadmin/storage/admin_private.org/
 ```
 Alternatively you can run one of two bash scripts `docker_export_script.sh` that extracts the queries from the docker container or `docker_import_script.sh` that imports the queries to the container. Both need the container id to be provided as a command line argument. 
-#### Initialize database
-After starting up the container containing the database, simply running `db-manager -f` will populate the database, optionally also launching it with the flag `-s` will cause the server to automatically start scraping webpages.
 
 #### Visualizing database schema
 You can do a nifty visualization by right clicking on "postgres" under "databases"
