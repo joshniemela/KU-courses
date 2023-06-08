@@ -24,6 +24,7 @@ services:
     environment:
       PGADMIN_DEFAULT_EMAIL: admin@private.org
       PGADMIN_DEFAULT_PASSWORD: admin
+    user: "${UID}:${GID}"
     networks:
       - dis-network
     volumes:
