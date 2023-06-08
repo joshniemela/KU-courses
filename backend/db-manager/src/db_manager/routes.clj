@@ -43,11 +43,11 @@
                                          :body (get-course-ids db)})}}]
 
     ; this takes a map of query params, and returns a list of courses
-    ["/find-courses" {:post {:parameters {:body {:predicates [[map?]]}}
-                           :responses {200 {:body map?}}
-                           :handler (fn [{{{:keys [predicates]} :body} :parameters}]
-                                      {:status 200
-                                       :body (let [courses (get-courses db predicates)]
-                                               {:count (count courses)
-                                                :keys (keys (first courses))
-                                                :courses courses})})}}]])
+   ["/find-courses" {:post {:parameters {:body {:predicates [[map?]]}}
+                            :responses {200 {:body map?}}
+                            :handler (fn [{{{:keys [predicates]} :body} :parameters}]
+                                       {:status 200
+                                        :body (let [courses (get-courses db predicates)]
+                                                {:count (count courses)
+                                                 :keys (keys (first courses))
+                                                 :courses courses})})}}]])

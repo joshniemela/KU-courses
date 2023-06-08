@@ -2,9 +2,6 @@
   (:require [clojure.string :as str]
             [clojure.data.json :as json]))
 
-
-
-
 (defn sanitise [val]
   ; psql has double dollar seprated strings, this is used to avoid injection, and therefore we need to remove any $ in the string
   (str "$$" (clojure.string/replace val #"\$" "") "$$"))
@@ -34,15 +31,16 @@
          "workload_type" "workload.workload_type"
          "exam_type" "exam.exam_type"
          "course_id" "course.course_id"
-         "title" "course.title"
+         "course_title" "course.title"
          "start_block" "course.start_block"
          "duration" "course.duration"
          "schedule_group" "course.schedule_group"
          "study_level" "course.study_level"
          "course_language" "course.course_language"
-         "full_name" "employee.full_name"
+         "employee_name" "employee.full_name"
          "credits" "course.credits"
          "raw_desc" "course.raw_description")
+       ; "employee_title" is a value in the future
        " " (sanitise-op (:op predicate)) " " (sanitise (:value predicate))))
 
 (defn generate-inner [predicates]
@@ -50,7 +48,6 @@
 
 (defn generate-outer [predicates]
   (clojure.string/join "\nAND " (map generate-inner (rm-empty predicates))))
-
 
 (defn generate-courses-query [predicates]
   (let [prepared-predicate (generate-outer predicates)]
@@ -78,7 +75,8 @@ JOIN
 	schedule ON course.course_id = schedule.course_id
 JOIN 
 	employee ON employee.email = coordinates.email"
-    (if (empty? (str/replace prepared-predicate #"\(|\)" ""))
-      ""
-      (str "\nWHERE " prepared-predicate))
-    " GROUP BY course.course_id;")))
+         (if (empty? (str/replace prepared-predicate #"\(|\)" ""))
+           ""
+           (str "\nWHERE " prepared-predicate))
+         " GROUP BY course.course_id;")))
+
