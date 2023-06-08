@@ -5,7 +5,7 @@ import FilterButton from '../components/FilterButton/FilterButton.svelte';
 import { navigate } from 'svelte-navigator';
 import { filters, filtersObj, jsonToString, SearchTypes, queryStore, initialFilters } from '../stores';
 
-let searches = $filtersObj.searches
+let searches = $filtersObj.searches;
 let currentType = SearchTypes.courseTitle;
 
 function consoleJosh() {

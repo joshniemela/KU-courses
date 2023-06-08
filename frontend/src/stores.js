@@ -126,6 +126,10 @@ function searchToPredicate(searchItem, key) {
     return constructPredicate('%', key, searchItem)
 }
 
+function searchWordToPredicate(searchItem, key) {
+    return constructPredicate('%>', key, searchItem)
+}
+
 function equalityToPredicate(value, key) {
     return constructPredicate('=', key, value)
 }
@@ -136,6 +140,7 @@ function addSearches(query, state) {
         let andList = []
         searchElem.search.map(x => {
             andList.push(searchToPredicate(x, searchElem.type))
+            andList.push(searchWordToPredicate(x, searchElem.type))
         })
         query = {
             ...query,

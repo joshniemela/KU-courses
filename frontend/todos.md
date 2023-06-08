@@ -1,6 +1,11 @@
 # Todos 
-* Exams should render as a list 
 * Blocks and schedule_groups should render as a list 
-* Description reformed
 * Course names to be standardized
+
+* Search icon in home page should also execute Search
+* search bar in browse view should work 
+* search bar icon --||--
+* Filter popup with enums
+* Filter buttons on search should appear on browse as well
+
 
