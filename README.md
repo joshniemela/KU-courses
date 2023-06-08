@@ -2,9 +2,10 @@
 
 ## Starting the application
 * STEP 1: Install `docker` and `docker-compose`, this may need a restart of your system since Docker is a very low level program.
-* STEP 2: Run `docker-compose up` as either a user with permissions to docker, or with `sudo`/`doas`
-* STEP 3: ???
-* STEP 4: PROFIT!!!  
+* STEP 2 run `mkdir data`, `mkdir data/pg-admin` and `doas chown -R 5050:5050 pg-admin`
+* STEP 3: Run `docker-compose up` as either a user with permissions to docker, or with `sudo`/`doas`
+* STEP 4: ???
+* STEP 5: PROFIT!!!  
 The build process may take a while since it is both building a Java program, as well as the Python scraper which is quite large in the number of required dependencies. When built, the scraper will be one of the first things to run and it may take up to 30 minutes to finish scraping since we want to be nice to KU's surprisingly fragile IT infrastructure.
 
 The entire application is governed through the `docker-compose.yml` file
