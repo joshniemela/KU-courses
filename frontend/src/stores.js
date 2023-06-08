@@ -2,21 +2,14 @@ import { writable, derived } from 'svelte/store';
 import { browser } from "$app/environment"
 
 // Currently supported search types
-export const SearchTypes = ['title', 'coordinator']
+export const SearchTypes = ['course_title', 'employee_name']
+
 /*
 FILTER STORE.
 Responsible for keeping track of all the currently applied filters.
 */
-const initialFilters = {
+export const initialFilters = {
     'searches': [
-        {
-            'search': ['LinAlg', 'Problem'],
-            'type': 'title',
-        },
-        {
-            'search': ['Jakob', 'Henrik'],
-            'type': 'employee'
-        }
     ],
     'study_level': [''],
     'block': ['']
@@ -72,10 +65,60 @@ export const filtersObj = derived(
  * language
  * @function joshMagic
 */
-export const joshMagic = derived(
-    filters,
-    $filters => {
-        let obj = toObj($filters);
-        return obj.search;
+
+// const initialFilters = {
+//     'searches': [
+//         {
+//             'search': ['LinAlg', 'Problem'],
+//             'type': 'title',
+//         },
+//         {
+//             'search': ['Jakob', 'Henrik'],
+//             'type': 'employee'
+//         }
+//     ],
+//     'study_level': [''],
+//     'block': ['']
+// }
+//
+function searchToPredicate(searchItem, type) {
+    return {
+        'op': '%>',
+        'key': type,
+        'value': searchItem
+    }
+}
+function convertToQueryStructure(state) {
+    let query = {
+        'predicates': [
+        ]
+    }
+
+    // Add searches to predicates
+    for (let i = 0; i < state.searches.length; i++) {
+        let searchElem = state.searches[i]
+        let andList = []
+        searchElem.search.map(x => {
+            andList.push(searchToPredicate(x, searchElem.type))
+        })
+        query = {
+            ...query,
+            'predicates': [
+                ...query.predicates,
+                andList
+            ]
+
+        }
+    }
+    console.log(query)
+    return query
+}
+
+
+export const queryStore = derived(
+    filtersObj,
+    $filtersObj => {
+        let obj = $filtersObj
+        return convertToQueryStructure(obj)
     }
 )

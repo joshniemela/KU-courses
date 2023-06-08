@@ -3,13 +3,14 @@ import theme from '../theme'
 import SearchIcon from '../assets/SearchIcon.svelte';
 import FilterButton from '../components/FilterButton/FilterButton.svelte';
 import { navigate } from 'svelte-navigator';
-import { filters, filtersObj, jsonToString, SearchTypes } from '../stores';
+import { filters, filtersObj, jsonToString, SearchTypes, queryStore, initialFilters } from '../stores';
 
 let searches = $filtersObj.searches
-let currentType = 'title';
+let currentType = 'course_title';
 
-console.log($filtersObj)
-
+function consoleJosh() {
+    console.log($queryStore)
+}
 function switchType(newType) {
     console.log('click')
     currentType = newType
@@ -59,7 +60,7 @@ function submit(event) {
             </a>
         </div>
         <div class="type-button-container">
-            <button on:click={() => $filters = ''}>Clear filters </button>
+            <button on:click={() => $filters = jsonToString(initialFilters)}>Clear filters </button>
             {#each SearchTypes as type}
                 {#if type == currentType}
                     <button
@@ -91,6 +92,7 @@ function submit(event) {
         {#each $filtersObj.searches as searchElem}
             <p>{searchElem.search} - {searchElem.type}</p>
         {/each}
+        <button on:click={consoleJosh}> log </button>
 </div>
 
 <style scoped>

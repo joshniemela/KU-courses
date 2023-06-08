@@ -16,13 +16,12 @@ use for the summary.
 function extractSummary(charLimit) {
     let summaryArray = []
     for (var i in data.description) {
-        if (summaryArray.join().length <  charLimit) {
-            let elem = data.description[i]
+        let elem = data.description[i]
+        if (summaryArray.join().length <  charLimit && elem != data.description[data.description.length -1]) {
             if (elem.type == 'p') {
                 summaryArray.push(elem.string)
             } 
         } else {
-            console.log("returns: " + summaryArray.join())
             let summ = summaryArray.join()
             return (summ.slice(0, charLimit) + "...")
         }
