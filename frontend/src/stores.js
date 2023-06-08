@@ -2,23 +2,24 @@ import { writable, derived } from 'svelte/store';
 import { browser } from "$app/environment"
 
 // Currently supported search types
-export const SearchTypes = ['title', 'coordinator']
+export const SearchTypes = {
+    courseTitle: 'course_title',
+    employeeName: 'employeeName'
+}
+
+export const StudyLevelTypes = {
+    bachelor: 'Bachelor',
+    master: 'Master'
+}
+
 /*
 FILTER STORE.
 Responsible for keeping track of all the currently applied filters.
 */
-const initialFilters = {
+export const initialFilters = {
     'searches': [
-        {
-            'search': ['LinAlg', 'Problem'],
-            'type': 'title',
-        },
-        {
-            'search': ['Jakob', 'Henrik'],
-            'type': 'employee'
-        }
     ],
-    'study_level': [''],
+    'study_level': [StudyLevelTypes.master],
     'block': ['']
 }
 
@@ -72,10 +73,75 @@ export const filtersObj = derived(
  * language
  * @function joshMagic
 */
-export const joshMagic = derived(
-    filters,
-    $filters => {
-        let obj = toObj($filters);
-        return obj.search;
+
+// const initialFilters = {
+//     'searches': [
+//         {
+//             'search': ['LinAlg', 'Problem'],
+//             'type': 'title',
+//         },
+//         {
+//             'search': ['Jakob', 'Henrik'],
+//             'type': 'employee'
+//         }
+//     ],
+//     'study_level': [''],
+//     'block': ['']
+// }
+//
+//
+function constructPredicate(op, key, value) {
+    return {'op': op, 'key': key, 'value': value}
+}
+
+function searchToPredicate(searchItem, key) {
+    return constructPredicate('%>', key, searchItem)
+}
+
+function equalityToPredicate(value, key) {
+    return constructPredicate('=', key, value)
+}
+
+function convertToQueryStructure(state) {
+    let query = {
+        'predicates': [
+        ]
+    }
+
+    // Add searches to predicates
+    for (let i = 0; i < state.searches.length; i++) {
+        let searchElem = state.searches[i]
+        let andList = []
+        searchElem.search.map(x => {
+            andList.push(searchToPredicate(x, searchElem.type))
+        })
+        query = {
+            ...query,
+            'predicates': [
+                ...query.predicates,
+                andList
+            ]
+        }
+    }
+
+    // Add study level 
+    let studyLevelList = [];
+    state.study_level.map(x => studyLevelList.push(equalityToPredicate(x, 'study_level')))
+    query = {
+        ...query,
+        'predicates': [
+            ...query.predicates,
+            studyLevelList
+        ]
+    }
+    return query
+}
+
+
+export const queryStore = derived(
+    filtersObj,
+    $filtersObj => {
+        let obj = $filtersObj
+        return convertToQueryStructure(obj)
     }
 )

@@ -3,7 +3,7 @@ import theme from "../../theme";
 import SearchIcon from "../../assets/SearchIcon.svelte";
 import FilterButton from "../../components/FilterButton/FilterButton.svelte";
 import Loader from "../../components/Loader/Loader.svelte";
-import { filters, filtersObj, jsonToString, joshMagic } from '../../stores';
+import { filters, filtersObj, jsonToString, queryStore } from '../../stores';
 import { onMount } from 'svelte';
 import overview from "../../mocking/overview.json";
 import OverviewCard from "../../components/OverviewCard/OverviewCard.svelte";
@@ -25,12 +25,8 @@ function submit(event) {
 }
 
 const fetchCourses = async () => {
-    const filters = {
-        "predicates": [
-                // [{"op": "~~", "key": "raw_desc", "value": "%Haskell%"}],
-                // [{"op": "=", "key": "study_level", "value": "Bachelor"}]
-        ]
-    };
+    const filters = $queryStore;
+    console.log(filters);
     const res = await fetch('http://localhost:3000/api/find-courses', {
         method: 'POST',
         headers: {
