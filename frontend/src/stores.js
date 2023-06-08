@@ -81,13 +81,15 @@ export const filtersObj = derived(
 //     'block': ['']
 // }
 //
-function searchToPredicate(searchItem, type) {
-    return {
-        'op': '%>',
-        'key': type,
-        'value': searchItem
-    }
+//
+function constructPredicate(op, key, value) {
+    return {'op': op, 'key': key, 'value': value}
 }
+
+function searchToPredicate(searchItem, key) {
+    return constructPredicate('%>', key, searchItem)
+}
+
 function convertToQueryStructure(state) {
     let query = {
         'predicates': [
@@ -107,7 +109,6 @@ function convertToQueryStructure(state) {
                 ...query.predicates,
                 andList
             ]
-
         }
     }
     console.log(query)
