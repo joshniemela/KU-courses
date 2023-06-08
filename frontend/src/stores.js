@@ -26,6 +26,18 @@ export const BlockTypes = {
     'four': 4,
     'five': 5
 }
+
+export const ExamTypes = {
+    oralExamination: 'oral_examination',
+	writtenExamination: 'written_examination',
+	writtenAssignment: 'written_assignment',
+	continousAssesment: 'continuous_assessment',
+	practicalWrittenExamination: 'practical_written_examination',
+	practicalOralExamination: 'practical_oral_examination',
+	oralDefence: 'oral_defence',
+	portfolio: 'portfolio',
+	other: 'other'
+}
 /*
 FILTER STORE.
 Responsible for keeping track of all the currently applied filters.
@@ -35,7 +47,8 @@ export const initialFilters = {
     ],
     'study_level': [],
     'block': [],
-    'schedule_group': [ScheduleGroupTypes.A],
+    'schedule_group': [],
+    'exam_type': []
 }
 
 // Helper functions to allow us to store our objects as strings
@@ -110,7 +123,7 @@ function constructPredicate(op, key, value) {
 }
 
 function searchToPredicate(searchItem, key) {
-    return constructPredicate('%>', key, searchItem)
+    return constructPredicate('%', key, searchItem)
 }
 
 function equalityToPredicate(value, key) {
@@ -174,6 +187,18 @@ function addScheduleGroup(query, state) {
     return query
 }
 
+function addExamType(query, state) {
+    let examTypeList = [];
+    state.exam_type.map(x => examTypeList.push(equalityToPredicate(x, 'exam_type')))
+    query = {
+        ...query,
+        'predicates': [
+            ...query.predicates,
+            examTypeList
+        ]
+    }
+    return query
+}
 function convertToQueryStructure(state) {
     let query = {
         'predicates': [
@@ -196,6 +221,11 @@ function convertToQueryStructure(state) {
     // Add schedule group 
     if (state.schedule_group.length > 0) {
         query = addScheduleGroup(query,state)
+    }
+
+    // Add exam type
+    if (state.exam_type.length > 0) {
+        query = addExamType(query, state)
     }
 
     console.log(query)
