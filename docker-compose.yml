@@ -57,6 +57,7 @@ services:
 
   scraper:
     build: ./backend/courses
+    restart: on-failure
     volumes:
       - ./data:/data
 
