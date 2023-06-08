@@ -62,7 +62,13 @@
             :muuntaja m/instance
             :middleware [[wrap-cors
                           :access-control-allow-origin [#".*"]
-                          :access-control-allow-methods [:get :put :post :delete]]
+                          :access-control-allow-methods [:get :put :post :delete]
+                          :access-control-allow-headers #{"accept"
+                                                          "accept-encoding"
+                                                          "accept-language"
+                                                          "authorization"
+                                                          "content-type"
+                                                          "origin"}]
                          parameters/parameters-middleware
                          muuntaja/format-middleware
                          rrc/coerce-exceptions-middleware
