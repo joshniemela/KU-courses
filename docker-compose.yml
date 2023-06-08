@@ -34,6 +34,21 @@ services:
     restart: always
     ports:
       - "5000:5000"
+    networks:
+      - dis-network
+    depends_on:
+      - server
+
+  server:
+    build: ./backend/db-manager
+    restart: always
+    ports:
+      - "3000:3000"
+    networks:
+      - dis-network
+    depends_on:
+      - db
+
 
 volumes:
   local_pgdata:

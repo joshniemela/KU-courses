@@ -23,7 +23,7 @@
 (def db-config
   {:dbtype "postgresql"
    :dbname "admin"
-   :host "localhost"
+   :host "db"
    :user "admin"
    :password "admin"
    :stringtype "unspecified"})
