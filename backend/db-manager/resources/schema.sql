@@ -10,7 +10,7 @@ CREATE TABLE IF NOT EXISTS course (
 	start_block block_enum,
 	duration int,
 	credits numeric(3, 1),
-	study_level text
+	study_level study_enum
 );
 CREATE TABLE IF NOT EXISTS exam (
 	course_id char(10) NOT NULL,
