@@ -10,5 +10,6 @@ workload;
 DROP TYPE IF EXISTS schedule_enum,
 block_enum,
 exam_enum,
-work_enum;
+work_enum,
+study_enum;
 END;

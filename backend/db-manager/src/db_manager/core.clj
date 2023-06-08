@@ -85,7 +85,6 @@
 (defn coerce-as-other [course-map]
   ; make schedule_group into "as-other"
   (-> course-map
-      (assoc :schedule_group (as-other (:schedule_group course-map)))
       (assoc :start_block (as-other (:start_block course-map)))
       ; workloads is a vector of maps with :workload_type and :hours
       ; workload_types should have as-other

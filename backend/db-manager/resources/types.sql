@@ -2,6 +2,7 @@
 BEGIN;
 CREATE TYPE block_enum AS ENUM ('1', '2', '3', '4', '5');
 CREATE TYPE schedule_enum AS ENUM ('A', 'B', 'C', 'D');
+CREATE TYPE study_enum AS ENUM ('Bachelor', 'Master');
 CREATE TYPE exam_enum AS ENUM (
 	'oral_examination',
 	'written_examination',
