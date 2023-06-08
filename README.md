@@ -5,6 +5,7 @@
 * STEP 2: Run `docker-compose up` as either a user with permissions to docker, or with `sudo`/`doas`
 * STEP 3: ???
 * STEP 4: PROFIT!!!
+The build process may take a while since it is both building a Java program, as well as the Python scraper which is quite large in the number of required dependencies. When built, the scraper will be one of the first things to run and it may take up to 30 minutes to finish scraping since we want to be nice to KU's surprisingly fragile IT infrastructure.
 
 The entire application is governed through the `docker-compose.yml` file
 present in the root directory. This file specifies each service we spin up, 
