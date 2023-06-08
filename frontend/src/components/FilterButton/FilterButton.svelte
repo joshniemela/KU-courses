@@ -31,7 +31,7 @@ function handleHoverOut(e) {
     on:mouseout={handleHoverOut}
     on:click={() => dialog.showModal()}
 >Filter</button>
-<FilterDialog bind:dialog on:close={() => console.log('closed')}> Look at me! </FilterDialog>
+<FilterDialog bind:dialog on:close={() => console.log('closed')} /> 
 <style scoped>
 .filter-button {
     background: none;

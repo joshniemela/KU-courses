@@ -51,6 +51,16 @@ export const initialFilters = {
     'exam_type': []
 }
 
+export function checkEmpty(state) {
+    let empty = true;
+    for (const [key, val] of Object.entries(state)) {
+        if (state[key].length > 0) {
+            empty = false
+        }
+    }
+    return empty
+}
+
 // Helper functions to allow us to store our objects as strings
 export const jsonToString = (val) => JSON.stringify(val, null, 2);
 const toObj = JSON.parse;

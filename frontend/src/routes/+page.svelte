@@ -3,10 +3,11 @@ import theme from '../theme'
 import SearchIcon from '../assets/SearchIcon.svelte';
 import FilterButton from '../components/FilterButton/FilterButton.svelte';
 import { navigate } from 'svelte-navigator';
-import { filters, filtersObj, jsonToString, SearchTypes, queryStore, initialFilters } from '../stores';
+import { filters, filtersObj, jsonToString, SearchTypes, queryStore, initialFilters, checkEmpty} from '../stores';
 
 let searches = $filtersObj.searches;
 let currentType = SearchTypes.courseTitle;
+let searchInput = "";
 
 function consoleJosh() {
     console.log($queryStore)
@@ -15,29 +16,44 @@ function switchType(newType) {
     console.log('click')
     currentType = newType
 }
+
+function submitAndReload(value) {
+    $filters = jsonToString({
+        ...$filtersObj,
+        'searches': [
+            ...$filtersObj.searches,
+            {
+                'search': value.split(','),
+                'type': currentType
+            }
+        ]
+    })
+    navigate('/browse')
+    location.reload()
+}
+
 /**
 * navigates to the /browse route and updates the search value.
 * @function submit 
 * @param {event} event event: the event emitted by the component on click / enter
 */
 function submit(event) {
-    if (event.key === 'Enter') {
-        if (event.target.value.length > 0) {
-            $filters = jsonToString({
-                ...$filtersObj,
-                'searches': [
-                    ...$filtersObj.searches,
-                    {
-                        'search': event.target.value.split(','),
-                        'type': currentType
-                    }
-                ]
-            })
-            navigate('/browse')
-            location.reload()
+    if (searchInput.length > 0 || !checkEmpty($filtersObj)) {
+        if (searchInput.length > 0) {
+            if (event.key === 'Enter') {
+                submitAndReload(searchInput)
+            } else if (event.type === 'clicked') {
+                submitAndReload(searchInput)
+            }
+        } else {
+            if (event.key === 'Enter') {
+                navigate('/browse')
+                location.reload()
+            } else if (event.type === 'clicked') {
+                navigate('/browse')
+                location.reload()
+            }
         }
-        navigate('/browse')
-        location.reload()
     }
 }
 
@@ -54,11 +70,11 @@ function submit(event) {
                 --search-bg-color: {theme.colors.neutral[800]}
                 "
                 on:keydown={submit}
+                bind:value={searchInput}
             />
-            <a class="search-icon-ref" href="/browse">
-            <SearchIcon />
-            </a>
+            <SearchIcon on:clicked={submit} />
         </div>
+        <p> {searchInput} </p>
         <div class="type-button-container">
             <button on:click={() => $filters = jsonToString(initialFilters)}>Clear filters </button>
             {#each Object.entries(SearchTypes) as [_, type]}
