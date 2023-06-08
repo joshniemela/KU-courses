@@ -8,4 +8,5 @@
 * Filter popup with enums
 * Filter buttons on search should appear on browse as well
 
+* dont parse json if internal error
 

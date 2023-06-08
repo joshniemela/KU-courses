@@ -62,7 +62,7 @@
             :muuntaja m/instance
             :middleware [[wrap-cors
                           :access-control-allow-origin [#".*"]
-                          :access-control-allow-methods [:get :put :post :delete]
+                          :access-control-allow-methods [:get :post]
                           :access-control-allow-headers #{"accept"
                                                           "accept-encoding"
                                                           "accept-language"
@@ -75,7 +75,7 @@
                          rrc/coerce-request-middleware
                          rrc/coerce-response-middleware]}})
    (ring/routes
-    (swagger-ui/create-swagger-ui-handler {:path "/swagger"})
+    (swagger-ui/create-swagger-ui-handler {:path "/api"})
     (ring/create-default-handler))))
 
 ; read every json in data-dir
