@@ -1,7 +1,14 @@
 <script>
+    import { createEventDispatcher } from "svelte";
 import theme from "../theme";
 let fill = theme.colors.neutral[200]
 let BgColor = theme.colors.neutral[800]
+
+const dispatch = createEventDispatcher()
+
+function onClick() {
+        dispatch('clicked')
+    }
 
 function handleOnMouseOver() {
     fill = theme.colors.neutral[900]
@@ -17,6 +24,7 @@ function handleOnMouseLeave() {
 <div class="svg-container" style="--bg: {BgColor}; --text-color: {fill}"
     on:mouseover={handleOnMouseOver}
     on:mouseleave={handleOnMouseLeave}
+    on:click={onClick}
 >
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" style="--fill: {fill}">
         <path fill="none" d="M0 0h24v24H0z"></path>
