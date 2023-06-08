@@ -4,7 +4,7 @@ import { browser } from "$app/environment"
 // Currently supported search types
 export const SearchTypes = {
     courseTitle: 'course_title',
-    employeeName: 'employeeName'
+    employeeName: 'employee_name'
 }
 
 export const StudyLevelTypes = {
@@ -12,6 +12,20 @@ export const StudyLevelTypes = {
     master: 'Master'
 }
 
+export const ScheduleGroupTypes = {
+    A: 'A',
+    B: 'B',
+    C: 'C',
+    D: 'D'
+}
+
+export const BlockTypes = {
+    'one': 1,
+    'two': 2,
+    'three': 3,
+    'four': 4,
+    'five': 5
+}
 /*
 FILTER STORE.
 Responsible for keeping track of all the currently applied filters.
@@ -19,8 +33,9 @@ Responsible for keeping track of all the currently applied filters.
 export const initialFilters = {
     'searches': [
     ],
-    'study_level': [StudyLevelTypes.master],
-    'block': ['']
+    'study_level': [],
+    'block': [],
+    'schedule_group': [ScheduleGroupTypes.A],
 }
 
 // Helper functions to allow us to store our objects as strings
@@ -102,13 +117,7 @@ function equalityToPredicate(value, key) {
     return constructPredicate('=', key, value)
 }
 
-function convertToQueryStructure(state) {
-    let query = {
-        'predicates': [
-        ]
-    }
-
-    // Add searches to predicates
+function addSearches(query, state) {
     for (let i = 0; i < state.searches.length; i++) {
         let searchElem = state.searches[i]
         let andList = []
@@ -123,8 +132,10 @@ function convertToQueryStructure(state) {
             ]
         }
     }
+    return query
+}
 
-    // Add study level 
+function addStudyLevel(query, state) {
     let studyLevelList = [];
     state.study_level.map(x => studyLevelList.push(equalityToPredicate(x, 'study_level')))
     query = {
@@ -134,6 +145,61 @@ function convertToQueryStructure(state) {
             studyLevelList
         ]
     }
+    return query
+}
+
+function addBlock(query, state) {
+    let blockList = [];
+    state.block.map(x => blockList.push(equalityToPredicate(x, 'start_block')))
+    query = {
+        ...query,
+        'predicates': [
+            ...query.predicates,
+            blockList
+        ]
+    }
+    return query
+}
+
+function addScheduleGroup(query, state) {
+    let scheduleGroupList = [];
+    state.schedule_group.map(x => scheduleGroupList.push(equalityToPredicate(x, 'schedule_group')))
+    query = {
+        ...query,
+        'predicates': [
+            ...query.predicates,
+            scheduleGroupList
+        ]
+    }
+    return query
+}
+
+function convertToQueryStructure(state) {
+    let query = {
+        'predicates': [
+        ]
+    }
+
+    // Add searches to predicates
+    query = addSearches(query, state)
+
+    // Add study level 
+    if (state.study_level.length > 0) {
+        query = addStudyLevel(query, state)
+    }
+
+    // Add block 
+    if (state.block.length > 0) {
+        query = addBlock(query, state)
+    }
+
+    // Add schedule group 
+    if (state.schedule_group.length > 0) {
+        query = addScheduleGroup(query,state)
+    }
+
+    console.log(query)
+
     return query
 }
 
