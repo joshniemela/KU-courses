@@ -1,16 +1,15 @@
 # DIS Project
 
-## Starting Docker (not correct)
+## Starting the application
+* STEP 1: Install `docker` and `docker-compose`, this may need a restart of your system since Docker is a very low level program.
+* STEP 2: Run `docker-compose up` as either a user with permissions to docker, or with `sudo`/`doas`
+* STEP 3: ???
+* STEP 4: PROFIT!!!
+
 The entire application is governed through the `docker-compose.yml` file
 present in the root directory. This file specifies each service we spin up, 
 and makes these available to eachother on the internal network `dis-network`.
 To spin the containers up simply run:
-
-```
-docker-compose down && docker-compose up
-```
-
-Administrator rights might be nescessary depending on your configuration.
 
 ### PgAdmin
 We've included a container running PgAdmin to provide a GUI for interacting 
