@@ -11,6 +11,7 @@
 
 (defn nuke-db! [db]
   (jdbc/with-transaction [tx db]
+    (jdbc/execute! tx [(slurp (io/resource "extensions.sql"))])
     (jdbc/execute! tx [(slurp (io/resource "nuke.sql"))])
     (jdbc/execute! tx [(slurp (io/resource "types.sql"))])
     (jdbc/execute! tx [(slurp (io/resource "schema.sql"))])))
