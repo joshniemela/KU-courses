@@ -3,7 +3,7 @@ import theme from '../theme'
 import SearchIcon from '../assets/SearchIcon.svelte';
 import FilterButton from '../components/FilterButton/FilterButton.svelte';
 import { navigate } from 'svelte-navigator';
-import { filters, filtersObj, jsonToString, SearchTypes, queryStore, initialFilters } from '../stores';
+import { filters, filtersObj, jsonToString, SearchTypes, queryStore, initialFilters, checkEmpty} from '../stores';
 
 let searches = $filtersObj.searches;
 let currentType = SearchTypes.courseTitle;
@@ -31,17 +31,28 @@ function submitAndReload(value) {
     navigate('/browse')
     location.reload()
 }
+
 /**
 * navigates to the /browse route and updates the search value.
 * @function submit 
 * @param {event} event event: the event emitted by the component on click / enter
 */
 function submit(event) {
-    if (searchInput.length > 0) {
-        if (event.key === 'Enter') {
-            submitAndReload(searchInput)
-        } else if (event.type === 'clicked') {
-            submitAndReload(searchInput)
+    if (searchInput.length > 0 || !checkEmpty($filtersObj)) {
+        if (searchInput.length > 0) {
+            if (event.key === 'Enter') {
+                submitAndReload(searchInput)
+            } else if (event.type === 'clicked') {
+                submitAndReload(searchInput)
+            }
+        } else {
+            if (event.key === 'Enter') {
+                navigate('/browse')
+                location.reload()
+            } else if (event.type === 'clicked') {
+                navigate('/browse')
+                location.reload()
+            }
         }
     }
 }
