@@ -26,7 +26,7 @@
 
 (defn generate-predicate [predicate]
   (str (case (:key predicate)
-         "schedule_type" "schedule.schedule_type"
+         "schedule_group" "schedule.schedule_type"
          "email" "employee.email"
          "workload_type" "workload.workload_type"
          "exam_type" "exam.exam_type"
@@ -34,7 +34,6 @@
          "course_title" "course.title"
          "start_block" "course.start_block"
          "duration" "course.duration"
-         "schedule_group" "course.schedule_group"
          "study_level" "course.study_level"
          "course_language" "course.course_language"
          "employee_name" "employee.full_name"
@@ -44,10 +43,10 @@
        " " (sanitise-op (:op predicate)) " " (sanitise (:value predicate))))
 
 (defn generate-inner [predicates]
-  (str "(" (clojure.string/join " OR " (map generate-predicate (rm-empty predicates))) ")"))
+  (str "(" (str/join " OR " (map generate-predicate (rm-empty predicates))) ")"))
 
 (defn generate-outer [predicates]
-  (clojure.string/join "\nAND " (map generate-inner (rm-empty predicates))))
+  (str/join "\nAND " (map generate-inner (rm-empty predicates))))
 
 (defn generate-courses-query [predicates]
   (let [prepared-predicate (generate-outer predicates)]
