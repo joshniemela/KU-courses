@@ -27,7 +27,7 @@ services:
     networks:
       - dis-network
     volumes:
-      - pgadmin-data:/var/lib/pgadmin
+      - ./data/pg-admin:/var/lib/pgadmin
 
   frontend:
     build: ./frontend
@@ -44,15 +44,21 @@ services:
     restart: always
     ports:
       - "3000:3000"
+    volumes:
+      - ./data:/data
+
     networks:
       - dis-network
     depends_on:
-      - db
+      scraper:
+        condition: service_completed_successfully
+      db:
+        condition: service_started
 
-
-volumes:
-  local_pgdata:
-  pgadmin-data:
+  scraper:
+    build: ./backend/courses
+    volumes:
+      - ./data:/data
 
 networks:
   dis-network:

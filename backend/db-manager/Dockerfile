@@ -12,4 +12,4 @@ WORKDIR /app
 
 COPY --from=BUILD /code/target/uberjar/*-standalone.jar ./app.jar
 
-CMD ["java", "-jar", "app.jar"]
+CMD ["java", "-jar", "app.jar", "-f"]
