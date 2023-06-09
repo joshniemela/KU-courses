@@ -57,6 +57,22 @@ function convertExamToString(inputString) {
     return inputString.replace(/(\w)_(\w)/g, "$1 $2");
 }
 
+/**
+ * This function takes an exam duration and changes the unit depending on the duration, e.g. 120 minutes -> 2 hours
+*/
+function formatExamDuration(duration) {
+    if (duration % 60 == 0) {
+        if (duration % 24 == 0) {
+            return `${duration / (60 * 24)}d`
+        } else {
+            return `${duration / 60}h`
+        }
+    } else {
+        return `${duration}m`
+    }
+}
+
+
 onMount(async () => {
     const res = await fetchCourse(courseId);
     console.log(res.employees)
@@ -158,7 +174,7 @@ onMount(async () => {
                 >
                     <h3 class="side-card-heading">Exam</h3>
                     {#each course.exams as exam}
-                        <p class="side-card-name">{convertExamToString(exam.exam_type)} {#if exam.minutes} - ({exam.minutes}m){/if}</p>
+                        <p class="side-card-name">{convertExamToString(exam.exam_type)} {#if exam.minutes} - ({formatExamDuration(exam.minutes)}) {/if}</p>
                     {/each}
                 </div>
             </div>
