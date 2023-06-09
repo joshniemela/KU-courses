@@ -24,14 +24,46 @@ services:
     environment:
       PGADMIN_DEFAULT_EMAIL: admin@private.org
       PGADMIN_DEFAULT_PASSWORD: admin
+    user: "${UID}:${GID}"
     networks:
       - dis-network
     volumes:
-      - pgadmin-data:/var/lib/pgadmin
+      - ./data/pg-admin:/var/lib/pgadmin
 
-volumes:
-  local_pgdata:
-  pgadmin-data:
+  frontend:
+    build: ./frontend
+    restart: always
+    ports:
+      - "5000:5000"
+    networks:
+      - dis-network
+    depends_on:
+      - server
+
+    environment:
+      NODE_ENV: production
+
+  server:
+    build: ./backend/db-manager
+    restart: always
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./data:/data
+
+    networks:
+      - dis-network
+    depends_on:
+      scraper:
+        condition: service_completed_successfully
+      db:
+        condition: service_started
+
+  scraper:
+    build: ./backend/courses
+    restart: on-failure
+    volumes:
+      - ./data:/data
 
 networks:
   dis-network:

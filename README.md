@@ -1,16 +1,25 @@
 # DIS Project
 
-## Starting Docker (not correct)
+## Starting the application
+* STEP 1: Install `docker` and `docker-compose`, this may need a restart of your system since Docker is a very low level program.
+* STEP 2: Run `docker-compose up` as either a user with permissions to docker, or with `sudo`/`doas`
+* STEP 3: ???
+* STEP 4: PROFIT!!!  
+The build process may take a while since it is both building a Java program, as well as the Python scraper which is quite large in the number of required dependencies. When built, the scraper will be one of the first things to run and it may take up to 30 minutes to finish scraping since we want to be nice to KU's surprisingly fragile IT infrastructure.
+
 The entire application is governed through the `docker-compose.yml` file
 present in the root directory. This file specifies each service we spin up, 
 and makes these available to eachother on the internal network `dis-network`.
 To spin the containers up simply run:
+### db-manager
+Our backend is built with Clojure, a functional programmering language based on Lisp which runs on the Java Virtual Machine.  
+This part of the project is responsible for gluing our web-scraper together with the frontend and the database. Furthermore, it is responsible for constructing our SQL queries that are served via the API.
 
-```
-docker-compose down && docker-compose up
-```
+### scraper
+TODO
 
-Administrator rights might be nescessary depending on your configuration.
+### Frontend
+TODO
 
 ### PgAdmin
 We've included a container running PgAdmin to provide a GUI for interacting 
@@ -43,8 +52,6 @@ you want to import are in /queries):
 sudo docker cp queries/. <docker_container_id>:/var/lib/pgadmin/storage/admin_private.org/
 ```
 Alternatively you can run one of two bash scripts `docker_export_script.sh` that extracts the queries from the docker container or `docker_import_script.sh` that imports the queries to the container. Both need the container id to be provided as a command line argument. 
-#### Initialize database
-After starting up the container containing the database, simply running `db-manager -f` will populate the database, optionally also launching it with the flag `-s` will cause the server to automatically start scraping webpages.
 
 #### Visualizing database schema
 You can do a nifty visualization by right clicking on "postgres" under "databases"
