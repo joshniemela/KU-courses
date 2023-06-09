@@ -2,10 +2,13 @@
 
 ## Starting the application
 * STEP 1: Install `docker` and `docker-compose`, this may need a restart of your system since Docker is a very low level program.
-* STEP 2: Run `docker-compose up` as either a user with permissions to docker, or with `sudo`/`doas`
+* STEP 2: Run `docker-compose up --build` as either a user with permissions to docker, or with `sudo`/`doas`
 * STEP 3: ???
 * STEP 4: PROFIT!!!  
 The build process may take a while since it is both building a Java program, as well as the Python scraper which is quite large in the number of required dependencies. When built, the scraper will be one of the first things to run and it may take up to 30 minutes to finish scraping since we want to be nice to KU's surprisingly fragile IT infrastructure.
+
+OBS: There are two modes the containers can run in "development" and "production", default is development, where it sets up the entire environment local to your machine,
+the production mode runs it as defined on Josh' server. If for some reason you need to change mode, you have to run `docker-compose up --build` again as the mode is a build time argument.
 
 The entire application is governed through the `docker-compose.yml` file
 present in the root directory. This file specifies each service we spin up, 
