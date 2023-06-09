@@ -4,10 +4,11 @@ import { onMount } from 'svelte';
 import theme from '../../../theme';
 import Loader from '../../../components/Loader/Loader.svelte';
 import { LoremIpsum } from 'lorem-ipsum';
+import { apiUrl } from '../../../stores';
 import overview from '../../../mocking/overview.json';
 
 const courseId = $page.params.courseId;
-
+let API_URL = apiUrl();
 let loading = true;
 
 let course = {
@@ -39,7 +40,7 @@ const desc = new LoremIpsum({
     }
 });
 const fetchCourse = async (courseId) => {
-    const res = await fetch(`http://localhost:3000/api/get-course?id=${courseId}`, {
+    const res = await fetch(`${API_URL}/get-course?id=${courseId}`, {
         method: 'GET',
         headers: {
             'accept': 'application/json',
