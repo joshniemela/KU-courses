@@ -10,8 +10,24 @@ const courseId = $page.params.courseId;
 
 let loading = true;
 
-let course = {};
+let course = {
+    'employees': [],
+    'schedules': [],
+    'workloads': [],
+    'exams': [],
+    'description': []
+};
 
+let totalHours = 0;
+
+function calcTotalHours() {
+    let total = 0;
+    course.workloads.map(x => {
+        total += x.hours
+        console.log(x)
+    })
+    return total
+}
 const desc = new LoremIpsum({
     sentencesPerParagraph: {
         max: 8,
@@ -22,23 +38,30 @@ const desc = new LoremIpsum({
         min: 4
     }
 });
-
-const matchId = (obj) => {
-    console.log('matching id ' + obj.course_id)
-    return obj.course_id === courseId
+const fetchCourse = async (courseId) => {
+    const res = await fetch(`http://localhost:3000/api/get-course?id=${courseId}`, {
+        method: 'GET',
+        headers: {
+            'accept': 'application/json',
+            'Content-Type': 'application/json'
+        }
+    })
+	const json = await res.json();
+    console.log(json)
+    console.log(json.employees[0].email)
+    loading = false;
+    return json
 }
 
-const fetchCourse = async (courseId) => {
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    loading = false;
-    const index = overview.findIndex(course => course.course_id === courseId)
-    return overview[index]
+function convertExamToString(inputString) {
+    return inputString.replace(/(\w)_(\w)/g, "$1 $2");
 }
 
 onMount(async () => {
     const res = await fetchCourse(courseId);
-    console.log(res)
+    console.log(res.employees)
     course = res
+    totalHours = calcTotalHours()
 })
 
 </script>
@@ -53,15 +76,19 @@ onMount(async () => {
                         <p>Go back</p>
                     </a>
                     <div>
-                        <h1>{course.primary_title}</h1>
+                        <h1>{course.title}</h1>
                         <h2>{course.course_id} - SCIENCE </h2>
                     </div>
                 </div>
-                <h3>Description</h3>
-                <p>{desc.generateParagraphs(1)}</p>
-                <p>{desc.generateParagraphs(1)}</p>
-                <p>{desc.generateParagraphs(1)}</p>
-                <p>{desc.generateParagraphs(1)}</p>
+                {#each course.description as de}
+                {#if de.type == 'h1'}
+                    <h1>{de.string}</h1>
+                {:else if de.type == 'li'}
+                    <p> * {de.string} </p>
+                {:else}
+                    <p> {de.string} </p>
+                {/if}
+                {/each}
             </div>
             <div class="content-container-right">
                 <div class="side-card"
@@ -73,17 +100,12 @@ onMount(async () => {
                         "
                 >
                     <h3 class="side-card-heading">Coordinators</h3>
-                    <div class="side-card-name-title">
-                        <p class="side-card-name">Jon Sporring</p>
-                        <p class="side-card-title">(Professor)</p>
-                    </div>
-                    <p class="side-card-clickable">sporring@di.ku.dk</p>
-
-                    <div class="side-card-name-title">
-                        <p class="side-card-name">Josh Niemela</p>
-                        <p class="side-card-title">(baller)</p>
-                    </div>
-                    <p class="side-card-clickable">rick@roll.com</p>
+                    {#each course.employees as emp}
+                        <div class="side-card-name-title">
+                            <p class="side-card-name">{emp.full_name}</p>
+                        </div>
+                        <p class="side-card-clickable">{emp.email}</p>
+                    {/each}
                 </div>
                 <div class="side-card"
                     style="
@@ -94,10 +116,10 @@ onMount(async () => {
                         "
                 >
                     <h3 class="side-card-heading">Info</h3>
-                    <p class="side-card-name">Bachelor's course</p>
+                    <p class="side-card-name">{course.study_level} course</p>
                     <p class="side-card-name">15 ECTS</p>
-                    <a href="https://kurser.ku.dk/course/ndab15009u">
-                    <p class="side-card-clickable">https://kurser.ku.dk/course/ndab15009u</p>
+                    <a href={`https://kurser.ku.dk/course/${course.course_id}`}>
+                        <p class="side-card-clickable">https://kurser.ku.dk/course/{course.course_id}</p>
                     </a>
                 </div>
                 <div class="side-card"
@@ -109,8 +131,8 @@ onMount(async () => {
                         "
                 >
                     <h3 class="side-card-heading">Schedule</h3>
-                    <p class="side-card-name">Block: 1</p>
-                    <p class="side-card-name">Group: A</p>
+                    <p class="side-card-name">Block: {course.start_block}</p>
+                    <p class="side-card-name">Schedule group(s): {#each course.schedules as sch}{sch.schedule_type} {/each}</p>
                 </div>
                 <div class="side-card"
                     style="
@@ -121,11 +143,10 @@ onMount(async () => {
                         "
                 >
                     <h3 class="side-card-heading">Workload</h3>
-                    <p class="side-card-name">Lectures: 54h</p>
-                    <p class="side-card-name">Preparation: 106h</p>
-                    <p class="side-card-name">Project: 144h</p>
-                    <p class="side-card-name">Exercises: 108h</p>
-                    <p class="side-card-clickable">Total: 412h</p>
+                    {#each course.workloads as wl}
+                        <p class="side-card-name">{convertExamToString(wl.workload_type)}: {wl.hours}h</p>
+                    {/each}
+                    <p class="side-card-clickable">Total: {totalHours}h</p>
                 </div>
                 <div class="side-card"
                     style="
@@ -136,7 +157,9 @@ onMount(async () => {
                         "
                 >
                     <h3 class="side-card-heading">Exam</h3>
-                    <p class="side-card-name">Ongoing evaluation</p>
+                    {#each course.exams as exam}
+                        <p class="side-card-name">{convertExamToString(exam.exam_type)} {#if exam.minutes} - ({exam.minutes}m){/if}</p>
+                    {/each}
                 </div>
             </div>
         </div>
