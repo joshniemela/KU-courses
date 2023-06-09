@@ -10,7 +10,7 @@ export function apiUrl() {
         return 'http://localhost:3000/api'
         // API_URL = 'https://dbmanager:3000/api'
     } else if (PUBLIC_MODE == 'production') {
-        return 'https://disku.jniemela/api'
+        return 'https://disku.jniemela.dk/api'
     }
 }
 // export let API_URL;
