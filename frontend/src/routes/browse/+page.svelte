@@ -3,18 +3,27 @@ import theme from "../../theme";
 import SearchIcon from "../../assets/SearchIcon.svelte";
 import FilterButton from "../../components/FilterButton/FilterButton.svelte";
 import Loader from "../../components/Loader/Loader.svelte";
-import { filters, filtersObj, jsonToString, queryStore } from '../../stores';
+import { apiUrl, filters, filtersObj, jsonToString, queryStore } from '../../stores';
 import { onMount } from 'svelte';
-import overview from "../../mocking/overview.json";
+import { PUBLIC_MODE } from '$env/static/public';
 import OverviewCard from "../../components/OverviewCard/OverviewCard.svelte";
 
 let loading = true;
+let API_URL = apiUrl()
 
+console.log("In mode: " + {PUBLIC_MODE})
+console.log("Api: " + API_URL)
 let courses = [];
 
-let API_URL = import.meta.env.PROD ? 'https://disku.jniemela/api' : 'http://localhost:3000/api';
-console.log(API_URL)
-
+// let API_URL;
+// if (PUBLIC_MODE == 'local') {
+//     API_URL = 'http://localhost:3000/api'
+// } else if (PUBLIC_MODE == 'development') {
+//     API_URL = 'http://localhost:3000/api'
+//     // API_URL = 'https://dbmanager:3000/api'
+// } else if (PUBLIC_MODE == 'production') {
+//     API_URL = 'https://disku.jniemela/api'
+// }
 /**
 * Event handler for submit on search 
 */

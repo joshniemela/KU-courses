@@ -31,7 +31,10 @@ services:
       - ./data/pg-admin:/var/lib/pgadmin
 
   frontend:
-    build: ./frontend
+    build: 
+      context: ./frontend
+      args:
+        PUBLIC_MODE: "${MODE}"
     restart: always
     ports:
       - "5000:5000"
@@ -46,6 +49,7 @@ services:
   server:
     build: ./backend/db-manager
     restart: always
+    container_name: dbmanager
     ports:
       - "3000:3000"
     volumes:

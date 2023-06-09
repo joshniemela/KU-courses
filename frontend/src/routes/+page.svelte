@@ -8,7 +8,6 @@ import { filters, filtersObj, jsonToString, SearchTypes, queryStore, initialFilt
 let searches = $filtersObj.searches;
 let currentType = SearchTypes.courseTitle;
 let searchInput = "";
-
 function consoleJosh() {
     console.log($queryStore)
 }

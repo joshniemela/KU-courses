@@ -1,4 +1,6 @@
 FROM node:latest AS build 
+ARG PUBLIC_MODE
+ENV PUBLIC_MODE $PUBLIC_MODE
 
 WORKDIR /app
 

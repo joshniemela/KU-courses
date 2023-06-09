@@ -1,6 +1,27 @@
 import { writable, derived } from 'svelte/store';
-import { browser } from "$app/environment"
+import { browser } from "$app/environment";
+import { PUBLIC_MODE } from '$env/static/public';
 
+// API URL 
+export function apiUrl() {
+    if (PUBLIC_MODE == 'local') {
+        return 'http://localhost:3000/api'
+    } else if (PUBLIC_MODE == 'development') {
+        return 'http://localhost:3000/api'
+        // API_URL = 'https://dbmanager:3000/api'
+    } else if (PUBLIC_MODE == 'production') {
+        return 'https://disku.jniemela/api'
+    }
+}
+// export let API_URL;
+// if (PUBLIC_MODE == 'local') {
+//     API_URL = 'http://localhost:3000/api'
+// } else if (PUBLIC_MODE == 'development') {
+//     API_URL = 'http://localhost:3000/api'
+//     // API_URL = 'https://dbmanager:3000/api'
+// } else if (PUBLIC_MODE == 'production') {
+//     API_URL = 'https://disku.jniemela/api'
+// }
 // Currently supported search types
 export const SearchTypes = {
     courseTitle: 'course_title',
