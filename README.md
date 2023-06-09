@@ -7,8 +7,11 @@
 * STEP 4: PROFIT!!!  
 The build process may take a while since it is both building a Java program, as well as the Python scraper which is quite large in the number of required dependencies. When built, the scraper will be one of the first things to run and it may take up to 30 minutes to finish scraping since we want to be nice to KU's surprisingly fragile IT infrastructure.
 
+
 OBS: There are two modes the containers can run in "development" and "production", default is development, where it sets up the entire environment local to your machine,
 the production mode runs it as defined on Josh' server. If for some reason you need to change mode, you have to run `docker-compose up --build` again as the mode is a build time argument.
+
+To change which mode it runs in, simply change the "MODE" value in the .env file located in root.
 
 The entire application is governed through the `docker-compose.yml` file
 present in the root directory. This file specifies each service we spin up, 
