@@ -13,6 +13,7 @@ let loading = true;
 let courses = [];
 
 let API_URL = import.meta.env.PROD ? 'https://disku.jniemela/api' : 'http://localhost:3000';
+console.log(API_URL)
 
 /**
 * Event handler for submit on search 
