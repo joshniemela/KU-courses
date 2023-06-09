@@ -1,4 +1,5 @@
 <script>
+    import { onMount } from 'svelte';
 import {
     filters,
     filtersObj,
@@ -17,8 +18,7 @@ export let dialog;
 function generateOptionsObject(TypeObject, field) {
     let obj = {};
     for (const [key, val] of Object.entries(TypeObject)) {
-        console.log($filtersObj[field])
-        obj[val] = ($filtersObj[field].length > 0)
+        obj[val] = ($filtersObj[field].includes(val.toString()))
     }
     return obj
 }
@@ -40,22 +40,36 @@ function aggregateOptions(optionsObject) {
 * Applies the new filters
 */
 function applyOptions() {
-    // Apply studyLevelOptions
     $filters = jsonToString({
         ...$filtersObj,
         'study_level': aggregateOptions(studyLevelOptions),
-        'scheduleGroupOptions': aggregateOptions(scheduleGroupOptions)
+        'schedule_group': aggregateOptions(scheduleGroupOptions),
+        'block': aggregateOptions(blockOptions),
+        'exam_type': aggregateOptions(examTypeOptions),
     })
 }
 
+function convertExamToString(inputString) {
+    return inputString.replace(/(\w)_(\w)/g, "$1 $2");
+}
 
 let studyLevelOptions = generateOptionsObject(StudyLevelTypes, 'study_level')
 let scheduleGroupOptions = generateOptionsObject(ScheduleGroupTypes, 'schedule_group')
+let blockOptions = generateOptionsObject(BlockTypes, 'block')
+let examTypeOptions = generateOptionsObject(ExamTypes, 'exam_type')
+
+onMount(() => {
+})
 </script>
 
-<dialog bind:this={dialog} on:close>
+<dialog bind:this={dialog} on:close={() => {
+    studyLevelOptions = generateOptionsObject(StudyLevelTypes, 'study_level')
+    scheduleGroupOptions = generateOptionsObject(ScheduleGroupTypes, 'schedule_group')
+    blockOptions = generateOptionsObject(BlockTypes, 'block')
+    examTypeOptions = generateOptionsObject(ExamTypes, 'exam_type')
+}}>
     <div class="filter-container">
-    <button on:click={() => console.log(aggregateOptions(studyLevelOptions))}> log </button>
+    <button on:click={() => console.log($filtersObj)}> log </button>
     <button on:click={applyOptions}>Apply</button>
     <p>Course level</p>
     {#each Object.entries(StudyLevelTypes) as [key, value]}
@@ -80,8 +94,29 @@ let scheduleGroupOptions = generateOptionsObject(ScheduleGroupTypes, 'schedule_g
             <label for={key}>{value}</label>
         </div>
     {/each}
+
     <p>Block</p>
+    {#each Object.entries(BlockTypes) as [key, value]}
+        <div>
+            <input
+                type="checkbox"
+                bind:checked={blockOptions[value]}
+                id={key}
+            />
+            <label for={key}>{value}</label>
+        </div>
+    {/each}
     <p>Exam type</p>
+    {#each Object.entries(ExamTypes) as [key, value]}
+        <div>
+            <input
+                type="checkbox"
+                bind:checked={examTypeOptions[value]}
+                id={key}
+            />
+            <label for={key}>{convertExamToString(value)}</label>
+        </div>
+    {/each}
     </div>
 </dialog>
 
