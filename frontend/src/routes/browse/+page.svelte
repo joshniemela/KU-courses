@@ -12,7 +12,7 @@ let loading = true;
 
 let courses = [];
 
-let API_URL = import.meta.env.PROD ? 'https://disku.jniemela/api' : 'http://localhost:3000';
+let API_URL = import.meta.env.PROD ? 'https://disku.jniemela/api' : 'http://localhost:3000/api';
 console.log(API_URL)
 
 /**
