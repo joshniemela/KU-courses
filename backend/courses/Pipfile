@@ -4,13 +4,8 @@ verify_ssl = true
 name = "pypi"
 
 [packages]
-scikit-learn = "*"
-ipykernel = "*"
-notebook = "*"
 clean-text = "*"
-pandas = "*"
 unidecode = "*"
-matplotlib = "*"
 beautifulsoup4 = "*"
 requests = "*"
 uvicorn = {extras = ["standard"], version = "*"}
@@ -20,9 +15,9 @@ python-decouple = "*"
 nltk = "*"
 regex = "*"
 black = "*"
+lxml = "*"
 
 [dev-packages]
 
 [requires]
-python_version = "3.10"
-
+python_version = "3.11"
