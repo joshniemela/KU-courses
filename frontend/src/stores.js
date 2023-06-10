@@ -98,7 +98,6 @@ function createFilters() {
 
 
 export const filters = createFilters();
-
 /**
 * Small derived store, such that we can subscribe to changes in filters,
 * without having to unpack the string every time.
@@ -147,6 +146,26 @@ function addSearches(query, state) {
     }
     return query
 }
+
+
+function countFilters(state) {
+    let count = 0;
+    for (filter in Object.entries(state)) {
+        print(filter)
+    }
+    return count
+}
+
+export const filterCount = derived(
+    filtersObj,
+    $filtersObj => {
+        let count = 0;
+        for (let [key, val] of Object.entries($filtersObj)) {
+            count = count + val.length
+        }
+        return count
+    }
+)
 
 function addStudyLevel(query, state) {
     let studyLevelList = [];

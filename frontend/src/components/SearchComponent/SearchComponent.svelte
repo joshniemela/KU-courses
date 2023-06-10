@@ -13,6 +13,7 @@ function switchType(newType) {
     currentType = newType
 }
 
+
 /** 
 * Submits filters and goes to browse
 * @function submiteAndReload
@@ -87,7 +88,7 @@ function convertExamToString(inputString) {
                     class="type-button"
                     style="--text-color: {theme.colors.neutral[900]}; --bg-color: {theme.colors.neutral[200]};
                         --hover-color: {theme.colors.neutral[900]}; --hover-bg: {theme.colors.neutral[200]}"
-                    on:click={() => switchtype(type)}
+                    on:click={() => switchType(type)}
                 >
                     { convertExamToString(type) }
                 </button>

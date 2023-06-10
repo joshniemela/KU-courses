@@ -9,7 +9,7 @@ function convertExamToString(inputString) {
 
 </script>
     <div class="content">
-        <h1 class="title" style="--font-color: {theme.colors.brand[500]}">KU Courses (WIP)</h1>
+        <h1 class="title" style="--font-color: {theme.colors.brand[500]}">KU Courses</h1>
 
         <!-- Container responsible for the search area --> 
         <div class="search-container">
