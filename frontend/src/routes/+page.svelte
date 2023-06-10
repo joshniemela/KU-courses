@@ -1,63 +1,7 @@
 <script>
 import theme from '../theme'
-import SearchIcon from '../assets/SearchIcon.svelte';
-import FilterButton from '../components/FilterButton/FilterButton.svelte';
 import SearchComponent from '../components/SearchComponent/SearchComponent.svelte';
-import { navigate } from 'svelte-navigator';
-import { filters, filtersObj, jsonToString, SearchTypes, queryStore, initialFilters } from '../stores';
-
-let searches = $filtersObj.searches;
-let currentType = SearchTypes.courseTitle;
-let searchInput = "";
-function consoleJosh() {
-    console.log($queryStore)
-}
-function switchType(newType) {
-    console.log('click')
-    currentType = newType
-}
-
-/** 
-* Submits filters and goes to browse
-* @function submiteAndReload
-*/
-function submitAndReload(value) {
-    $filters = jsonToString({
-        ...$filtersObj,
-        'searches': [
-            ...$filtersObj.searches,
-            {
-                'search': value.split(','),
-                'type': currentType
-            }
-        ]
-    })
-    navigate('/browse')
-    location.reload()
-}
-
-/**
-* navigates to the /browse route and updates the search value.
-* @function submit 
-* @param {event} event event: the event emitted by the component on click / enter
-*/
-function submit(event) {
-    if (searchInput.length > 0) {
-            if (event.key === 'Enter') {
-                submitAndReload(searchInput)
-            } else if (event.type === 'clicked') {
-                submitAndReload(searchInput)
-            }
-    } else {
-        if (event.key === 'Enter') {
-            navigate('/browse')
-            location.reload()
-        } else if (event.type === 'clicked') {
-            navigate('/browse')
-            location.reload()
-        }
-    }
-}
+import { filtersObj } from '../stores';
 
 </script>
     <div class="content">
@@ -67,18 +11,26 @@ function submit(event) {
         <div class="search-container">
             <SearchComponent />
         </div>
-        <a href="/browse">
-        <button class="view-all-button"
-            style="
-                --bg-color: {theme.colors.neutral[900]};
-                --text-color: {theme.colors.brand[200]}
-            "
-        >View all (WIP)</button>
-        </a>
+        <p> Current search: </p>
         {#each $filtersObj.searches as searchElem}
-            <p>{searchElem.search} - {searchElem.type}</p>
+            <p>
+            {searchElem.type}: 
+            {#each searchElem.search as s}
+                {#if searchElem.search.length == 1}
+                    {s}
+                {:else if s != searchElem.search[searchElem.search.length -1]}
+                    {s} OR
+                {:else}
+                    {s}
+                {/if}
+            {/each}
+            </p>
+            {#if $filtersObj.searches.length > 1}
+                {#if searchElem != $filtersObj.searches[$filtersObj.searches.length -1]}
+                    <p> AND </p>
+                {/if}
+            {/if}
         {/each}
-        <button on:click={consoleJosh}> log </button>
 </div>
 
 <style scoped>
@@ -104,7 +56,7 @@ function submit(event) {
     align-items: center;
     height: 5vh;
     width: 30vw;
-    margin-bottom: 2vh;
+    margin-bottom: 3vh;
 }
 
 .view-all-button {

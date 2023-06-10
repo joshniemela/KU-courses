@@ -69,20 +69,28 @@ function submit(event) {
         <SearchIcon on:clicked={submit} />
     </div>
     <div class="type-button-container">
-        <button on:click={() => $filters = jsonToString(initialFilters)}>Clear filters </button>
+        <button on:click={() => $filters = jsonToString(initialFilters)}
+            class="type-button"
+            style="--text-color: {theme.colors.brand[200]}; --bg-color: {theme.colors.brand[800]}; 
+            --hover-color: {theme.colors.brand[900]}; --hover-bg: {theme.colors.brand[500]}"
+        >
+            Clear filters
+        </button>
         {#each Object.entries(SearchTypes) as [_, type]}
             {#if type == currentType}
                 <button
                     class="type-button"
-                    style="--text-color: {theme.colors.brand[200]}; --bg-color: {theme.colors.brand[800]}"
-                    on:click={() => switchType(type)}
+                    style="--text-color: {theme.colors.neutral[900]}; --bg-color: {theme.colors.neutral[200]};
+                        --hover-color: {theme.colors.neutral[900]}; --hover-bg: {theme.colors.neutral[200]}"
+                    on:click={() => switchtype(type)}
                 >
                     { type }
                 </button>
             {:else}
                 <button
                     class="type-button"
-                    style="--text-color: {theme.colors.neutral[200]}; --bg-color: {theme.colors.neutral[800]}"
+                    style="--text-color: {theme.colors.neutral[200]}; --bg-color: {theme.colors.neutral[800]};
+                        --hover-color: {theme.colors.neutral[900]}; --hover-bg: {theme.colors.neutral[200]}"
                     on:click={() => switchType(type)}
                 >
                     { type }
@@ -138,10 +146,20 @@ function submit(event) {
 .type-button {
     background: none;
     border: 0;
+    font-size: 1.2rem;
+    padding: 1%;
+    margin-left: 1vw;
+    margin-right: 1vw;
     border-color: var(--text-color);
     color: var(--text-color);
     height: 100%;
     background-color: var(--bg-color);
     transition: ease-in-out 0.1s;
 }
+
+.type-button:hover {
+    color: var(--hover-color);
+    background-color: var(--hover-bg);
+}
+
 </style>
