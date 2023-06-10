@@ -5,7 +5,6 @@ name = "pypi"
 
 [packages]
 clean-text = "*"
-pandas = "*"
 unidecode = "*"
 beautifulsoup4 = "*"
 requests = "*"
@@ -16,9 +15,9 @@ python-decouple = "*"
 nltk = "*"
 regex = "*"
 black = "*"
+lxml = "*"
 
 [dev-packages]
 
 [requires]
 python_version = "3.11"
-
