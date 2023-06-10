@@ -55,51 +55,59 @@ function submit(event) {
     }
 }
 </script>
-<div class="search-container">
-    <FilterButton />
-    <input class="search" type="search" placeholder={searches.length > 0 ? searches[searches.length-1].search.join() : 'Search'}
-        style="
-        --text-color: {theme.colors.brand[200]};
-        --search-bg-color: {theme.colors.neutral[800]}
-        "
-        on:keydown={submit}
-        bind:value={searchInput}
-    />
-    <SearchIcon on:clicked={submit} />
+<div class="root-search-container">
+    <div class="search-container">
+        <FilterButton />
+        <input class="search" type="search" placeholder={searches.length > 0 ? searches[searches.length-1].search.join() : 'Search'}
+            style="
+            --text-color: {theme.colors.brand[200]};
+            --search-bg-color: {theme.colors.neutral[800]}
+            "
+            on:keydown={submit}
+            bind:value={searchInput}
+        />
+        <SearchIcon on:clicked={submit} />
+    </div>
+    <div class="type-button-container">
+        <button on:click={() => $filters = jsonToString(initialFilters)}>Clear filters </button>
+        {#each Object.entries(SearchTypes) as [_, type]}
+            {#if type == currentType}
+                <button
+                    class="type-button"
+                    style="--text-color: {theme.colors.brand[200]}; --bg-color: {theme.colors.brand[800]}"
+                    on:click={() => switchType(type)}
+                >
+                    { type }
+                </button>
+            {:else}
+                <button
+                    class="type-button"
+                    style="--text-color: {theme.colors.neutral[200]}; --bg-color: {theme.colors.neutral[800]}"
+                    on:click={() => switchType(type)}
+                >
+                    { type }
+                </button>
+            {/if}
+        {/each}
+    </div>
 </div>
-<p> {searchInput} </p>
-<div class="type-button-container">
-    <button on:click={() => $filters = jsonToString(initialFilters)}>Clear filters </button>
-    {#each Object.entries(SearchTypes) as [_, type]}
-        {#if type == currentType}
-            <button
-                class="type-button"
-                style="--text-color: {theme.colors.brand[200]}; --bg-color: {theme.colors.brand[800]}"
-                on:click={() => switchType(type)}
-            >
-                { type }
-            </button>
-        {:else}
-            <button
-                class="type-button"
-                style="--text-color: {theme.colors.neutral[200]}; --bg-color: {theme.colors.neutral[800]}"
-                on:click={() => switchType(type)}
-            >
-                { type }
-            </button>
-        {/if}
-    {/each}
-</div>
-
 <style scoped>
+.root-search-container {
+    display: flex;
+    flex-direction: column; 
+    justify-content: center;
+    align-items: center;
+    height: 100%;
+    width: 100%;
+}
 .search-container {
     display: flex;
     flex-direction: row;
     justify-content: center;
+    margin-bottom: 1vh;
     align-items: center;
-    margin-bottom: 2vh;
-    height: 5vh;
-    width: 30vw;
+    height: 100%;
+    width: 100%;
 }
 
 
@@ -116,6 +124,15 @@ function submit(event) {
 .search:focus {
     outline: none !important;
     border:2px solid var(--text-color);
+}
+
+.type-button-container {
+    display: flex;
+    flex-direction: row;
+    height: 100%;
+    width: 100%;
+    justify-content: center;
+    align-items: center;
 }
 
 .type-button {

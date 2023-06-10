@@ -64,7 +64,9 @@ function submit(event) {
         <h1 class="title" style="--font-color: {theme.colors.brand[500]}">KU Courses (WIP)</h1>
 
         <!-- Container responsible for the search area --> 
-        <SearchComponent />
+        <div class="search-container">
+            <SearchComponent />
+        </div>
         <a href="/browse">
         <button class="view-all-button"
             style="
@@ -95,6 +97,15 @@ function submit(event) {
     justify-content: center;
 }
 
+.search-container {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    height: 5vh;
+    width: 30vw;
+    margin-bottom: 2vh;
+}
 
 .view-all-button {
     background: none;

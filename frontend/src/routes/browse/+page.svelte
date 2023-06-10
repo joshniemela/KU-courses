@@ -2,6 +2,7 @@
 import theme from "../../theme";
 import SearchIcon from "../../assets/SearchIcon.svelte";
 import FilterButton from "../../components/FilterButton/FilterButton.svelte";
+import SearchComponent from "../../components/SearchComponent/SearchComponent.svelte";
 import Loader from "../../components/Loader/Loader.svelte";
 import { apiUrl, filters, filtersObj, jsonToString, queryStore } from '../../stores';
 import { onMount } from 'svelte';
@@ -15,27 +16,10 @@ console.log("In mode: " + {PUBLIC_MODE})
 console.log("Api: " + API_URL)
 let courses = [];
 
-// let API_URL;
-// if (PUBLIC_MODE == 'local') {
-//     API_URL = 'http://localhost:3000/api'
-// } else if (PUBLIC_MODE == 'development') {
-//     API_URL = 'http://localhost:3000/api'
-//     // API_URL = 'https://dbmanager:3000/api'
-// } else if (PUBLIC_MODE == 'production') {
-//     API_URL = 'https://disku.jniemela/api'
-// }
 /**
-* Event handler for submit on search 
+* Fetches the courses from the backend
+* @function fetchCourses
 */
-function submit(event) {
-    console.log(event)
-    if (event.key === 'Enter') {
-        $filters = jsonToString({
-            'search': event.target.value 
-        })
-    }
-}
-
 const fetchCourses = async () => {
     const filters = $queryStore;
     console.log(filters);
@@ -62,16 +46,7 @@ onMount(async () => {
 </script>
 <div class="browse-container">
     <div class="control-container">
-        <FilterButton paddingLR={"2vw"} fontSize={"1.25rem"} />
-        <input class="search" type="search" placeholder={$filtersObj.searches.length > 0 ? $filtersObj.searches[0].search.join() : 'Search'}
-            style="
-            --text-color: {theme.colors.brand[200]};
-            --search-bg-color: {theme.colors.neutral[800]}
-            "
-            value={$filtersObj.searches.length > 0 ? $filtersObj.searches[$filtersObj.searches.length - 1].search.join() : ''}
-            on:keydown={submit}
-        />
-        <SearchIcon />
+        <SearchComponent />
     </div>
     {#if loading}
         <Loader />
@@ -93,11 +68,11 @@ onMount(async () => {
     align-items: center;
 }
 .control-container {
-    margin-top: 1vh;
-    height: 4vh;
-    width: 100%;
+    margin-top: 3vh;
+    height: 5vh;
+    width: 30vw;
     display: flex;
-    flex-direction: row;
+    flex-direction: column;
     align-items: center;
     justify-content: center;
 }
