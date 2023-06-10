@@ -130,7 +130,10 @@
 
 (defn get-courses [db predicates]
   (let [courses (jdbc/execute! db [(generate-courses-query predicates)])]
-    (map fix-json courses)))
+    ; sort the list of maps alphabetically according to course/title
+    (sort-by #(:course/title %) (map fix-json courses))))
+
+
 
 (defn get-course-by-id [db course-id]
   (first (get-courses db [[{:op "=" 
