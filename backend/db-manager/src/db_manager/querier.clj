@@ -57,6 +57,7 @@
 	course.start_block,
   course.course_language,
 	course.credits,
+	course.duration,
     course.description,
     jsonb_agg(DISTINCT to_jsonb(exam) - 'course_id')::TEXT AS exams,
     jsonb_agg(DISTINCT to_jsonb(employee))::TEXT AS employees,
