@@ -13,16 +13,7 @@ export function apiUrl() {
         return 'https://disku.jniemela.dk/api'
     }
 }
-// export let API_URL;
-// if (PUBLIC_MODE == 'local') {
-//     API_URL = 'http://localhost:3000/api'
-// } else if (PUBLIC_MODE == 'development') {
-//     API_URL = 'http://localhost:3000/api'
-//     // API_URL = 'https://dbmanager:3000/api'
-// } else if (PUBLIC_MODE == 'production') {
-//     API_URL = 'https://disku.jniemela/api'
-// }
-// Currently supported search types
+
 export const SearchTypes = {
     courseTitle: 'course_title',
     employeeName: 'employee_name'
@@ -70,16 +61,6 @@ export const initialFilters = {
     'block': [],
     'schedule_group': [],
     'exam_type': []
-}
-
-export function checkEmpty(state) {
-    let empty = true;
-    for (const [key, val] of Object.entries(state)) {
-        if (state[key].length > 0) {
-            empty = false
-        }
-    }
-    return empty
 }
 
 // Helper functions to allow us to store our objects as strings
