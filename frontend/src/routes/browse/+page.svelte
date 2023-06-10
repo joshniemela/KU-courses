@@ -39,6 +39,7 @@ const fetchCourses = async () => {
 }
 
 
+
 onMount(async () => {
     await fetchCourses();
 })
@@ -75,23 +76,6 @@ onMount(async () => {
     flex-direction: column;
     align-items: center;
     justify-content: center;
-}
-
-.search {
-    height: 100%;
-    width: 30vw;
-    max-width: 800px;
-    margin-left: 1vw;
-    font-size: 1.25rem;
-    padding-left: 1vw;
-    border: 0;
-    color: var(--text-color);
-    background-color: var(--search-bg-color);
-}
-
-.search:focus {
-    outline: none !important;
-    border:2px solid var(--text-color);
 }
 
 .card-container {

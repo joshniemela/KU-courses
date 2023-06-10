@@ -45,6 +45,20 @@ function navigateToCourse() {
     location.reload();
 }
 
+/**
+ * This function takes an exam duration and changes the unit depending on the duration, e.g. 120 minutes -> 2 hours
+*/
+function formatExamDuration(duration) {
+    if (duration % 60 == 0) {
+        if (duration % (60 * 24) == 0) {
+            return `${duration / (60 * 24)}d`
+        } else {
+            return `${duration / 60}h`
+        }
+    } else {
+        return `${duration}m`
+    }
+}
 
 function convertExamToString(inputString) {
     return inputString.replace(/(\w)_(\w)/g, "$1 $2");
@@ -107,7 +121,7 @@ function convertExamToString(inputString) {
                 style="--text-color: {theme.colors.neutral[900]}"
 
                 >
-                    {convertExamToString(exam.exam_type)} {#if exam.minutes} ({exam.minutes}m) {/if}
+                    {convertExamToString(exam.exam_type)} {#if exam.minutes} ({formatExamDuration(exam.minutes)}) {/if}
                     {#if exam != data.exams[data.exams.length - 1] && data.exams.length > 1} -  &nbsp {/if}
                 </p>
             {/each}

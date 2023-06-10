@@ -1,11 +1,10 @@
 <script>
 import { page } from '$app/stores';
+import { navigate } from 'svelte-navigator';
 import { onMount } from 'svelte';
 import theme from '../../../theme';
 import Loader from '../../../components/Loader/Loader.svelte';
-import { LoremIpsum } from 'lorem-ipsum';
 import { apiUrl } from '../../../stores';
-import overview from '../../../mocking/overview.json';
 
 const courseId = $page.params.courseId;
 let API_URL = apiUrl();
@@ -29,16 +28,6 @@ function calcTotalHours() {
     })
     return total
 }
-const desc = new LoremIpsum({
-    sentencesPerParagraph: {
-        max: 8,
-        min: 4
-    },
-    wordsPerSentence: {
-        max: 16,
-        min: 4
-    }
-});
 const fetchCourse = async (courseId) => {
     const res = await fetch(`${API_URL}/get-course?id=${courseId}`, {
         method: 'GET',
@@ -63,7 +52,7 @@ function convertExamToString(inputString) {
 */
 function formatExamDuration(duration) {
     if (duration % 60 == 0) {
-        if (duration % 24 == 0) {
+        if (duration % (60 * 24) == 0) {
             return `${duration / (60 * 24)}d`
         } else {
             return `${duration / 60}h`
@@ -74,6 +63,22 @@ function formatExamDuration(duration) {
 }
 
 
+function goBack() {
+    navigate("/browse");
+    location.reload();
+}
+
+// Button on hover animation
+let buttonTextColor = theme.colors.brand[200]
+let buttonBgColor = theme.colors.brand[800]
+function handleHover(e) {
+    buttonTextColor = theme.colors.brand[900]
+    buttonBgColor = theme.colors.brand[500]
+}
+function handleHoverOut(e) {
+    buttonTextColor = theme.colors.brand[200]
+    buttonBgColor = theme.colors.brand[800]
+}
 onMount(async () => {
     const res = await fetchCourse(courseId);
     console.log(res.employees)
@@ -89,9 +94,6 @@ onMount(async () => {
         <div class="content-container">
             <div class="content-container-left">
                 <div class="header-container">
-                    <a href="/browse">
-                        <p>Go back</p>
-                    </a>
                     <div>
                         <h1>{course.title}</h1>
                         <h2>{course.course_id} - SCIENCE </h2>
@@ -148,8 +150,19 @@ onMount(async () => {
                         "
                 >
                     <h3 class="side-card-heading">Schedule</h3>
-                    <p class="side-card-name">Block: {course.start_block}</p>
-                    <p class="side-card-name">Schedule group(s): {#each course.schedules as sch}{sch.schedule_type} {/each}</p>
+                    <p class="side-card-name">Block: {course.start_block}
+                        {#if Number(course.duration) > 1}
+                            - {Number(course.start_block) + Number(course.duration) - 1}
+                        {/if}
+                    </p>
+                    <p class="side-card-name">Schedule group(s): {#each course.schedules as sch}
+                            {#if sch != course.schedules[course.schedules.length-1]}
+                                {sch.schedule_type}, &nbsp
+                            {:else}
+                                {sch.schedule_type}
+                            {/if}
+                        {/each}
+                    </p>
                 </div>
                 <div class="side-card"
                     style="
@@ -179,7 +192,19 @@ onMount(async () => {
                     {/each}
                 </div>
             </div>
+
         </div>
+        <button class="back-button" style=
+            "
+            --bg-color: {buttonBgColor};
+            --text-color: {buttonTextColor};
+            "
+            on:mouseover={handleHover}
+            on:mouseout={handleHoverOut}
+            on:click={goBack}
+        >
+            Go back
+        </button>
     </div>
 {/if}
 
@@ -189,7 +214,7 @@ onMount(async () => {
     width: 100%;
     height: 100vh;
     flex-direction: column;
-    justify-content: start;
+    justify-content: center;
     align-items: center;
 }
 
@@ -247,16 +272,23 @@ onMount(async () => {
     color: var(--text-color);
 }
 
-.side-card-title {
-    font-size: 1rem;
-    color: var(--sub-title-color);
-    margin-left: 0.5vw;
-}
-
 .side-card-clickable {
     font-size: 1rem;
     color: var(--brand-color);
     margin-bottom: 1vh;
+}
+
+.back-button {
+    background: none;
+    font-size: var(--font-size);
+    border: 0;
+    border-color: var(--text-color);
+    color: var(--text-color);
+    margin-bottom: 0.5vh;
+    height: 3vh;
+    width: 15vw;
+    background-color: var(--bg-color);
+    transition: ease-in-out 0.1s;
 }
 
 </style>
