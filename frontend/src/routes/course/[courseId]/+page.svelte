@@ -97,17 +97,6 @@ onMount(async () => {
                     <div>
                         <h1>{course.title}</h1>
                         <h2>{course.course_id} - SCIENCE </h2>
-                        <button class="back-button" style=
-                            "
-                            --bg-color: {buttonBgColor};
-                            --text-color: {buttonTextColor};
-                            "
-                            on:mouseover={handleHover}
-                            on:mouseout={handleHoverOut}
-                            on:click={goBack}
-                        >
-                            Go back
-                        </button>
                     </div>
                 </div>
                 {#each course.description as de}
@@ -203,7 +192,19 @@ onMount(async () => {
                     {/each}
                 </div>
             </div>
+
         </div>
+        <button class="back-button" style=
+            "
+            --bg-color: {buttonBgColor};
+            --text-color: {buttonTextColor};
+            "
+            on:mouseover={handleHover}
+            on:mouseout={handleHoverOut}
+            on:click={goBack}
+        >
+            Go back
+        </button>
     </div>
 {/if}
 
@@ -213,7 +214,7 @@ onMount(async () => {
     width: 100%;
     height: 100vh;
     flex-direction: column;
-    justify-content: start;
+    justify-content: center;
     align-items: center;
 }
 
@@ -271,12 +272,6 @@ onMount(async () => {
     color: var(--text-color);
 }
 
-.side-card-title {
-    font-size: 1rem;
-    color: var(--sub-title-color);
-    margin-left: 0.5vw;
-}
-
 .side-card-clickable {
     font-size: 1rem;
     color: var(--brand-color);
@@ -289,8 +284,9 @@ onMount(async () => {
     border: 0;
     border-color: var(--text-color);
     color: var(--text-color);
-    height: 100%;
-    width: 60%;
+    margin-bottom: 0.5vh;
+    height: 3vh;
+    width: 15vw;
     background-color: var(--bg-color);
     transition: ease-in-out 0.1s;
 }
