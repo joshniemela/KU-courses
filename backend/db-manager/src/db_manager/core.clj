@@ -17,7 +17,9 @@
             [next.jdbc :as jdbc]
             [next.jdbc.types :refer [as-other]]
             [honey.sql :as sql]
-            [ring.middleware.cors :refer [wrap-cors]])
+            [ring.middleware.cors :refer [wrap-cors]]
+            [io.staticweb.rate-limit.storage :as storage]
+            [io.staticweb.rate-limit.middleware :refer [wrap-rate-limit ip-rate-limit]])
   (:gen-class))
 
 (def db-config
@@ -27,6 +29,14 @@
    :user "admin"
    :password "admin"
    :stringtype "unspecified"})
+
+
+(def storage (storage/local-storage))
+
+; limit to 500 requests per hour
+(def limit (ip-rate-limit :limit-id 500 (java.time.Duration/ofHours 1)))
+
+(def rate-limit-config {:storage storage :limit limit})
 
 (def data-dir "../../data/")
 
@@ -60,7 +70,7 @@
       (api-routes db)]]
     {:data {:coercion reitit.coercion.spec/coercion
             :muuntaja m/instance
-            :middleware [[wrap-cors
+            :middleware [[wrap-cors 
                           :access-control-allow-origin [#".*"]
                           :access-control-allow-methods [:get :post]
                           :access-control-allow-headers #{"accept"
@@ -68,7 +78,8 @@
                                                           "accept-language"
                                                           "authorization"
                                                           "content-type"
-                                                          "origin"}]
+                                                          "origin"}] 
+                         #(wrap-rate-limit % rate-limit-config)
                          parameters/parameters-middleware
                          muuntaja/format-middleware
                          rrc/coerce-exceptions-middleware
