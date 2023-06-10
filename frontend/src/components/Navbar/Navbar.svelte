@@ -3,7 +3,7 @@
     import Github from "../../assets/Github.svelte";
     import Logo from "../../assets/Logo.svelte";
 </script>
-<div class="navbar-container" style="--bg: {theme.colors.neutral[300]}">
+<div class="navbar-container" style="--bg: {theme.colors.neutral[200]}">
     <a href="/">
         <div class="title-container">
             <Logo />
