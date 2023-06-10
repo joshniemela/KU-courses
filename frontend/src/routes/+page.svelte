@@ -3,6 +3,10 @@ import theme from '../theme'
 import SearchComponent from '../components/SearchComponent/SearchComponent.svelte';
 import { filtersObj } from '../stores';
 
+function convertExamToString(inputString) {
+    return inputString.replace(/(\w)_(\w)/g, "$1 $2");
+}
+
 </script>
     <div class="content">
         <h1 class="title" style="--font-color: {theme.colors.brand[500]}">KU Courses (WIP)</h1>
@@ -11,10 +15,12 @@ import { filtersObj } from '../stores';
         <div class="search-container">
             <SearchComponent />
         </div>
-        <p> Current search: </p>
+        {#if $filtersObj.searches.length > 0}
+            <p> Current search: </p>
+        {/if}
         {#each $filtersObj.searches as searchElem}
             <p>
-            {searchElem.type}: 
+            {convertExamToString(searchElem.type)} contains: 
             {#each searchElem.search as s}
                 {#if searchElem.search.length == 1}
                     {s}

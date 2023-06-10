@@ -54,6 +54,11 @@ function submit(event) {
         }
     }
 }
+
+function convertExamToString(inputString) {
+    return inputString.replace(/(\w)_(\w)/g, "$1 $2");
+}
+
 </script>
 <div class="root-search-container">
     <div class="search-container">
@@ -84,7 +89,7 @@ function submit(event) {
                         --hover-color: {theme.colors.neutral[900]}; --hover-bg: {theme.colors.neutral[200]}"
                     on:click={() => switchtype(type)}
                 >
-                    { type }
+                    { convertExamToString(type) }
                 </button>
             {:else}
                 <button
@@ -93,7 +98,7 @@ function submit(event) {
                         --hover-color: {theme.colors.neutral[900]}; --hover-bg: {theme.colors.neutral[200]}"
                     on:click={() => switchType(type)}
                 >
-                    { type }
+                    { convertExamToString(type) }
                 </button>
             {/if}
         {/each}
