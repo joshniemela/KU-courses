@@ -34,7 +34,11 @@ let summary = extractSummary(390);
 * @function calcFontSize
 */
 function calcFontSize(string) {
-    return (1 + 12/string.length)*16 + "px"
+    if (string.length < 6) {
+            return "50px";
+    } else {
+        return (1 + 12/string.length)*16 + "px"
+    }
 }
 /**
 * Function to navigate to the course corresponding with the course_id
@@ -176,7 +180,7 @@ function convertExamToString(inputString) {
     height: 100%;
     display: flex;
     flex-direction: column;
-    justify-content: space-between;
+    justify-content: start;
     align-items: start;
 }
 
@@ -239,7 +243,6 @@ function convertExamToString(inputString) {
 
 .title-container {
     height: 100%;
-    width: 100%;
     display: flex;
     justify-content: center;
     align-items: center;
