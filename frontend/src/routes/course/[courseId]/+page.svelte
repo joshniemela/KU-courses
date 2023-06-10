@@ -4,9 +4,7 @@ import { navigate } from 'svelte-navigator';
 import { onMount } from 'svelte';
 import theme from '../../../theme';
 import Loader from '../../../components/Loader/Loader.svelte';
-import { LoremIpsum } from 'lorem-ipsum';
 import { apiUrl } from '../../../stores';
-import overview from '../../../mocking/overview.json';
 
 const courseId = $page.params.courseId;
 let API_URL = apiUrl();
@@ -30,16 +28,6 @@ function calcTotalHours() {
     })
     return total
 }
-const desc = new LoremIpsum({
-    sentencesPerParagraph: {
-        max: 8,
-        min: 4
-    },
-    wordsPerSentence: {
-        max: 16,
-        min: 4
-    }
-});
 const fetchCourse = async (courseId) => {
     const res = await fetch(`${API_URL}/get-course?id=${courseId}`, {
         method: 'GET',
@@ -64,7 +52,7 @@ function convertExamToString(inputString) {
 */
 function formatExamDuration(duration) {
     if (duration % 60 == 0) {
-        if (duration % 24 == 0) {
+        if (duration % (60 * 24) == 0) {
             return `${duration / (60 * 24)}d`
         } else {
             return `${duration / 60}h`
