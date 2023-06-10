@@ -81,7 +81,14 @@ function convertExamToString(inputString) {
                 </tr>
                 <tr>
                     <td class="card-td-left-bot">Block {data.start_block}</td>
-                    <td> Group: SCHEDULES</td>
+                    <td> Group: {#each data.schedules as sch}
+                            {#if sch != data.schedules[data.schedules.length-1]}
+                                {sch.schedule_type}, &nbsp
+                            {:else}
+                                {sch.schedule_type}
+                            {/if}
+                        {/each}
+                    </td>
                 </tr>
             </table>
         </div>
