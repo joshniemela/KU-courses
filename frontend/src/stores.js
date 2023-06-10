@@ -113,23 +113,6 @@ export const filtersObj = derived(
  * language
  * @function joshMagic
 */
-
-// const initialFilters = {
-//     'searches': [
-//         {
-//             'search': ['LinAlg', 'Problem'],
-//             'type': 'title',
-//         },
-//         {
-//             'search': ['Jakob', 'Henrik'],
-//             'type': 'employee'
-//         }
-//     ],
-//     'study_level': [''],
-//     'block': ['']
-// }
-//
-//
 function constructPredicate(op, key, value) {
     return {'op': op, 'key': key, 'value': value}
 }

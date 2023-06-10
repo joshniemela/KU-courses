@@ -1,5 +1,6 @@
 <script>
 import { page } from '$app/stores';
+import { navigate } from 'svelte-navigator';
 import { onMount } from 'svelte';
 import theme from '../../../theme';
 import Loader from '../../../components/Loader/Loader.svelte';
@@ -74,6 +75,22 @@ function formatExamDuration(duration) {
 }
 
 
+function goBack() {
+    navigate("/browse");
+    location.reload();
+}
+
+// Button on hover animation
+let buttonTextColor = theme.colors.brand[200]
+let buttonBgColor = theme.colors.brand[800]
+function handleHover(e) {
+    buttonTextColor = theme.colors.brand[900]
+    buttonBgColor = theme.colors.brand[500]
+}
+function handleHoverOut(e) {
+    buttonTextColor = theme.colors.brand[200]
+    buttonBgColor = theme.colors.brand[800]
+}
 onMount(async () => {
     const res = await fetchCourse(courseId);
     console.log(res.employees)
@@ -89,12 +106,20 @@ onMount(async () => {
         <div class="content-container">
             <div class="content-container-left">
                 <div class="header-container">
-                    <a href="/browse">
-                        <p>Go back</p>
-                    </a>
                     <div>
                         <h1>{course.title}</h1>
                         <h2>{course.course_id} - SCIENCE </h2>
+                        <button class="back-button" style=
+                            "
+                            --bg-color: {buttonBgColor};
+                            --text-color: {buttonTextColor};
+                            "
+                            on:mouseover={handleHover}
+                            on:mouseout={handleHoverOut}
+                            on:click={goBack}
+                        >
+                            Go back
+                        </button>
                     </div>
                 </div>
                 {#each course.description as de}
@@ -148,8 +173,19 @@ onMount(async () => {
                         "
                 >
                     <h3 class="side-card-heading">Schedule</h3>
-                    <p class="side-card-name">Block: {course.start_block}</p>
-                    <p class="side-card-name">Schedule group(s): {#each course.schedules as sch}{sch.schedule_type} {/each}</p>
+                    <p class="side-card-name">Block: {course.start_block}
+                        {#if Number(course.duration) > 1}
+                            - {Number(course.start_block) + Number(course.duration) - 1}
+                        {/if}
+                    </p>
+                    <p class="side-card-name">Schedule group(s): {#each course.schedules as sch}
+                            {#if sch != course.schedules[course.schedules.length-1]}
+                                {sch.schedule_type}, &nbsp
+                            {:else}
+                                {sch.schedule_type}
+                            {/if}
+                        {/each}
+                    </p>
                 </div>
                 <div class="side-card"
                     style="
@@ -257,6 +293,18 @@ onMount(async () => {
     font-size: 1rem;
     color: var(--brand-color);
     margin-bottom: 1vh;
+}
+
+.back-button {
+    background: none;
+    font-size: var(--font-size);
+    border: 0;
+    border-color: var(--text-color);
+    color: var(--text-color);
+    height: 100%;
+    width: 60%;
+    background-color: var(--bg-color);
+    transition: ease-in-out 0.1s;
 }
 
 </style>
