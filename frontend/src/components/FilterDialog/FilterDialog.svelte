@@ -47,6 +47,7 @@ function applyOptions() {
         'block': aggregateOptions(blockOptions),
         'exam_type': aggregateOptions(examTypeOptions),
     })
+    dialog.close();
 }
 
 function convertExamToString(inputString) {
@@ -124,5 +125,7 @@ onMount(() => {
 .filter-container {
     display: flex;
     flex-direction: column;
+    height: 100%;
+    width: 100%;
 }
 </style>
