@@ -80,7 +80,11 @@ function convertExamToString(inputString) {
                     <td class="card-td-right-top">{data.credits} ECTS</td>
                 </tr>
                 <tr>
-                    <td class="card-td-left-bot">Block {data.start_block}</td>
+                    <td class="card-td-left-bot">Block {Number(data.start_block)}
+                        {#if Number(data.duration) > 1}
+                            - {Number(data.start_block) + Number(data.duration) - 1}
+                        {/if}
+                    </td>
                     <td> Group: {#each data.schedules as sch}
                             {#if sch != data.schedules[data.schedules.length-1]}
                                 {sch.schedule_type}, &nbsp
