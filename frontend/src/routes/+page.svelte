@@ -2,6 +2,7 @@
 import theme from '../theme'
 import SearchIcon from '../assets/SearchIcon.svelte';
 import FilterButton from '../components/FilterButton/FilterButton.svelte';
+import SearchComponent from '../components/SearchComponent/SearchComponent.svelte';
 import { navigate } from 'svelte-navigator';
 import { filters, filtersObj, jsonToString, SearchTypes, queryStore, initialFilters } from '../stores';
 
@@ -16,6 +17,10 @@ function switchType(newType) {
     currentType = newType
 }
 
+/** 
+* Submits filters and goes to browse
+* @function submiteAndReload
+*/
 function submitAndReload(value) {
     $filters = jsonToString({
         ...$filtersObj,
@@ -59,41 +64,7 @@ function submit(event) {
         <h1 class="title" style="--font-color: {theme.colors.brand[500]}">KU Courses (WIP)</h1>
 
         <!-- Container responsible for the search area --> 
-        <div class="search-container">
-            <FilterButton />
-            <input class="search" type="search" placeholder={searches.length > 0 ? searches[searches.length-1].search.join() : 'Search'}
-                style="
-                --text-color: {theme.colors.brand[200]};
-                --search-bg-color: {theme.colors.neutral[800]}
-                "
-                on:keydown={submit}
-                bind:value={searchInput}
-            />
-            <SearchIcon on:clicked={submit} />
-        </div>
-        <p> {searchInput} </p>
-        <div class="type-button-container">
-            <button on:click={() => $filters = jsonToString(initialFilters)}>Clear filters </button>
-            {#each Object.entries(SearchTypes) as [_, type]}
-                {#if type == currentType}
-                    <button
-                        class="type-button"
-                        style="--text-color: {theme.colors.brand[200]}; --bg-color: {theme.colors.brand[800]}"
-                        on:click={() => switchType(type)}
-                    >
-                        { type }
-                    </button>
-                {:else}
-                    <button
-                        class="type-button"
-                        style="--text-color: {theme.colors.neutral[200]}; --bg-color: {theme.colors.neutral[800]}"
-                        on:click={() => switchType(type)}
-                    >
-                        { type }
-                    </button>
-                {/if}
-            {/each}
-        </div>
+        <SearchComponent />
         <a href="/browse">
         <button class="view-all-button"
             style="
@@ -124,31 +95,6 @@ function submit(event) {
     justify-content: center;
 }
 
-.search-container {
-    display: flex;
-    flex-direction: row;
-    justify-content: center;
-    align-items: center;
-    margin-bottom: 2vh;
-    height: 5vh;
-    width: 30vw;
-}
-
-
-.search {
-    font-size: 1.5rem;
-    border: 0;
-    width: 100%;
-    height: 100%;
-    padding-left: 1vw;
-    color: var(--text-color);
-    background-color: var(--search-bg-color);
-}
-
-.search:focus {
-    outline: none !important;
-    border:2px solid var(--text-color);
-}
 
 .view-all-button {
     background: none;
@@ -160,18 +106,5 @@ function submit(event) {
     transition: ease-in-out 0.1s;
 }
 
-.search-icon-ref {
-    height: 5vh;
-}
-
-.type-button {
-    background: none;
-    border: 0;
-    border-color: var(--text-color);
-    color: var(--text-color);
-    height: 100%;
-    background-color: var(--bg-color);
-    transition: ease-in-out 0.1s;
-}
 
 </style>
