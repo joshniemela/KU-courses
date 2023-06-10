@@ -1,5 +1,6 @@
 (ns db-manager.routes
-  (:require [clojure.data.json :as json]
+  (:require [clojure.data.json :as json] 
+            [clojure.spec.alpha :as s]
             [db-manager.db :refer [find-email-by-name
                                    get-course-ids
                                    get-course-by-id
@@ -52,8 +53,11 @@
                                                 {:count (count courses)
                                                  :keys (keys (first courses))
                                                  :courses courses})})}}]
+   
    ["/get-course" {:get {:parameters {:query {:id string?}}
                          :responses {200 {:body map?}}
+                         :summary "Get a course by its id"
+                         :description "Returns a course with the given id"
                          :handler (fn [{{{:keys [id]} :query} :parameters}]
                                     {:status 200
                                      :body (get-course-by-id db id)})}}]])
