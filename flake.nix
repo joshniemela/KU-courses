@@ -42,6 +42,10 @@
               #yarn
 
               #nodePackages.prettier
+
+              # browsers for testing purposes
+              firefox
+              chromium
             ];
 
             LD_LIBRARY_PATH = lib.makeLibraryPath [ stdenv.cc.cc 
