@@ -28,22 +28,15 @@
         devShells.default = with pkgs;
           mkShell {
             nativeBuildInputs = [
-              #autoreconfHook
-              #backblaze-b2
-              #cargo
-              #curl
-              #docker
-              #docker-compose
-              #git
-              #nodejs
+              # development tools
+              docker
+              docker-compose
+              git
+              nodejs
+              leiningen
               pipenv
-              #python310
-              #rustc
-              #yarn
 
-              #nodePackages.prettier
-
-              # browsers for testing purposes
+              # browsers for testing
               firefox
               chromium
             ];
