@@ -10,10 +10,10 @@
             <h1 style="--font-color: {theme.colors.brand[900]}"> DISKU </h1>
         </div>
     </a>
-    <a href="https://www.youtube.com/watch?v=j5a0jTc9S10" style="--color: {theme.colors.brand[900]}">
+    <a href="https://github.com/joshniemela/KU-courses" style="--color: {theme.colors.brand[900]}">
     <div class="git-container">
         <Github />
-        <p class="social-text" >/disproject </p>
+        <p class="social-text" >/KU-courses </p>
     </div>
     </a>
 </div>
