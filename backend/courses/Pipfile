@@ -8,8 +8,6 @@ clean-text = "*"
 unidecode = "*"
 beautifulsoup4 = "*"
 requests = "*"
-uvicorn = {extras = ["standard"], version = "*"}
-starlette = "*"
 pydantic = "*"
 python-decouple = "*"
 nltk = "*"

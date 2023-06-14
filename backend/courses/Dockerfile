@@ -1,8 +1,8 @@
-FROM python:3.11
+FROM python:3.11-slim
 
 COPY . ./app
 
-RUN pip install -r /app/requirements.txt
+RUN pip install --no-cache-dir --compile -r /app/requirements.txt
 
 WORKDIR /app
 
