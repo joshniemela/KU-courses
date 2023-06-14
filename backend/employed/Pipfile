@@ -4,20 +4,11 @@ verify_ssl = true
 name = "pypi"
 
 [packages]
-scikit-learn = "*"
-ipykernel = "*"
-notebook = "*"
 clean-text = "*"
-pandas = "*"
 unidecode = "*"
-matplotlib = "*"
 beautifulsoup4 = "*"
 requests = "*"
-scrapy = "*"
 numpy = "*"
-fastapi = "*"
-uvicorn = {extras = ["standard"], version = "*"}
-starlette = "*"
 pydantic = "*"
 python-decouple = "*"
 
