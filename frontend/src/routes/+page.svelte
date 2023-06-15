@@ -60,7 +60,6 @@ function convertExamToString(inputString) {
     flex-direction: column;
     justify-content: center;
     align-items: center;
-    height: 5vh;
     width: 30vw;
     margin-bottom: 3vh;
 }
