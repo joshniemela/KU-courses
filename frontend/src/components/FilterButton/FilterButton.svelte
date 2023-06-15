@@ -1,4 +1,4 @@
-<script>
+<script lang="ts">
 import theme from '../../theme';
 import FilterDialog from '../FilterDialog/FilterDialog.svelte';
 import { filterCount } from '../../stores';
@@ -6,16 +6,16 @@ import { filterCount } from '../../stores';
 // Props
 export let paddingLR = "1vw";
 export let fontSize = "1.25rem";
-let dialog;
+let dialog: HTMLDialogElement;
 
 // Button on hover animation
 let buttonTextColor = theme.colors.brand[200]
 let buttonBgColor = theme.colors.brand[800]
-function handleHover(e) {
+function handleHover(e: MouseEvent) {
     buttonTextColor = theme.colors.brand[900]
     buttonBgColor = theme.colors.brand[500]
 }
-function handleHoverOut(e) {
+function handleHoverOut(e: MouseEvent) {
     buttonTextColor = theme.colors.brand[200]
     buttonBgColor = theme.colors.brand[800]
 }
