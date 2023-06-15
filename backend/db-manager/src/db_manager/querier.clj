@@ -38,7 +38,7 @@
          "course_language" "course.course_language"
          "employee_name" "employee.full_name"
          "credits" "course.credits"
-         "raw_desc" "course.raw_description")
+         "description" "course.raw_description")
        ; "employee_title" is a value in the future
        " " (sanitise-op (:op predicate)) " " (sanitise (:value predicate))))
 

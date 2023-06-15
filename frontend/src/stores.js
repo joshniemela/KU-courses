@@ -16,7 +16,8 @@ export function apiUrl() {
 
 export const SearchTypes = {
     courseTitle: 'course_title',
-    employeeName: 'employee_name'
+    employeeName: 'employee_name',
+    description: 'description'
 }
 
 export const StudyLevelTypes = {
@@ -128,6 +129,10 @@ function equalityToPredicate(value, key) {
     return constructPredicate('=', key, value)
 }
 
+function regexToPredicate(value, key) {
+    return constructPredicate('~', key, value)
+}
+
 function addSearches(query, state) {
     for (let i = 0; i < state.searches.length; i++) {
         let searchElem = state.searches[i]
@@ -135,6 +140,7 @@ function addSearches(query, state) {
         searchElem.search.map(x => {
             andList.push(searchToPredicate(x, searchElem.type))
             andList.push(searchWordToPredicate(x, searchElem.type))
+            andList.push(regexToPredicate(x, searchElem.type))
         })
         query = {
             ...query,
