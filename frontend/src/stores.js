@@ -1,68 +1,67 @@
-import { writable, derived } from 'svelte/store';
+import { writable, derived } from "svelte/store";
 import { browser } from "$app/environment";
-import { PUBLIC_MODE } from '$env/static/public';
+import { PUBLIC_MODE } from "$env/static/public";
 
-// API URL 
+// API URL
 export function apiUrl() {
-    if (PUBLIC_MODE == 'local') {
-        return 'http://localhost:3000/api'
-    } else if (PUBLIC_MODE == 'development') {
-        return 'http://localhost:3000/api'
-        // API_URL = 'https://dbmanager:3000/api'
-    } else if (PUBLIC_MODE == 'production') {
-        return 'https://disku.jniemela.dk/api'
-    }
+  if (PUBLIC_MODE == "local") {
+    return "http://localhost:3000/api";
+  } else if (PUBLIC_MODE == "development") {
+    return "http://localhost:3000/api";
+    // API_URL = 'https://dbmanager:3000/api'
+  } else if (PUBLIC_MODE == "production") {
+    return "https://disku.jniemela.dk/api";
+  }
 }
 
 export const SearchTypes = {
-    courseTitle: 'course_title',
-    employeeName: 'employee_name',
-    description: 'description'
-}
+  courseTitle: "course_title",
+  employeeName: "employee_name",
+  description: "description",
+};
 
 export const StudyLevelTypes = {
-    bachelor: 'Bachelor',
-    master: 'Master'
-}
+  bachelor: "Bachelor",
+  master: "Master",
+};
 
 export const ScheduleGroupTypes = {
-    A: 'A',
-    B: 'B',
-    C: 'C',
-    D: 'D'
-}
+  A: "A",
+  B: "B",
+  C: "C",
+  D: "D",
+};
 
 export const BlockTypes = {
-    'one': 1,
-    'two': 2,
-    'three': 3,
-    'four': 4,
-    'five': 5
-}
+  one: 1,
+  two: 2,
+  three: 3,
+  four: 4,
+  five: 5,
+};
 
 export const ExamTypes = {
-    oralExamination: 'oral_examination',
-	writtenExamination: 'written_examination',
-	writtenAssignment: 'written_assignment',
-	continousAssesment: 'continuous_assessment',
-	practicalWrittenExamination: 'practical_written_examination',
-	practicalOralExamination: 'practical_oral_examination',
-	oralDefence: 'oral_defence',
-	portfolio: 'portfolio',
-	other: 'other'
-}
+  oralExamination: "oral_examination",
+  writtenExamination: "written_examination",
+  writtenAssignment: "written_assignment",
+  continousAssesment: "continuous_assessment",
+  practicalWrittenExamination: "practical_written_examination",
+  practicalOralExamination: "practical_oral_examination",
+  oralDefence: "oral_defence",
+  portfolio: "portfolio",
+  other: "other",
+};
 /*
 FILTER STORE.
 Responsible for keeping track of all the currently applied filters.
 */
 export const initialFilters = {
-    'searches': [
-    ],
-    'study_level': [],
-    'block': [],
-    'schedule_group': [],
-    'exam_type': []
-}
+  searches: [],
+  study_level: [],
+  block: [],
+  schedule_group: [],
+  exam_type: [],
+};
 
 // Helper functions to allow us to store our objects as strings
 export const jsonToString = (val) => JSON.stringify(val, null, 2);
@@ -84,185 +83,166 @@ const toObj = JSON.parse;
 * !TODO: Fix the above haha
 */
 function createFilters() {
-    // Helper functions to allow us to store our objects as strings
-    const toString = (val) => JSON.stringify(val, null, 2);
-    const toObj = JSON.parse;
+  // Helper functions to allow us to store our objects as strings
+  const toString = (val) => JSON.stringify(val, null, 2);
+  const toObj = JSON.parse;
 
-    const filterStore = writable(browser && localStorage.getItem("diskuFilter") || jsonToString(initialFilters));
-    
-    filterStore.subscribe((val) => {
-        if (browser) return (localStorage.diskuFilter = val);
-    });
+  const filterStore = writable(
+    (browser && localStorage.getItem("diskuFilter")) ||
+      jsonToString(initialFilters)
+  );
 
-    return filterStore
+  filterStore.subscribe((val) => {
+    if (browser) return (localStorage.diskuFilter = val);
+  });
+
+  return filterStore;
 }
-
 
 export const filters = createFilters();
 /**
-* Small derived store, such that we can subscribe to changes in filters,
-* without having to unpack the string every time.
-*/
-export const filtersObj = derived(
-    filters,
-    $filters => toObj($filters)
-);
+ * Small derived store, such that we can subscribe to changes in filters,
+ * without having to unpack the string every time.
+ */
+export const filtersObj = derived(filters, ($filters) => toObj($filters));
 
 /**
  * Derived store responsible converting our state to Josh' magical querying
  * language
  * @function joshMagic
-*/
+ */
 function constructPredicate(op, key, value) {
-    return {'op': op, 'key': key, 'value': value}
+  return { op: op, key: key, value: value };
 }
 
 function searchToPredicate(searchItem, key) {
-    return constructPredicate('%', key, searchItem)
+  return constructPredicate("%", key, searchItem);
 }
 
 function searchWordToPredicate(searchItem, key) {
-    return constructPredicate('%>', key, searchItem)
+  return constructPredicate("%>", key, searchItem);
 }
 
 function equalityToPredicate(value, key) {
-    return constructPredicate('=', key, value)
+  return constructPredicate("=", key, value);
 }
 
 function regexToPredicate(value, key) {
-    return constructPredicate('~', key, value)
+  return constructPredicate("~", key, value);
 }
 
 function addSearches(query, state) {
-    for (let i = 0; i < state.searches.length; i++) {
-        let searchElem = state.searches[i]
-        let andList = []
-        searchElem.search.map(x => {
-            andList.push(searchToPredicate(x, searchElem.type))
-            andList.push(searchWordToPredicate(x, searchElem.type))
-            andList.push(regexToPredicate(x, searchElem.type))
-        })
-        query = {
-            ...query,
-            'predicates': [
-                ...query.predicates,
-                andList
-            ]
-        }
-    }
-    return query
+  for (let i = 0; i < state.searches.length; i++) {
+    let searchElem = state.searches[i];
+    let andList = [];
+    searchElem.search.map((x) => {
+      andList.push(searchToPredicate(x, searchElem.type));
+      andList.push(searchWordToPredicate(x, searchElem.type));
+      andList.push(regexToPredicate(x, searchElem.type));
+    });
+    query = {
+      ...query,
+      predicates: [...query.predicates, andList],
+    };
+  }
+  return query;
 }
-
 
 function countFilters(state) {
-    let count = 0;
-    for (filter in Object.entries(state)) {
-        print(filter)
-    }
-    return count
+  let count = 0;
+  for (filter in Object.entries(state)) {
+    print(filter);
+  }
+  return count;
 }
 
-export const filterCount = derived(
-    filtersObj,
-    $filtersObj => {
-        let count = 0;
-        for (let [key, val] of Object.entries($filtersObj)) {
-            count = count + val.length
-        }
-        return count
-    }
-)
+export const filterCount = derived(filtersObj, ($filtersObj) => {
+  let count = 0;
+  for (let [key, val] of Object.entries($filtersObj)) {
+    count = count + val.length;
+  }
+  return count;
+});
 
 function addStudyLevel(query, state) {
-    let studyLevelList = [];
-    state.study_level.map(x => studyLevelList.push(equalityToPredicate(x, 'study_level')))
-    query = {
-        ...query,
-        'predicates': [
-            ...query.predicates,
-            studyLevelList
-        ]
-    }
-    return query
+  let studyLevelList = [];
+  state.study_level.map((x) =>
+    studyLevelList.push(equalityToPredicate(x, "study_level"))
+  );
+  query = {
+    ...query,
+    predicates: [...query.predicates, studyLevelList],
+  };
+  return query;
 }
 
 function addBlock(query, state) {
-    let blockList = [];
-    state.block.map(x => blockList.push(equalityToPredicate(x, 'start_block')))
-    query = {
-        ...query,
-        'predicates': [
-            ...query.predicates,
-            blockList
-        ]
-    }
-    return query
+  let blockList = [];
+  state.block.map((x) => blockList.push(equalityToPredicate(x, "start_block")));
+  query = {
+    ...query,
+    predicates: [...query.predicates, blockList],
+  };
+  return query;
 }
 
 function addScheduleGroup(query, state) {
-    let scheduleGroupList = [];
-    state.schedule_group.map(x => scheduleGroupList.push(equalityToPredicate(x, 'schedule_group')))
-    query = {
-        ...query,
-        'predicates': [
-            ...query.predicates,
-            scheduleGroupList
-        ]
-    }
-    return query
+  let scheduleGroupList = [];
+  state.schedule_group.map((x) =>
+    scheduleGroupList.push(equalityToPredicate(x, "schedule_group"))
+  );
+  query = {
+    ...query,
+    predicates: [...query.predicates, scheduleGroupList],
+  };
+  return query;
 }
 
 function addExamType(query, state) {
-    let examTypeList = [];
-    state.exam_type.map(x => examTypeList.push(equalityToPredicate(x, 'exam_type')))
-    query = {
-        ...query,
-        'predicates': [
-            ...query.predicates,
-            examTypeList
-        ]
-    }
-    return query
+  let examTypeList = [];
+  state.exam_type.map((x) =>
+    examTypeList.push(equalityToPredicate(x, "exam_type"))
+  );
+  query = {
+    ...query,
+    predicates: [...query.predicates, examTypeList],
+  };
+  return query;
 }
 function convertToQueryStructure(state) {
-    let query = {
-        'predicates': [
-        ]
-    }
+  let query = {
+    predicates: [],
+  };
 
-    // Add searches to predicates
-    query = addSearches(query, state)
+  // Add searches to predicates
+  query = addSearches(query, state);
 
-    // Add study level 
-    if (state.study_level.length > 0) {
-        query = addStudyLevel(query, state)
-    }
+  // Add study level
+  if (state.study_level.length > 0) {
+    query = addStudyLevel(query, state);
+  }
 
-    // Add block 
-    if (state.block.length > 0) {
-        query = addBlock(query, state)
-    }
+  // Add block
+  if (state.block.length > 0) {
+    query = addBlock(query, state);
+  }
 
-    // Add schedule group 
-    if (state.schedule_group.length > 0) {
-        query = addScheduleGroup(query,state)
-    }
+  // Add schedule group
+  if (state.schedule_group.length > 0) {
+    query = addScheduleGroup(query, state);
+  }
 
-    // Add exam type
-    if (state.exam_type.length > 0) {
-        query = addExamType(query, state)
-    }
+  // Add exam type
+  if (state.exam_type.length > 0) {
+    query = addExamType(query, state);
+  }
 
-    console.log(query)
+  console.log(query);
 
-    return query
+  return query;
 }
 
-
-export const queryStore = derived(
-    filtersObj,
-    $filtersObj => {
-        let obj = $filtersObj
-        return convertToQueryStructure(obj)
-    }
-)
+export const queryStore = derived(filtersObj, ($filtersObj) => {
+  let obj = $filtersObj;
+  return convertToQueryStructure(obj);
+});
