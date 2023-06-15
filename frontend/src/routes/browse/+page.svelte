@@ -71,7 +71,7 @@ onMount(async () => {
 .control-container {
     margin-top: 3vh;
     margin-bottom: 1vh;
-    height: 5vh;
+    height: 5rem;
     width: 30vw;
     display: flex;
     flex-direction: column;
