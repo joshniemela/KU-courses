@@ -147,7 +147,6 @@ function convertExamToString(inputString) {
     align-items: center;
     width: 100%;
     height: 33vh;
-    max-width: 30vw;
     background-color: var(--bg-color);
     border-radius: 10px;
     box-shadow: 0 2.8px 2.2px rgba(0, 0, 0, 0.15);
@@ -155,7 +154,7 @@ function convertExamToString(inputString) {
     opacity: 0%;
     animation: fadeIn 0.5s calc(var(--stagger)*0.05s);
     animation-fill-mode: forwards;
-    overflow: scroll;
+    overflow: auto;
 }
 
 .card:hover {
@@ -189,7 +188,7 @@ function convertExamToString(inputString) {
     padding-left: 2%;
     padding-right: 2%;
     height: 80%;
-    overflow: scroll;
+    overflow: auto;
 }
 .card-exam-text-container {
     position: relative;
@@ -246,7 +245,6 @@ function convertExamToString(inputString) {
     display: flex;
     justify-content: center;
     align-items: center;
-    overflow: auto;
     word-wrap: break-word;
 }
 

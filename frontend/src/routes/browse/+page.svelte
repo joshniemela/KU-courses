@@ -84,8 +84,8 @@ onMount(async () => {
     width:96%;
     margin: 2%;
     display: grid;
-    grid-template-columns: 1fr 1fr 1fr;
-    grid-auto-rows: 33vh;
+
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
     justify-content: center;
     align-items: center;
     gap: 2vh;
