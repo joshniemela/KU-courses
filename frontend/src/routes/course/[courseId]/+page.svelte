@@ -136,7 +136,7 @@ onMount(async () => {
                 >
                     <h3 class="side-card-heading">Info</h3>
                     <p class="side-card-name">{course.study_level} course</p>
-                    <p class="side-card-name">15 ECTS</p>
+                    <p class="side-card-name">ECTS: {course.credits}</p>
                     <a href={`https://kurser.ku.dk/course/${course.course_id}`}>
                         <p class="side-card-clickable">https://kurser.ku.dk/course/{course.course_id}</p>
                     </a>
