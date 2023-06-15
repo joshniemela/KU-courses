@@ -128,7 +128,7 @@ function equalityToPredicate(value, key) {
 }
 
 function regexToPredicate(value, key) {
-  return constructPredicate("~", key, value);
+  return constructPredicate("~*", key, value);
 }
 
 function addSearches(query, state) {
