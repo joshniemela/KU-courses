@@ -5,7 +5,7 @@ import { filterCount } from '../../stores';
 
 // Props
 export let paddingLR = "1vw";
-export let fontSize = "1.5rem";
+export let fontSize = "1.25rem";
 let dialog;
 
 // Button on hover animation
@@ -44,6 +44,7 @@ function handleHoverOut(e) {
     border-color: var(--text-color);
     color: var(--text-color);
     height: 100%;
+    white-space: nowrap;
     background-color: var(--bg-color);
     transition: ease-in-out 0.1s;
 }
