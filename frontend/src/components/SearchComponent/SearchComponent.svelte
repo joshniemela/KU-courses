@@ -153,7 +153,10 @@ function convertExamToString(inputString) {
     background: none;
     border: 0;
     font-size: 1.2rem;
-    padding: 1%;
+    padding-left: 1%;
+    padding-right: 1%;
+    padding-top: 0.5%;
+    padding-bottom: 0.5%;
     margin-left: 1vw;
     margin-right: 1vw;
     border-color: var(--text-color);
