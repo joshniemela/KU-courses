@@ -10,25 +10,25 @@ DATA_DIR = "../../data"  # where to store the data
 
 
 # helper functions:
-def name_from_url(url):
+def name_from_url(url: str) -> str:
     return url.split("/")[-1]
 
 
-def ensure_dir_exists(dir_path):
+def ensure_dir_exists(dir_path: str) -> None:
     os.makedirs(dir_path, exist_ok=True)
 
 
 # end helper functions
 
 
-def get_sitemap_urls(url=SITEMAP_URL):
+def get_sitemap_urls(url: str = SITEMAP_URL) -> list[str]:
     sitemap = requests.get(url)
     sitemap_soup = BeautifulSoup(sitemap.text, features="xml")
     urls = [url.text for url in sitemap_soup.find_all("loc")][1:]  # first is root
     return urls
 
 
-def get_page(url, data_dir=DATA_DIR):
+def get_page(url: str, data_dir: str = DATA_DIR) -> str:
     name = name_from_url(url)
     file_path = f"{data_dir}/pages/{name}.html"
     ensure_dir_exists(
@@ -45,7 +45,7 @@ def get_page(url, data_dir=DATA_DIR):
         return page.text
 
 
-def cache_pages(data_dir=DATA_DIR):
+def cache_pages(data_dir: str = DATA_DIR) -> None:
     ensure_dir_exists(
         f"{data_dir}/pages"
     )  # Create necessary folders if they don't exist
