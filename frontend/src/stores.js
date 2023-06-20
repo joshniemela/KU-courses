@@ -7,7 +7,9 @@ export function apiUrl() {
   if (hostname == "localhost") {
     return "http://localhost:3000/api";
   }
-  return "https://" + hostname + ":3000/api";
+
+  // if running on another host, assume we are in prod
+  return "https://" + hostname + "/api";
 }
 
 export const SearchTypes = {
