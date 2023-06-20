@@ -3,11 +3,11 @@ import { browser } from "$app/environment";
 // API URL
 export function apiUrl() {
   // check NODE_ENV
-  if (process.env.NODE_ENV === "development") {
+  let hostname = window.location.hostname;
+  if (hostname == "localhost") {
     return "http://localhost:3000/api";
-  } else if (process.env.NODE_ENV === "production") {
-    return "https://disku.jniemela.dk/api";
   }
+  return "https://" + hostname + ":3000/api";
 }
 
 export const SearchTypes = {
