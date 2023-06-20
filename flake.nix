@@ -39,9 +39,10 @@
               # browsers for testing
               firefox
               chromium
+              pre-commit
             ];
 
-            LD_LIBRARY_PATH = lib.makeLibraryPath [ stdenv.cc.cc 
+            LD_LIBRARY_PATH = lib.makeLibraryPath [ stdenv.cc.cc
             glibc libpng mlib zlib ];
           };
 
