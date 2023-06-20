@@ -1,15 +1,11 @@
 import { writable, derived } from "svelte/store";
 import { browser } from "$app/environment";
-import { PUBLIC_MODE } from "$env/static/public";
-
 // API URL
 export function apiUrl() {
-  if (PUBLIC_MODE == "local") {
+  // check NODE_ENV
+  if (process.env.NODE_ENV === "development") {
     return "http://localhost:3000/api";
-  } else if (PUBLIC_MODE == "development") {
-    return "http://localhost:3000/api";
-    // API_URL = 'https://dbmanager:3000/api'
-  } else if (PUBLIC_MODE == "production") {
+  } else if (process.env.NODE_ENV === "production") {
     return "https://disku.jniemela.dk/api";
   }
 }

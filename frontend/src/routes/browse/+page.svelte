@@ -6,14 +6,10 @@ import SearchComponent from "../../components/SearchComponent/SearchComponent.sv
 import Loader from "../../components/Loader/Loader.svelte";
 import { apiUrl, filters, filtersObj, jsonToString, queryStore } from '../../stores';
 import { onMount } from 'svelte';
-import { PUBLIC_MODE } from '$env/static/public';
 import OverviewCard from "../../components/OverviewCard/OverviewCard.svelte";
 
 let loading = true;
 let API_URL = apiUrl()
-
-console.log("In mode: " + {PUBLIC_MODE})
-console.log("Api: " + API_URL)
 let courses = [];
 
 /**
