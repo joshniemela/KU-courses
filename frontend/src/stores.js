@@ -80,8 +80,8 @@ const toObj = JSON.parse;
 
 * @function createFilters()
 
-* OBS: Since we are interacting with local storage, it expects the json to be in 
-* string format when updating the store 
+* OBS: Since we are interacting with local storage, it expects the json to be in
+* string format when updating the store
 *
 * !TODO: Fix the above haha
 */
@@ -141,7 +141,7 @@ function addSearches(query, state) {
     searchElem.search.map((x) => {
       andList.push(searchToPredicate(x, searchElem.type));
       andList.push(searchWordToPredicate(x, searchElem.type));
-//      andList.push(regexToPredicate(x, searchElem.type));
+      //      andList.push(regexToPredicate(x, searchElem.type));
     });
     query = {
       ...query,
