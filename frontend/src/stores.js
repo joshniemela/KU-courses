@@ -3,6 +3,11 @@ import { browser } from "$app/environment";
 // API URL
 export function apiUrl() {
   // check NODE_ENV
+  // check that window is defined
+  if (typeof window === "undefined") {
+    return "http://localhost:3000/api";
+  }
+
   let hostname = window.location.hostname;
   if (hostname == "localhost") {
     return "http://localhost:3000/api";
