@@ -1,10 +1,7 @@
 <script>
-import theme from "../../theme";
-import SearchIcon from "../../assets/SearchIcon.svelte";
-import FilterButton from "../../components/FilterButton/FilterButton.svelte";
 import SearchComponent from "../../components/SearchComponent/SearchComponent.svelte";
 import Loader from "../../components/Loader/Loader.svelte";
-import { apiUrl, filters, filtersObj, jsonToString, queryStore } from '../../stores';
+import { apiUrl, queryStore } from '../../stores';
 import { onMount } from 'svelte';
 import OverviewCard from "../../components/OverviewCard/OverviewCard.svelte";
 

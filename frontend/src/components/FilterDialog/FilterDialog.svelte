@@ -1,9 +1,8 @@
-<script>
+<script lang="ts">
     import { onMount } from "svelte";
     import {
         filters,
         filtersObj,
-        jsonToString,
         StudyLevelTypes,
         ScheduleGroupTypes,
         BlockTypes,
@@ -12,13 +11,13 @@
 
     import theme from "../../theme.js";
 
-    export let dialog;
+    export let dialog: HTMLDialogElement;
 
     /**
      * Helper function to generate option objects based on the different filter types
      */
-    function generateOptionsObject(TypeObject, field) {
-        let obj = {};
+    function generateOptionsObject(TypeObject:{[key: string]:string}, field: string) {
+        let obj:{[key: string]:string} = {};
         for (const [key, val] of Object.entries(TypeObject)) {
             obj[val] = $filtersObj[field].includes(val.toString());
         }
@@ -42,8 +41,8 @@
      * Applies the new filters
      */
     function applyOptions() {
-        $filters = jsonToString({
-            ...$filtersObj,
+        $filters = JSON.stringify({
+            searches: $filtersObj.searches,
             study_level: aggregateOptions(studyLevelOptions),
             schedule_group: aggregateOptions(scheduleGroupOptions),
             block: aggregateOptions(blockOptions),
@@ -52,8 +51,8 @@
         dialog.close();
     }
 
-    function convertExamToString(inputString) {
-        return inputString.replace(/(\w)_(\w)/g, "$1 $2");
+    function convertExamToString(input: string) {
+        return input.replace(/(\w)_(\w)/g, "$1 $2");
     }
 
     let studyLevelOptions = generateOptionsObject(
@@ -78,20 +77,15 @@
     }
 
     // Styling handling for the apply button
-    let buttonTextColor = theme.colors.brand[200];
-    let buttonBgColor = theme.colors.brand[800];
-    function handleHover(e) {
-        buttonTextColor = theme.colors.brand[900];
-        buttonBgColor = theme.colors.brand[500];
-    }
-    function handleHoverOut(e) {
-        buttonTextColor = theme.colors.brand[200];
-        buttonBgColor = theme.colors.brand[800];
-    }
+    const buttonTextColor = theme.colors.brand[200];
+    const buttonBgColor = theme.colors.brand[800];
+    const buttonTextColorHover = theme.colors.brand[900];
+    const buttonBgColorHover = theme.colors.brand[500];
 
     onMount(() => {});
 </script>
 
+<!-- svelte-ignore a11y-click-events-have-key-events -->
 <dialog
     class="dialog"
     bind:this={dialog}
@@ -236,9 +230,9 @@
             style="
             --bg-color: {buttonBgColor};
             --text-color: {buttonTextColor};
+            --bg-color-hover: {buttonBgColorHover};
+            --text-color-hover: {buttonTextColorHover};
             "
-            on:mouseover={handleHover}
-            on:mouseout={handleHoverOut}
             on:click={applyOptions}
         >
             Apply
@@ -366,5 +360,11 @@
         color: var(--text-color);
         background-color: var(--bg-color);
         transition: ease-in-out 0.1s;
+    }
+
+    .apply-button:hover {
+        border-color: var(--text-color-hover);
+        color: var(--text-color-hover);
+        background-color: var(--bg-color-hover);
     }
 </style>
