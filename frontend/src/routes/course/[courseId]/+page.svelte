@@ -1,4 +1,4 @@
-<script>
+<script lang="ts">
     import { page } from "$app/stores";
     import { onMount } from "svelte";
     import theme from "../../../theme";
@@ -10,7 +10,55 @@
     let API_URL = apiUrl();
     let loading = true;
 
-    let course = {
+    // TODO: make workload an enum
+    type Workload = {
+        hours: number;
+        workload_type: string;
+    };
+    type Employee = {
+        full_name: string;
+        email: string;
+    };
+    type Schedule = {
+        schedule_type: string;
+    };
+
+    type Description = {
+        // TODO: rename type and string since it is a reserved keyword
+        type: string;
+        string: string;
+    };
+
+    type Exam = {
+        minutes: number;
+        exam_type: string;
+    };
+
+    type Course = {
+        course_id: string;
+        title: string;
+        start_block: number;
+        study_level: string;
+        duration: number;
+        course_language: string;
+        credits: number;
+
+        employees: Employee[];
+        schedules: Schedule[];
+        workloads: Workload[];
+        exams: Exam[];
+        description: Description[];
+    };
+
+    let course: Course = {
+        course_id: "",
+        title: "",
+        start_block: 0,
+        study_level: "",
+        duration: 0,
+        course_language: "",
+        credits: 0,
+
         employees: [],
         schedules: [],
         workloads: [],
@@ -28,7 +76,7 @@
         });
         return total;
     }
-    const fetchCourse = async (courseId) => {
+    const fetchCourse = async (courseId: string) => {
         const res = await fetch(`${API_URL}/get-course?id=${courseId}`, {
             method: "GET",
             headers: {
@@ -43,14 +91,17 @@
         return json;
     };
 
-    function convertExamToString(inputString) {
-        return inputString.replace(/(\w)_(\w)/g, "$1 $2");
+    /**
+     * TODO: remove this since it is duplicated in the project multiple times
+     */
+    function convertExamToString(input: string) {
+        return input.replace(/(\w)_(\w)/g, "$1 $2");
     }
 
     /**
      * This function takes an exam duration and changes the unit depending on the duration, e.g. 120 minutes -> 2 hours
      */
-    function formatExamDuration(duration) {
+    function formatExamDuration(duration: number) {
         if (duration % 60 == 0) {
             if (duration % (60 * 24) == 0) {
                 return `${duration / (60 * 24)}d`;
@@ -211,8 +262,8 @@
             --bg-color-hover : {buttonBgColorHover};
             --text-color-hover: {buttonTextColorHover};
             "
-            on:click={goBack} 
-        ><!--!TODO! why not link -->
+            on:click={goBack}
+            ><!--!TODO! why not link -->
             Go back
         </button>
     </div>
