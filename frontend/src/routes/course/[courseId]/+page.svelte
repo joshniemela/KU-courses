@@ -1,5 +1,6 @@
 <script lang="ts">
     import { page } from "$app/stores";
+    import { empty_course, total_hours } from "../../../stores";
     import { onMount } from "svelte";
     import theme from "../../../theme";
     import Loader from "../../../components/Loader/Loader.svelte";
@@ -10,72 +11,9 @@
     let API_URL = apiUrl();
     let loading = true;
 
-    // TODO: make workload an enum
-    type Workload = {
-        hours: number;
-        workload_type: string;
-    };
-    type Employee = {
-        full_name: string;
-        email: string;
-    };
-    type Schedule = {
-        schedule_type: string;
-    };
-
-    type Description = {
-        // TODO: rename type and string since it is a reserved keyword
-        type: string;
-        string: string;
-    };
-
-    type Exam = {
-        minutes: number;
-        exam_type: string;
-    };
-
-    type Course = {
-        course_id: string;
-        title: string;
-        start_block: number;
-        study_level: string;
-        duration: number;
-        course_language: string;
-        credits: number;
-
-        employees: Employee[];
-        schedules: Schedule[];
-        workloads: Workload[];
-        exams: Exam[];
-        description: Description[];
-    };
-
-    let course: Course = {
-        course_id: "",
-        title: "",
-        start_block: 0,
-        study_level: "",
-        duration: 0,
-        course_language: "",
-        credits: 0,
-
-        employees: [],
-        schedules: [],
-        workloads: [],
-        exams: [],
-        description: [],
-    };
-
     let totalHours = 0;
+    let course = empty_course;
 
-    function calcTotalHours() {
-        let total = 0;
-        course.workloads.map((x) => {
-            total += x.hours;
-            console.log(x);
-        });
-        return total;
-    }
     const fetchCourse = async (courseId: string) => {
         const res = await fetch(`${API_URL}/get-course?id=${courseId}`, {
             method: "GET",
@@ -121,7 +59,7 @@
         const res = await fetchCourse(courseId);
         console.log(res.employees);
         course = res;
-        totalHours = calcTotalHours();
+        totalHours = total_hours(course);
     });
 
     const buttonTextColor = theme.colors.brand[200];
