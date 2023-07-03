@@ -3,57 +3,22 @@
     import Dk from "../../assets/Dk.svelte";
     import Gb from "../../assets/Gb.svelte";
     import theme from "../../theme.js";
-
+    import { empty_course } from "../../stores";
+    import type { Course } from "../../stores";
     export let stagger = 0;
-    export let data: dataType = {
-         description: [],
-         start_block: "",
-         exams: [],
-         study_level: "",
-         duration: 0,
-         course_language: "",
-         title: "",
-         credits: 0,
-         course_id: "",
-         schedules: [],
-         employees: [],
-         workloads: []
-     };
-    type typeString = { type: string; string: string };
-    type dataType = {
-        description: typeString[];
-        start_block: string;
-        exams: {
-            minutes: number;
-            exam_type: string;
-        }[];
-        study_level: string;
-        duration: number;
-        course_language: string;
-        title: string;
-        credits: number;
-        course_id: string;
-        schedules: {
-            schedule_type: string;
-        }[];
-        employees: {
-            email: string;
-            full_name: string;
-        }[];
-        workloads: {
-            hours: number;
-            workload_type: string;
-        }[];
-    };
+    export let course: Course = structuredClone(empty_course);
+
     /**
-     * Function to extracct the first <charLimit> letters from the paragraphs to use for the summary.
+     * Function to extract the first <charLimit> letters from the paragraphs to use for the summary.
      * @function extractSummary
      */
     function extractSummary(charLimit: number): string {
-        return data.description
-            .map(x=>x.string)
-            .join()
-            .slice(0, charLimit) + "...";
+        return (
+            course.description
+                .map((x) => x.string)
+                .join()
+                .slice(0, charLimit) + "..."
+        );
     }
     let summary = extractSummary(390);
 
@@ -62,7 +27,7 @@
      * @function navigateToCourse
      */
     function navigateToCourse() {
-        goto(`/course/${data.course_id}`);
+        goto(`/course/${course.course_id}`);
     }
 
     /**
@@ -101,7 +66,7 @@
         <div class="card-header-container">
             <div class="card-title-container">
                 <div class="title-container">
-                    <a href={`/course/${data.course_id}`}>
+                    <a href={`/course/${course.course_id}`}>
                         <h1
                             class="card-title"
                             style="
@@ -109,7 +74,7 @@
                                 --text-size: 24px
                                 "
                         >
-                            {data.title}
+                            {course.title}
                         </h1>
                     </a>
                 </div>
@@ -117,26 +82,26 @@
                     class="card-subtitle"
                     style="--text-color: {theme.colors.neutral[600]}"
                 >
-                    {data.course_id} - SCIENCE
+                    {course.course_id} - SCIENCE
                 </h2>
             </div>
             <table class="card-info-table">
                 <tr>
-                    <td class="card-td-left-top">{data.study_level}</td>
-                    <td class="card-td-right-top">{data.credits} ECTS</td>
+                    <td class="card-td-left-top">{course.study_level}</td>
+                    <td class="card-td-right-top">{course.credits} ECTS</td>
                 </tr>
                 <tr>
                     <td class="card-td-left-bot"
-                        >Block {Number(data.start_block)}
-                        {#if Number(data.duration) > 1}
-                            - {Number(data.start_block) +
-                                Number(data.duration) -
+                        >Block {Number(course.start_block)}
+                        {#if Number(course.duration) > 1}
+                            - {Number(course.start_block) +
+                                Number(course.duration) -
                                 1}
                         {/if}
                     </td>
                     <td>
-                        Group: {#each data.schedules as sch}
-                            {#if sch != data.schedules[data.schedules.length - 1]}
+                        Group: {#each course.schedules as sch}
+                            {#if sch != course.schedules[course.schedules.length - 1]}
                                 {sch.schedule_type}, &nbsp
                             {:else}
                                 {sch.schedule_type}
@@ -153,7 +118,7 @@
             class="card-exam-text-container"
             style="--bg-color: {theme.colors.neutral[300]}"
         >
-            {#each data.exams as exam}
+            {#each course.exams as exam}
                 <p
                     class="card-exam-text"
                     style="--text-color: {theme.colors.neutral[900]}"
@@ -162,12 +127,12 @@
                     {#if exam.minutes}
                         ({formatExamDuration(exam.minutes)})
                     {/if}
-                    {#if data.exams.length > 1 && exam != data.exams[data.exams.length - 1]}
+                    {#if course.exams.length > 1 && exam != course.exams[course.exams.length - 1]}
                         &nbsp - &nbsp
                     {/if}
                 </p>
             {/each}
-            {#if data.course_language == "da"}
+            {#if course.course_language == "da"}
                 <Dk />
             {:else}
                 <Gb />

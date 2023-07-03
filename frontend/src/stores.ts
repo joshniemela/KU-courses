@@ -271,30 +271,30 @@ export const queryStore = derived(filtersObj, ($filtersObj) => {
 
 // TYPES FOR COURSE
 // TODO: make workload an enum
-type Workload = {
+export type Workload = {
   hours: number;
   workload_type: string;
 };
-type Employee = {
+export type Employee = {
   full_name: string;
   email: string;
 };
-type Schedule = {
+export type Schedule = {
   schedule_type: string;
 };
 
-type Description = {
+export type Description = {
   // TODO: rename type and string since it is a reserved keyword
   type: string;
   string: string;
 };
 
-type Exam = {
+export type Exam = {
   minutes: number;
   exam_type: string;
 };
 
-type Course = {
+export type Course = {
   course_id: string;
   title: string;
   start_block: number;
