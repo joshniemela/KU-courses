@@ -10,15 +10,20 @@
     } from "../../stores.js";
 
     import theme from "../../theme.js";
+    import type { Filters } from "../../stores.js";
 
     export let dialog: HTMLDialogElement;
 
     /**
      * Helper function to generate option objects based on the different filter types
      */
-    function generateOptionsObject(TypeObject:{[key: string]:string}, field: string) {
-        let obj:{[key: string]:string} = {};
-        for (const [key, val] of Object.entries(TypeObject)) {
+    function generateOptionsObject(
+        // TODO: figure out if the union type makes any sense or if BlockTypes should be string
+        TypeObject: { [key: string]: string | number },
+        field: keyof Filters
+    ) {
+        let obj: { [key: string]: string } = {};
+        for (const [_key, val] of Object.entries(TypeObject)) {
             obj[val] = $filtersObj[field].includes(val.toString());
         }
         return obj;

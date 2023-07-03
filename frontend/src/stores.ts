@@ -21,19 +21,19 @@ export const SearchTypes = {
   courseTitle: "course_title",
   employeeName: "employee_name",
   description: "description",
-}
+} as const
 
 export const StudyLevelTypes = {
   bachelor: "Bachelor",
   master: "Master",
-}
+} as const
 
 export const ScheduleGroupTypes = {
   A: "A",
   B: "B",
   C: "C",
   D: "D",
-}
+} as const
 
 export const BlockTypes = {
   one: 1,
@@ -41,7 +41,7 @@ export const BlockTypes = {
   three: 3,
   four: 4,
   five: 5,
-}
+} as const
 
 export const ExamTypes = {
   oralExamination: "oral_examination",
@@ -53,7 +53,7 @@ export const ExamTypes = {
   oralDefence: "oral_defence",
   portfolio: "portfolio",
   other: "other",
-}
+} as const
 /*
 FILTER STORE.
 Responsible for keeping track of all the currently applied filters.
@@ -66,7 +66,9 @@ export const initialFilters: Filters = {
   exam_type: [],
 }
 
-type Filters = {
+
+// TODO: why is searches a possible list of strings
+export type Filters = {
   searches: { search: string[], type: string }[],
   study_level: string[],
   block: string[],
