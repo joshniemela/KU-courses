@@ -36,11 +36,11 @@ export const ScheduleGroupTypes = {
 } as const
 
 export const BlockTypes = {
-  one: 1,
-  two: 2,
-  three: 3,
-  four: 4,
-  five: 5,
+  one: "1",
+  two: "2",
+  three: "3",
+  four: "4",
+  five: "5",
 } as const
 
 export const ExamTypes = {

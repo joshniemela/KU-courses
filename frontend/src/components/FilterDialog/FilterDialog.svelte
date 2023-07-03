@@ -19,20 +19,23 @@
      */
     function generateOptionsObject(
         // TODO: figure out if the union type makes any sense or if BlockTypes should be string
-        TypeObject: { [key: string]: string | number },
-        field: keyof Filters
+        TypeObject: { [key: string]: string },
+        field: Exclude<keyof Filters, "searches">
     ) {
-        let obj: { [key: string]: string } = {};
-        for (const [_key, val] of Object.entries(TypeObject)) {
-            obj[val] = $filtersObj[field].includes(val.toString());
-        }
+        let obj: { [key: string]: boolean } = {};
+        let entries: string[] = Object.values(TypeObject);
+
+        entries.forEach((entry) => {
+            obj[entry] = $filtersObj[field].includes(entry);
+        });
+
         return obj;
     }
 
     /**
      * Helper function to aggregate chosen options into array
      */
-    function aggregateOptions(optionsObject) {
+    function aggregateOptions(optionsObject: { [key: string]: boolean }) {
         let li = [];
         for (const [key, val] of Object.entries(optionsObject)) {
             if (val === true) {
