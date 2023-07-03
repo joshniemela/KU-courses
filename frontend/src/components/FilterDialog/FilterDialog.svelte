@@ -78,8 +78,8 @@
      * Checks wether we are clicking on the background, and if so closes the dialog
      * @function closeOnClickOutside
      */
-    function closeOnClickOutside(event) {
-        if (event.target.id == "dialog") {
+    function closeOnClickOutside(event: MouseEvent) {
+        if (event.target === dialog) {
             dialog.close();
         }
     }

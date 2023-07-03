@@ -11,11 +11,11 @@
         SearchTypes,
     } from "../../stores";
 
-    let currentType = SearchTypes.courseTitle;
+    let currentType: string = SearchTypes.courseTitle;
     let searchInput = "";
     let searches = $filtersObj.searches;
 
-    function switchType(newType:string) {
+    function switchType(newType: string) {
         currentType = newType;
     }
 
@@ -94,7 +94,7 @@
             on:click={() => ($filters = JSON.stringify(initialFilters))}
             class="type-button"
             style="--text-color: {theme.colors.brand[200]}; --bg-color: {theme
-                .colors.brand[800]}; 
+                .colors.brand[800]};
             --hover-color: {theme.colors.brand[900]}; --hover-bg: {theme.colors
                 .brand[500]}"
         >
