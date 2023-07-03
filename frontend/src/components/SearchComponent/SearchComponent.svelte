@@ -35,6 +35,7 @@
             ],
         });
         goto("/browse");
+        location.reload();
     }
 
     /**
