@@ -1,4 +1,6 @@
-# DIS Project
+# KU-Courses
+
+![Example of KU-Courses](assets/showcase.gif "Example of KU Courses")
 
 The entire application is governed through the `docker-compose.yml` file and is built with `docker compose`:
 
