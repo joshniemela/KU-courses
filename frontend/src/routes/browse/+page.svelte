@@ -1,5 +1,4 @@
 <script lang="ts">
-    import SearchComponent from "../../components/SearchComponent/SearchComponent.svelte";
     import Loader from "../../components/Loader/Loader.svelte";
     import { apiUrl, queryStore } from "../../stores";
     import { onMount } from "svelte";
@@ -38,9 +37,7 @@
 </script>
 
 <div class="browse-container">
-    <div class="control-container">
-        <SearchComponent />
-    </div>
+    <div class="control-container" />
     {#if loading}
         <Loader />
     {:else}

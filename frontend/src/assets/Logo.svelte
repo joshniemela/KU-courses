@@ -754,7 +754,7 @@
 
 <style scoped>
     svg {
-        width: 30%;
+        width: 100%;
         fill: var(--fill);
         margin-right: 0.2vw; /* Coordinated with the logo text width */
     }
