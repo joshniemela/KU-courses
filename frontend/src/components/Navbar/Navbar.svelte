@@ -2,7 +2,6 @@
     import Github from "../../assets/Github.svelte";
     import Logo from "../../assets/Logo.svelte";
     import MenuIcon from "../../assets/MenuIcon.svelte";
-    import { onMount } from "svelte";
     import { Drawer } from "flowbite-svelte";
     import { sineIn } from "svelte/easing";
     let hidden1 = true;
@@ -14,7 +13,7 @@
     import SearchComponent from "../../components/SearchComponent/SearchComponent.svelte";
 
     // check if window is defined (so if in the browser or in node.js)
-    let browsableRoutes = ["/browse", "/course"];
+    let browsableRoutes = ["/browse"];
     let isBrowser = typeof window !== "undefined";
 </script>
 
@@ -72,54 +71,3 @@
         </button>
     </div>
 </Drawer>
-<!--
-<style scoped>
-    .navbar-container {
-        /*
-            Ensures navbar will "follow" when the user scrolls. https://stackoverflow.com/a/13337664
-            Content may not fit correctly unless .content-offset is used on the content.
-        */
-        position: fixed;
-        overflow-y: hidden;
-        top: 0;
-        bottom: 0;
-        display: flex;
-
-        flex-direction: column;
-        background-color: var(--bg);
-        width: 8vw;
-        min-width: 8vw;
-        align-items: center;
-        justify-content: space-between;
-    }
-
-    .title-container {
-        display: flex;
-        flex-direction: row;
-        align-items: center;
-        justify-content: center;
-    }
-
-    .social-text {
-        font-size: 1vw;
-    }
-    .git-container {
-        display: flex;
-        flex-direction: row;
-        width: fit-content;
-        padding: 5%;
-        align-items: center;
-        justify-content: center;
-        margin-bottom: 1vh;
-    }
-
-    h1 {
-        font-size: 1vw;
-        color: var(--font-color);
-        margin-left: 0.2vw; /* Coordinated with the logo width */
-    }
-    a {
-        color: var(--color);
-    }
-</style>
--->
