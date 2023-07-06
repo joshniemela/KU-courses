@@ -12,7 +12,7 @@
     type firstFiveInts = 1 | 2 | 3 | 4 | 5;
 </script>
 
-<div class="content">
+<main class="flex flex-col items-center justify-center space-y-4">
     <h1 class="title" style="--font-color: {theme.colors.brand[500]}">
         KU Courses
     </h1>
@@ -43,50 +43,31 @@
             {/if}
         {/if}
     {/each}
+    <div
+        class="flex flex-col justify-center space-y-4 md:space-y-0 md:flex-row md:space-x-4"
+    >
+        <CheckboxMenu
+            header_name="Block"
+            options={["1", "2", "3", "4", "5"]}
+            bind:selected={selected_values}
+        />
 
-    // bind selected_values to the selected values of the checkbox menu
-    <CheckboxMenu
-        header_name="Test Menu"
-        options={["1", "2", "3", "4", "5"]}
-        bind:selected = {selected_values}
-    />
-    Selected: {selected_values.join(", ")}
+        <CheckboxMenu
+            header_name="Study Level"
+            options={["Bachelor", "Master", "PhD"]}
+            bind:selected={selected_values}
+        />
 
-</div>
+        <CheckboxMenu
+            header_name="Schedule Group"
+            options={["A", "B", "C", "D"]}
+            bind:selected={selected_values}
+        />
 
-<style scoped>
-    .title {
-        color: var(--font-color);
-        margin-bottom: 2vh;
-    }
-
-    .content {
-        display: flex;
-        height: 98vh;
-        width: 100%;
-        margin-right: 8vw; /* should be the same as navbar-container width */
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        overflow: auto;
-    }
-
-    .search-container {
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
-        align-items: center;
-        width: 30vw;
-        margin-bottom: 3vh;
-    }
-
-    /*     .view-all-button {
-        background: none;
-        font-size: 1rem;
-        border: 0;
-        color: var(--text-color);
-        width: 8vw;
-        background-color: var(--bg-color);
-        transition: ease-in-out 0.1s;
-    } */
-</style>
+        <CheckboxMenu
+            header_name="Examination Type"
+            options={["Written", "Oral", "Assignment", "Continuous Assessment"]}
+            bind:selected={selected_values}
+        />
+    </div>
+</main>

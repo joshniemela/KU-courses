@@ -7,7 +7,7 @@
 </script>
 
 <div class="">
-    <div class="bg-kuRed text-white text-center px-2 py-1">
+    <div class="bg-kuRed text-white text-center px-2 py-1 w-full">
         <h1>{header_name}</h1>
     </div>
     <div class="flex flex-col">
@@ -21,7 +21,7 @@
                     name="header_name"
                     value={option}
                 />
-                <span class="text-center w-full absolute">
+                <span class="text-center w-full absolute leading-none">
                     {option}
                 </span>
             </label>
