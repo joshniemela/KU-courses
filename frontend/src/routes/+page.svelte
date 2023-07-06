@@ -9,7 +9,7 @@
         return inputString.replace(/(\w)_(\w)/g, "$1 $2");
     }
     // make a writableSession if we have a browser
-    let emptyQuery = {
+    const emptyQuery = {
         block: [],
         study_level: [],
         schedule_group: [],
@@ -18,10 +18,24 @@
     };
 
     const queryStore = writableSession("query", emptyQuery);
+
+    function clearAll() {
+        // Cause the checkboxes to update
+        queryStore.update((store) => {
+            store.block = [];
+            store.study_level = [];
+            store.schedule_group = [];
+            store.examination_type = [];
+            store.searches = [];
+            return store;
+        });
+    }
 </script>
 
 <main class="flex flex-col items-center justify-center space-y-4 mt-40">
-    <h1 class="text-brand-500 text-4xl font-bold">KU Courses</h1>
+    <h1 class="text-brand-500 text-4xl font-bold">
+        KU Courses 2.0 the electric boogaloo (WIP! everything is broken)
+    </h1>
 
     <!-- Container responsible for the search area -->
     <TextSearch bind:searches={$queryStore.searches} />
@@ -52,11 +66,12 @@
             bind:selected={$queryStore.examination_type}
         />
     </div>
-
-    // print current sessionStorage
-    {#each Object.entries($queryStore) as [key, value]}
-        <p>
-            {key}: {value}
-        </p>
-    {/each}
+    <button
+        class="bg-brand-500 text-white px-4 py-0"
+        on:click={() => {
+            clearAll();
+        }}
+    >
+        Clear All
+    </button>
 </main>

@@ -30,9 +30,6 @@
             fuzzy: true,
         };
     }
-    function removeSearch(index: number) {
-        searches = searches.filter((_, i) => i !== index);
-    }
 
     function formatPlaceholder(search: Search) {
         const uncased =
@@ -42,6 +39,15 @@
             "...";
         // lowercase everything except first letter which will be uppercase
         return uncased.charAt(0).toUpperCase() + uncased.slice(1).toLowerCase();
+    }
+    function removeSearch(index: number) {
+        return () => {
+            searches = searches.filter((_, i) => i !== index);
+        };
+    }
+
+    function getIndex(search: Search) {
+        return searches.findIndex((s) => s === search);
     }
 </script>
 
@@ -62,42 +68,34 @@
     />
 
     <button
-        class="bg-kuRed text-white font-bold py-2 px-4"
-        on:click={pushCurrentSearch}>Search</button
+        class={"text-white font-bold py-2 px-4 bg-" +
+            (currentSearch.query ? "kuRed" : "kuGray")}
+        on:click={pushCurrentSearch}>Add</button
     >
 </div>
 <!-- Button to trigger search -->
 
 <!--Show each search in the searches list and make so each of them have a remvoe button-->
-{#if searches.length}
-    <span> Searching on: </span>
-{/if}
-<ul>
-    {#each searches as search, index}
-        <li class="flex">
-            <span class="flex items-center">
-                {search.category}: {search.query}
-                <button
-                    class="align-right"
-                    on:click={() => removeSearch(index)}
-                >
-                    <svg
-                        class="w-4 h-4 text-gray-800 dark:text-white ml-1"
-                        aria-hidden="true"
-                        xmlns="http://www.w3.org/2000/svg"
-                        fill="none"
-                        viewBox="0 0 14 14"
-                    >
-                        <path
-                            stroke="currentColor"
-                            stroke-linecap="round"
-                            stroke-linejoin="round"
-                            stroke-width="2"
-                            d="m1 1 6 6m0 0 6 6M7 7l6-6M7 7l-6 6"
-                        />
-                    </svg>
-                </button>
-            </span>
-        </li>
+
+<div class="flex flex-col md:flex-row md:space-x-4 space-y-4 md:space-y-0">
+    {#each searchTypes as type}
+        {#if searches.filter((search) => search.category === type).length > 0}
+            <div>
+                <h1 class="bg-kuGray font-bold px-4 text-white text-xl">
+                    {type}
+                </h1>
+                {#each searches.filter((search) => search.category === type) as search, index}
+                    <div class="flex flex-row justify-between">
+                        <p>{search.query}</p>
+                        <button
+                            class="ml-4 text-kuRed font-bold"
+                            on:click={removeSearch(getIndex(search))}
+                        >
+                            X
+                        </button>
+                    </div>
+                {/each}
+            </div>
+        {/if}
     {/each}
-</ul>
+</div>

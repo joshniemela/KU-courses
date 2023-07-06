@@ -7,10 +7,17 @@
 </script>
 
 <div class="">
-    <div class="bg-kuRed text-white text-center px-2 py-1 w-full">
+    <div class="bg-kuGray text-white text-center px-2 py-1 w-full">
         <h1>{header_name}</h1>
     </div>
+
     <div class="flex flex-col">
+        <button
+            class="bg-kuRed text-white text-center text-xs {selected.length
+                ? 'visible'
+                : 'invisible'}"
+            on:click={() => (selected = [])}>Clear</button
+        >
         {#each options as option}
             <!--Align label before checkbox-->
             <label class="flex items-center relative cursor-pointer py-1.5">
@@ -26,11 +33,5 @@
                 </span>
             </label>
         {/each}
-        <button
-            class="bg-kuGray text-white text-center px-1 text-xs mx-2 {selected.length
-                ? 'visible'
-                : 'invisible'}"
-            on:click={() => (selected = [])}>Clear all</button
-        >
     </div>
 </div>
