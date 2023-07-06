@@ -4,6 +4,7 @@
     import { filtersObj } from "../stores";
 
     import CheckboxMenu from "../components/CheckboxMenu.svelte";
+    import TextSearch from "../components/TextSearch.svelte";
     let selected_values: string[] = [];
 
     function convertExamToString(inputString: string) {
@@ -43,6 +44,7 @@
             {/if}
         {/if}
     {/each}
+    <TextSearch />
     <div
         class="flex flex-col justify-center space-y-4 md:space-y-0 md:flex-row md:space-x-4"
     >
