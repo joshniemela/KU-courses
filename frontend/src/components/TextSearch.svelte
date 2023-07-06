@@ -1,23 +1,15 @@
 <script lang="ts">
     import { writable } from "svelte/store";
     export const searchTypes = ["Title", "Description", "Coordinator"] as const;
-    export type SearchType = (typeof searchTypes)[number];
-    export type Search = {
+    type SearchType = (typeof searchTypes)[number];
+    type Search = {
         category: SearchType;
         query: string;
         fuzzy: boolean;
     };
 
-    const searchTypeColours = {
-        Title: "text-blue-500",
-        Description: "text-green-500",
-        Coordinator: "text-yellow-500",
-    };
-    // Check that we aren't missing colours
-    const _check: { [key in SearchType]: string } = searchTypeColours;
-
     // Store for searches
-    const searches = writable<Search[]>([]);
+    export let searches: Search[];
 
     const initialSearch: Search = {
         category: searchTypes[0],
@@ -29,7 +21,7 @@
     function pushCurrentSearch() {
         if (currentSearch.query === "") return; // Don't push empty searches
         // Push to searches and clear currentSearch
-        searches.update((prevSearches) => [...prevSearches, currentSearch]);
+        searches = [...searches, currentSearch];
 
         // TODO: currentSearch = initialSearch; doesn't work
         currentSearch = {
@@ -39,10 +31,7 @@
         };
     }
     function removeSearch(index: number) {
-        searches.update((prevSearches) => {
-            // Create a new array without the search at the specified index
-            return prevSearches.filter((_, i) => i !== index);
-        });
+        searches = searches.filter((_, i) => i !== index);
     }
 
     function formatPlaceholder(search: Search) {
@@ -58,10 +47,7 @@
 
 <!-- Dropdown menu for categories -->
 <div class="flex md:flex-row flex-col">
-    <select
-        class={searchTypeColours[currentSearch.category] + " bold"}
-        bind:value={currentSearch.category}
-    >
+    <select class="" bind:value={currentSearch.category}>
         {#each searchTypes as type}
             <option value={type}>{type}</option>
         {/each}
@@ -83,17 +69,14 @@
 <!-- Button to trigger search -->
 
 <!--Show each search in the searches list and make so each of them have a remvoe button-->
-{#if $searches.length}
+{#if searches.length}
     <span> Searching on: </span>
 {/if}
 <ul>
-    {#each $searches as search, index}
+    {#each searches as search, index}
         <li class="flex">
-            <span
-                class={"flex items-center " +
-                    searchTypeColours[search.category]}
-            >
-                {search.query}
+            <span class="flex items-center">
+                {search.category}: {search.query}
                 <button
                     class="align-right"
                     on:click={() => removeSearch(index)}
