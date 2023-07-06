@@ -8,7 +8,7 @@ export default {
 
       colors: {
         kuRed: "#901A1E",
-        kuGray: "#14314F",
+        kuGray: "#333333",
         darkGray: "#2b2d41",
         dulledWhite: "#F4F5F7",
         greyedOut: "#8D99AD",

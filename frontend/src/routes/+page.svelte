@@ -3,9 +3,13 @@
     import SearchComponent from "../components/SearchComponent/SearchComponent.svelte";
     import { filtersObj } from "../stores";
 
+    import CheckboxMenu from "../components/CheckboxMenu.svelte";
+    let selected_values: string[] = [];
+
     function convertExamToString(inputString: string) {
         return inputString.replace(/(\w)_(\w)/g, "$1 $2");
     }
+    type firstFiveInts = 1 | 2 | 3 | 4 | 5;
 </script>
 
 <div class="content">
@@ -39,6 +43,15 @@
             {/if}
         {/if}
     {/each}
+
+    // bind selected_values to the selected values of the checkbox menu
+    <CheckboxMenu
+        header_name="Test Menu"
+        options={["1", "2", "3", "4", "5"]}
+        bind:selected = {selected_values}
+    />
+    Selected: {selected_values.join(", ")}
+
 </div>
 
 <style scoped>
@@ -67,7 +80,7 @@
         margin-bottom: 3vh;
     }
 
-/*     .view-all-button {
+    /*     .view-all-button {
         background: none;
         font-size: 1rem;
         border: 0;
