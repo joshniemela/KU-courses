@@ -1,15 +1,23 @@
 <script lang="ts">
     import theme from "../theme";
     import SearchComponent from "../components/SearchComponent/SearchComponent.svelte";
-    import { filtersObj } from "../stores";
 
     import CheckboxMenu from "../components/CheckboxMenu.svelte";
     import TextSearch from "../components/TextSearch.svelte";
+
     let selected_values: string[] = [];
 
     function convertExamToString(inputString: string) {
         return inputString.replace(/(\w)_(\w)/g, "$1 $2");
     }
+
+    let query = {
+        blocks: [],
+        study_levels: [],
+        schedule_groups: [],
+        examination_types: [],
+        searches: [],
+    };
 </script>
 
 <main class="flex flex-col items-center justify-center space-y-4 mt-40">

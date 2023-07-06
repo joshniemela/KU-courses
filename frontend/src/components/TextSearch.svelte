@@ -1,8 +1,8 @@
 <script lang="ts">
     import { writable } from "svelte/store";
-    const searchTypes = ["Title", "Description", "Coordinator"] as const;
-    type SearchType = (typeof searchTypes)[number];
-    type Search = {
+    export const searchTypes = ["Title", "Description", "Coordinator"] as const;
+    export type SearchType = (typeof searchTypes)[number];
+    export type Search = {
         category: SearchType;
         query: string;
         fuzzy: boolean;
