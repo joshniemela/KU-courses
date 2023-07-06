@@ -8,6 +8,14 @@
         fuzzy: boolean;
     };
 
+    const searchTypeColours = {
+        Title: "text-blue-500",
+        Description: "text-green-500",
+        Coordinator: "text-yellow-500",
+    };
+    // Check that we aren't missing colours
+    const _check: { [key in SearchType]: string } = searchTypeColours;
+
     // Store for searches
     const searches = writable<Search[]>([]);
 
@@ -49,8 +57,11 @@
 </script>
 
 <!-- Dropdown menu for categories -->
-<div>
-    <select bind:value={currentSearch.category}>
+<div class="flex md:flex-row flex-col">
+    <select
+        class={searchTypeColours[currentSearch.category] + " bold"}
+        bind:value={currentSearch.category}
+    >
         {#each searchTypes as type}
             <option value={type}>{type}</option>
         {/each}
@@ -72,28 +83,38 @@
 <!-- Button to trigger search -->
 
 <!--Show each search in the searches list and make so each of them have a remvoe button-->
-Searching on:
+{#if $searches.length}
+    <span> Searching on: </span>
+{/if}
 <ul>
     {#each $searches as search, index}
-        <li class="flex justify-between">
-            <span>{search.category}: {search.query}</span>
-            <button on:click={() => removeSearch(index)}>
-                <svg
-                    class="w-6 h-6 text-gray-800 dark:text-white"
-                    aria-hidden="true"
-                    xmlns="http://www.w3.org/2000/svg"
-                    fill="none"
-                    viewBox="0 0 14 14"
+        <li class="flex">
+            <span
+                class={"flex items-center " +
+                    searchTypeColours[search.category]}
+            >
+                {search.query}
+                <button
+                    class="align-right"
+                    on:click={() => removeSearch(index)}
                 >
-                    <path
-                        stroke="currentColor"
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                        stroke-width="2"
-                        d="m1 1 6 6m0 0 6 6M7 7l6-6M7 7l-6 6"
-                    />
-                </svg>
-            </button>
+                    <svg
+                        class="w-4 h-4 text-gray-800 dark:text-white ml-1"
+                        aria-hidden="true"
+                        xmlns="http://www.w3.org/2000/svg"
+                        fill="none"
+                        viewBox="0 0 14 14"
+                    >
+                        <path
+                            stroke="currentColor"
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            stroke-width="2"
+                            d="m1 1 6 6m0 0 6 6M7 7l6-6M7 7l-6 6"
+                        />
+                    </svg>
+                </button>
+            </span>
         </li>
     {/each}
 </ul>
