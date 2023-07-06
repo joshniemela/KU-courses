@@ -24,3 +24,27 @@ export function writableSession<T>(key: string, value: T): Writable<T> {
 
     return store;
 }
+
+
+// make a writableSession if we have a browser
+const emptyQuery = {
+    block: [],
+    study_level: [],
+    schedule_group: [],
+    examination_type: [],
+    searches: [],
+};
+
+export const queryStore = writableSession("query", emptyQuery);
+
+export function clearAll() {
+    // Cause the checkboxes to update
+    queryStore.update((store) => {
+        store.block = [];
+        store.study_level = [];
+        store.schedule_group = [];
+        store.examination_type = [];
+        store.searches = [];
+        return store;
+    });
+}

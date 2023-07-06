@@ -133,9 +133,16 @@
     ; sort the list of maps alphabetically according to course/title
     (sort-by #(:course/title %) (map fix-json courses))))
 
-
-
 (defn get-course-by-id [db course-id]
-  (first (get-courses db [[{:op "=" 
-                            :key "course_id" 
+  (first (get-courses db [[{:op "="
+                            :key "course_id"
                             :value course-id}]])))
+
+;(defn get-courses-new [db block study_level schedule_group examination_type searches]
+;  (let [courses (jdbc/execute! db [(generate-courses-query-new block
+;                                                               study_level
+;                                                               schedule_group
+;                                                               examination_type
+;                                                               searches)])]
+;    ; sort the list of maps alphabetically according to course/title
+;    (sort-by #(:course/title %) (map fix-json courses))))

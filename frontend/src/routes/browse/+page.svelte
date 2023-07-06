@@ -1,6 +1,7 @@
 <script lang="ts">
     import Loader from "../../components/Loader/Loader.svelte";
-    import { apiUrl, queryStore } from "../../stores";
+    import { apiUrl } from "../../stores";
+    import { queryStore } from "../../newStore";
     import { onMount } from "svelte";
     import OverviewCard from "../../components/OverviewCard/OverviewCard.svelte";
     import type { Course } from "../../stores";
@@ -16,7 +17,7 @@
     const fetchCourses = async () => {
         const filters = $queryStore;
         console.log(filters);
-        const res = await fetch(`${API_URL}/find-courses`, {
+        const res = await fetch(`${API_URL}/find-courses-new`, {
             method: "POST",
             headers: {
                 accept: "application/json",
@@ -37,7 +38,6 @@
 </script>
 
 <div class="browse-container">
-    <div class="control-container" />
     {#if loading}
         <Loader />
     {:else}
@@ -56,16 +56,6 @@
         display: flex;
         flex-direction: column;
         align-items: center;
-    }
-    .control-container {
-        margin-top: 3vh;
-        margin-bottom: 1vh;
-        height: 5rem;
-        width: 30vw;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
     }
 
     .card-container {

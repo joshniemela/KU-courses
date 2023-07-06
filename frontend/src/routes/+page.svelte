@@ -3,32 +3,10 @@
     import SearchComponent from "../components/SearchComponent/SearchComponent.svelte";
     import CheckboxMenu from "../components/CheckboxMenu.svelte";
     import TextSearch from "../components/TextSearch.svelte";
-    import { writableSession } from "../newStore";
+    import { queryStore, clearAll } from "../newStore";
 
     function convertExamToString(inputString: string) {
         return inputString.replace(/(\w)_(\w)/g, "$1 $2");
-    }
-    // make a writableSession if we have a browser
-    const emptyQuery = {
-        block: [],
-        study_level: [],
-        schedule_group: [],
-        examination_type: [],
-        searches: [],
-    };
-
-    const queryStore = writableSession("query", emptyQuery);
-
-    function clearAll() {
-        // Cause the checkboxes to update
-        queryStore.update((store) => {
-            store.block = [];
-            store.study_level = [];
-            store.schedule_group = [];
-            store.examination_type = [];
-            store.searches = [];
-            return store;
-        });
     }
 </script>
 
@@ -37,8 +15,11 @@
         KU Courses 2.0 the electric boogaloo (WIP! everything is broken)
     </h1>
 
-    <!-- Container responsible for the search area -->
     <TextSearch bind:searches={$queryStore.searches} />
+    <!--Search button, this sends us to /browse------------------------------->
+    <button class="bg-blue-500 text-white px-4 py-0">
+        <a href="/browse">Search</a>
+    </button>
     <div
         class="flex flex-col justify-center space-y-4 md:space-y-0 md:flex-row md:space-x-4"
     >

@@ -1,5 +1,5 @@
 (ns db-manager.routes
-  (:require [clojure.data.json :as json] 
+  (:require [clojure.data.json :as json]
             [clojure.spec.alpha :as s]
             [db-manager.db :refer [find-email-by-name
                                    get-course-ids
@@ -23,12 +23,6 @@
                     :handler (fn [{{{:keys [x y]} :body} :parameters}]
                                {:status 200
                                 :body {:sum (+ x y)}})}}]
-  ; echo json back, no longer used
-   ["/echo" {:post {:parameters {:body {:json map?}}
-                    :responses {200 {:body {:json map?}}}
-                    :handler (fn [{{{:keys [json]} :body} :parameters}]
-                               {:status 200
-                                :body {:json json}})}}]
    ; find email of coordinator in query
    ["/find-email" {:get {:parameters {:query {:name string?}}
                          :responses {200 {:body {:email string?
@@ -53,11 +47,18 @@
                                                 {:count (count courses)
                                                  :keys (keys (first courses))
                                                  :courses courses})})}}]
-   
+
    ["/get-course" {:get {:parameters {:query {:id string?}}
                          :responses {200 {:body map?}}
                          :summary "Get a course by its id"
                          :description "Returns a course with the given id"
                          :handler (fn [{{{:keys [id]} :query} :parameters}]
                                     {:status 200
-                                     :body (get-course-by-id db id)})}}]])
+                                     :body (get-course-by-id db id)})}}]
+
+   ; Better echo route
+   ["/echo" {:post {:parameters {:body map?}
+                    :handler (fn [request]
+                               (let [body (-> request :parameters :body)]
+                                 {:status 200
+                                  :body body}))}}]])
