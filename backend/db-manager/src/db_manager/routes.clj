@@ -4,7 +4,8 @@
             [db-manager.db :refer [find-email-by-name
                                    get-course-ids
                                    get-course-by-id
-                                   get-courses]]))
+                                   get-courses
+                                   get-courses-new]]))
 
 (def ping-route
   ["/ping"
@@ -61,4 +62,13 @@
                     :handler (fn [request]
                                (let [body (-> request :parameters :body)]
                                  {:status 200
-                                  :body body}))}}]])
+                                  :body body}))}}]
+
+   ["/find-courses-new" {:post {:parameters {:body map?}
+                                :handler (fn [request]
+                                           (let [body (-> request :parameters :body)]
+                                             {:status 200
+                                              :body (let [courses (get-courses-new db body)]
+                                                      {:count (count courses)
+                                                       :keys (keys (first courses))
+                                                       :courses courses})}))}}]])
