@@ -5,7 +5,6 @@ export default {
     './node_modules/flowbite-svelte/**/*.{html,js,svelte,ts}'],
   theme: {
     extend: {
-
       colors: {
         kuRed: "#901A1E",
         kuGray: "#333333",
@@ -79,6 +78,15 @@ export default {
           900: "#ACCDFF",
         },
       },
+    },
+    keyframes: {
+      fadeIn: {
+        '0%': { opacity: '0' },
+        '100%': { opacity: '1' }
+      }
+    },
+    animation: {
+      fadeIn: 'fadeIn 0.5s ease-in-out'
     }
   },
   plugins: [
