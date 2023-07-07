@@ -16,10 +16,8 @@
 </script>
 
 <!--pressing enter anywhere should cause it to search------------------------->
-<main class="flex flex-col items-center justify-center space-y-4 mt-40">
-    <h1 class="text-brand-500 text-4xl font-bold">
-        KU Courses 2.0 the electric boogaloo (WIP! everything is broken)
-    </h1>
+<main class="flex flex-col items-center justify-center space-y-4 mt-10">
+    <h1 class="text-brand-500 text-4xl font-bold">KU Courses 2.0</h1>
 
     <TextSearch bind:searches={$queryStore.searches} />
     <!--Search button, this sends us to /browse------------------------------->
