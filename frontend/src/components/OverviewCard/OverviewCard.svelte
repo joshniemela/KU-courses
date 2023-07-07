@@ -3,8 +3,8 @@
     import Dk from "../../assets/Dk.svelte";
     import Gb from "../../assets/Gb.svelte";
     import theme from "../../theme.js";
-    import { empty_course } from "../../stores";
-    import type { Course } from "../../stores";
+    import { empty_course } from "../../course";
+    import type { Course } from "../../course";
     export let stagger = 0;
     export let course: Course = structuredClone(empty_course);
 

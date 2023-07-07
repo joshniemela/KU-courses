@@ -1,79 +1,52 @@
 <script lang="ts">
-    import theme from "../theme";
-    import SearchComponent from "../components/SearchComponent/SearchComponent.svelte";
-    import { filtersObj } from "../stores";
-
-    function convertExamToString(inputString: string) {
-        return inputString.replace(/(\w)_(\w)/g, "$1 $2");
-    }
+    import CheckboxMenu from "../components/CheckboxMenu.svelte";
+    import TextSearch from "../components/TextSearch.svelte";
+    import { queryStore, clearAll } from "../stores";
 </script>
 
-<div class="content">
-    <h1 class="title" style="--font-color: {theme.colors.brand[500]}">
-        KU Courses
+<main class="flex flex-col items-center justify-center space-y-4 mt-40">
+    <h1 class="text-brand-500 text-4xl font-bold">
+        KU Courses 2.0 the electric boogaloo (WIP! everything is broken)
     </h1>
 
-    <!-- Container responsible for the search area -->
-    <div class="search-container">
-        <SearchComponent />
+    <TextSearch bind:searches={$queryStore.searches} />
+    <!--Search button, this sends us to /browse------------------------------->
+    <button class="bg-blue-500 text-white px-4 py-0">
+        <a href="/browse">Search</a>
+    </button>
+    <div
+        class="flex flex-col justify-center space-y-4 md:space-y-0 md:flex-row md:space-x-4"
+    >
+        <CheckboxMenu
+            header_name="Block"
+            options={["1", "2", "3", "4", "5"]}
+            bind:selected={$queryStore.block}
+        />
+
+        <CheckboxMenu
+            header_name="Study Level"
+            options={["Bachelor", "Master"]}
+            bind:selected={$queryStore.study_level}
+        />
+
+        <CheckboxMenu
+            header_name="Schedule Group"
+            options={["A", "B", "C", "D"]}
+            bind:selected={$queryStore.schedule_group}
+        />
+
+        <CheckboxMenu
+            header_name="Examination Type"
+            options={["Written", "Oral", "Assignment", "Continuous Assessment"]}
+            bind:selected={$queryStore.examination_type}
+        />
     </div>
-    {#if $filtersObj.searches.length > 0}
-        <p>Current search:</p>
-    {/if}
-    {#each $filtersObj.searches as searchElem}
-        <p>
-            {convertExamToString(searchElem.type)} contains:
-            {#each searchElem.search as s}
-                {#if searchElem.search.length == 1}
-                    {s}
-                {:else if s != searchElem.search[searchElem.search.length - 1]}
-                    {s} OR
-                {:else}
-                    {s}
-                {/if}
-            {/each}
-        </p>
-        {#if $filtersObj.searches.length > 1}
-            {#if searchElem != $filtersObj.searches[$filtersObj.searches.length - 1]}
-                <p>AND</p>
-            {/if}
-        {/if}
-    {/each}
-</div>
-
-<style scoped>
-    .title {
-        color: var(--font-color);
-        margin-bottom: 2vh;
-    }
-
-    .content {
-        display: flex;
-        height: 98vh;
-        width: 100%;
-        margin-right: 8vw; /* should be the same as navbar-container width */
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        overflow: auto;
-    }
-
-    .search-container {
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
-        align-items: center;
-        width: 30vw;
-        margin-bottom: 3vh;
-    }
-
-/*     .view-all-button {
-        background: none;
-        font-size: 1rem;
-        border: 0;
-        color: var(--text-color);
-        width: 8vw;
-        background-color: var(--bg-color);
-        transition: ease-in-out 0.1s;
-    } */
-</style>
+    <button
+        class="bg-brand-500 text-white px-4 py-0"
+        on:click={() => {
+            clearAll();
+        }}
+    >
+        Clear All
+    </button>
+</main>

@@ -1,10 +1,10 @@
 <script lang="ts">
-    import SearchComponent from "../../components/SearchComponent/SearchComponent.svelte";
     import Loader from "../../components/Loader/Loader.svelte";
-    import { apiUrl, queryStore } from "../../stores";
+    import { apiUrl } from "../../stores";
+    import { queryStore } from "../../stores";
     import { onMount } from "svelte";
     import OverviewCard from "../../components/OverviewCard/OverviewCard.svelte";
-    import type { Course } from "../../stores";
+    import type { Course } from "../../course";
 
     let loading = true;
     let API_URL = apiUrl();
@@ -17,7 +17,7 @@
     const fetchCourses = async () => {
         const filters = $queryStore;
         console.log(filters);
-        const res = await fetch(`${API_URL}/find-courses`, {
+        const res = await fetch(`${API_URL}/find-course-overviews`, {
             method: "POST",
             headers: {
                 accept: "application/json",
@@ -38,13 +38,21 @@
 </script>
 
 <div class="browse-container">
-    <div class="control-container">
-        <SearchComponent />
-    </div>
+    <button
+        class="text-2xl font-bold bg-blue-500 text-white rounded-lg px-4 py-2 m-2"
+        on:click={() => {
+            window.location.href = "/";
+        }}
+    >
+        Back
+    </button>
     {#if loading}
         <Loader />
     {:else}
         <div class="card-container">
+            {#if courses.length === 0}
+                <h1>No courses found, try broadening your search</h1>
+            {/if}
             {#each courses as card, i}
                 <OverviewCard stagger={i} course={card} />
             {/each}
@@ -59,16 +67,6 @@
         display: flex;
         flex-direction: column;
         align-items: center;
-    }
-    .control-container {
-        margin-top: 3vh;
-        margin-bottom: 1vh;
-        height: 5rem;
-        width: 30vw;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
     }
 
     .card-container {

@@ -7,7 +7,7 @@
             [honey.sql.helpers :refer :all :as h]
             [clojure.set :as set]
             [clojure.data.json :as json]
-            [db-manager.querier :refer [generate-courses-query]]))
+            [db-manager.querier :refer [generate-courses-query generate-courses-query-new]]))
 
 (defn nuke-db! [db]
   (jdbc/with-transaction [tx db]
@@ -133,9 +133,12 @@
     ; sort the list of maps alphabetically according to course/title
     (sort-by #(:course/title %) (map fix-json courses))))
 
-
-
 (defn get-course-by-id [db course-id]
-  (first (get-courses db [[{:op "=" 
-                            :key "course_id" 
+  (first (get-courses db [[{:op "="
+                            :key "course_id"
                             :value course-id}]])))
+
+(defn get-courses-new [db predicates]
+  (let [courses (jdbc/execute! db [(generate-courses-query-new predicates)])]
+    ; sort the list of maps alphabetically according to course/title
+    (sort-by #(:course/title %) (map fix-json courses))))
