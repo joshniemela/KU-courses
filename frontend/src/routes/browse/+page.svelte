@@ -41,7 +41,7 @@
     <button
         class="text-2xl font-bold bg-blue-500 text-white rounded-lg px-4 py-2 m-2"
         on:click={() => {
-            window.history.back();
+            window.location.href = "/";
         }}
     >
         Back
