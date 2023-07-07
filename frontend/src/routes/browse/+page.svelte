@@ -51,15 +51,16 @@
         <!--put the loader in the centre of the screen always----------------->
         <Loader />
     {:else}
-        <div class="grid grid-flow-row grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 m-4 mt-10">
-            {#if courses.length === 0}
-                <h1 class="text-3xl text-center mt-10">
-                No courses found, try broadening your search</h1>
-            {/if}
+        <div class="grid grid-flow-row grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 m-4 mt-12">
             {#each courses as card, i}
                 <OverviewCard stagger={i} course={card} />
             {/each}
         </div>
+
+            {#if courses.length === 0}
+                <h1 class="text-3xl text-center mt-10">
+                No courses found, try broadening your search</h1>
+            {/if}
     {/if}
 </div>
 

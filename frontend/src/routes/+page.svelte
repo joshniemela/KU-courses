@@ -4,13 +4,15 @@
     import { queryStore, clearAll } from "../stores";
 
     // if enter is pressed anywhere, it should search unless in a text box
-    window.addEventListener("keydown", (e) => {
-        if (e.key === "Enter") {
-            if (document.activeElement?.tagName !== "INPUT") {
-                window.location.href = "/browse";
+    if (typeof window !== "undefined") {
+        window.addEventListener("keydown", (e) => {
+            if (e.key === "Enter") {
+                if (document.activeElement?.tagName !== "INPUT") {
+                    window.location.href = "/browse";
+                }
             }
-        }
-    });
+        });
+    }
 </script>
 
 <!--pressing enter anywhere should cause it to search------------------------->
