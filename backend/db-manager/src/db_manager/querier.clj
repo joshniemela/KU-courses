@@ -93,11 +93,18 @@ JOIN
 
 ; input example
 ;{"block":[],"study_level":[],"schedule_group":["C"],"examination_type":[],"searches":[{"category":"Title","query":"linear algebra","fuzzy":true},{"category":"Coordinator","query":"troels","fuzzy":true}]}
+(defn convert-exam [exam-type]
+  (case (str/lower-case exam-type)
+    "written" "written_examination"
+    "oral" "oral_examination"
+    "continuous assessment" "continuous_assessment"
+    "assignment" "written_assignment"))
+
 (defn generate-statements [predicates]
   (let [block (map sanitise (:block predicates))
         study_level (map sanitise (:study_level predicates))
         schedule_group (map sanitise (:schedule_group predicates))
-        examination_type (map sanitise (:examination_type predicates))
+        examination_type (map convert-exam (:convert-exam_type predicates))
         searches (map generate-search-statements (:searches predicates))]
     (str/join " AND " (rm-empty (list (if (empty? block)
                                         ""
@@ -125,7 +132,7 @@ JOIN
     course.course_language,
 	course.credits,
 	course.duration,
-    substring(course.description, 0, 200) AS description,
+    course.description,
     jsonb_agg(DISTINCT to_jsonb(exam) - 'course_id')::TEXT AS exams,
     jsonb_agg(DISTINCT to_jsonb(employee))::TEXT AS employees,
 	jsonb_agg(DISTINCT to_jsonb(schedule) - 'course_id')::TEXT AS schedules,

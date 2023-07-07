@@ -64,11 +64,11 @@
                                  {:status 200
                                   :body body}))}}]
 
-   ["/find-courses-new" {:post {:parameters {:body map?}
-                                :handler (fn [request]
-                                           (let [body (-> request :parameters :body)]
-                                             {:status 200
-                                              :body (let [courses (get-courses-new db body)]
-                                                      {:count (count courses)
-                                                       :keys (keys (first courses))
-                                                       :courses courses})}))}}]])
+   ["/find-course-overviews" {:post {:parameters {:body map?}
+                                     :handler (fn [request]
+                                                (let [body (-> request :parameters :body)]
+                                                  {:status 200
+                                                   :body (let [courses (get-courses-new db body)]
+                                                           {:count (count courses)
+                                                            :keys (keys (first courses))
+                                                            :courses courses})}))}}]])

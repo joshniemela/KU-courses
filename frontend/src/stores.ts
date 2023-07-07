@@ -10,7 +10,7 @@ export function apiUrl() {
 
   let hostname = window.location.hostname;
   if (hostname == "localhost") {
-    return "https://disku.jniemela.dk/api";
+    return "http://localhost:3000/api";
   }
 
   // if running on another host, assume we are in prod

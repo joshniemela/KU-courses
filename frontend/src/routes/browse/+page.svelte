@@ -17,7 +17,7 @@
     const fetchCourses = async () => {
         const filters = $queryStore;
         console.log(filters);
-        const res = await fetch(`${API_URL}/find-courses-new`, {
+        const res = await fetch(`${API_URL}/find-course-overviews`, {
             method: "POST",
             headers: {
                 accept: "application/json",
@@ -38,10 +38,21 @@
 </script>
 
 <div class="browse-container">
+    <button
+        class="text-2xl font-bold bg-blue-500 text-white rounded-lg px-4 py-2 m-2"
+        on:click={() => {
+            window.history.back();
+        }}
+    >
+        Back
+    </button>
     {#if loading}
         <Loader />
     {:else}
         <div class="card-container">
+            {#if courses.length === 0}
+                <h1>No courses found, try broadening your search</h1>
+            {/if}
             {#each courses as card, i}
                 <OverviewCard stagger={i} course={card} />
             {/each}

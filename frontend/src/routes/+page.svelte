@@ -31,7 +31,7 @@
 
         <CheckboxMenu
             header_name="Study Level"
-            options={["Bachelor", "Master", "PhD"]}
+            options={["Bachelor", "Master"]}
             bind:selected={$queryStore.study_level}
         />
 
