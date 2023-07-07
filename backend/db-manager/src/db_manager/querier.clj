@@ -88,23 +88,23 @@ JOIN
         ;fuzzy (:fuzzy search-statement)]
         ]
     ;TODO: implement exact search, right now it is always fuzzy
-    (str "( " category " % " (sanitise query) " OR "
-         category " <% " (sanitise query) " )")))
+    (str "(( " category " % " (sanitise query) " ) OR ( "
+         category " %> " (sanitise query) " ))")))
 
 ; input example
 ;{"block":[],"study_level":[],"schedule_group":["C"],"examination_type":[],"searches":[{"category":"Title","query":"linear algebra","fuzzy":true},{"category":"Coordinator","query":"troels","fuzzy":true}]}
 (defn convert-exam [exam-type]
-  (case (str/lower-case exam-type)
+  (sanitise (case (str/lower-case exam-type)
     "written" "written_examination"
     "oral" "oral_examination"
     "continuous assessment" "continuous_assessment"
-    "assignment" "written_assignment"))
+    "assignment" "written_assignment")))
 
 (defn generate-statements [predicates]
   (let [block (map sanitise (:block predicates))
         study_level (map sanitise (:study_level predicates))
         schedule_group (map sanitise (:schedule_group predicates))
-        examination_type (map convert-exam (:convert-exam_type predicates))
+        examination_type (map convert-exam (:examination_type predicates))
         searches (map generate-search-statements (:searches predicates))]
     (str/join " AND " (rm-empty (list (if (empty? block)
                                         ""
