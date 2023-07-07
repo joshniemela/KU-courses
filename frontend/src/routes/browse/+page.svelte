@@ -1,10 +1,10 @@
 <script lang="ts">
     import Loader from "../../components/Loader/Loader.svelte";
     import { apiUrl } from "../../stores";
-    import { queryStore } from "../../newStore";
+    import { queryStore } from "../../stores";
     import { onMount } from "svelte";
     import OverviewCard from "../../components/OverviewCard/OverviewCard.svelte";
-    import type { Course } from "../../stores";
+    import type { Course } from "../../course";
 
     let loading = true;
     let API_URL = apiUrl();

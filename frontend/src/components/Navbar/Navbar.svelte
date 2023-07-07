@@ -10,11 +10,6 @@
         duration: 300,
         easing: sineIn,
     };
-    import SearchComponent from "../../components/SearchComponent/SearchComponent.svelte";
-
-    // check if window is defined (so if in the browser or in node.js)
-    let browsableRoutes = ["/browse"];
-    let isBrowser = typeof window !== "undefined";
 </script>
 
 <nav class="fixed inset-x-0 top-0 z-50 backdrop-blur-sm flex items-center">
@@ -31,9 +26,6 @@
             </div>
         </button>
     </div>
-    {#if isBrowser && browsableRoutes.includes(window.location.pathname)}
-        <SearchComponent />
-    {/if}
 </nav>
 
 <Drawer

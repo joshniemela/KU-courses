@@ -1,13 +1,7 @@
 <script lang="ts">
-    import theme from "../theme";
-    import SearchComponent from "../components/SearchComponent/SearchComponent.svelte";
     import CheckboxMenu from "../components/CheckboxMenu.svelte";
     import TextSearch from "../components/TextSearch.svelte";
-    import { queryStore, clearAll } from "../newStore";
-
-    function convertExamToString(inputString: string) {
-        return inputString.replace(/(\w)_(\w)/g, "$1 $2");
-    }
+    import { queryStore, clearAll } from "../stores";
 </script>
 
 <main class="flex flex-col items-center justify-center space-y-4 mt-40">
