@@ -1,6 +1,6 @@
 <script lang="ts">
     import { page } from "$app/stores";
-    import { empty_course, total_hours } from "../../../stores";
+    import { empty_course, total_hours } from "../../../course";
     import { onMount } from "svelte";
     import theme from "../../../theme";
     import Loader from "../../../components/Loader/Loader.svelte";
