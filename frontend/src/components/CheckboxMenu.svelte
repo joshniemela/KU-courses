@@ -20,7 +20,9 @@
         >
         {#each options as option}
             <!--Align label before checkbox-->
-            <label class="flex items-center relative cursor-pointer py-1.5">
+            <label
+                class="flex items-center relative cursor-pointer py-1.5 ml-2"
+            >
                 <input
                     class="text-kuRed"
                     type="checkbox"
@@ -28,7 +30,7 @@
                     name="header_name"
                     value={option}
                 />
-                <span class="text-center w-full absolute leading-none">
+                <span class="text-left w-full absolute leading-none ml-6">
                     {option}
                 </span>
             </label>
