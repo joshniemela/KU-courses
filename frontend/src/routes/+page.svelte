@@ -2,21 +2,34 @@
     import CheckboxMenu from "../components/CheckboxMenu.svelte";
     import TextSearch from "../components/TextSearch.svelte";
     import { queryStore, clearAll } from "../stores";
+
+    // if enter is pressed anywhere, it should search unless in a text box
+    if (typeof window !== "undefined") {
+        window.addEventListener("keydown", (e) => {
+            if (e.key === "Enter") {
+                if (document.activeElement?.tagName !== "INPUT") {
+                    window.location.href = "/browse";
+                }
+            }
+        });
+    }
 </script>
 
-<main class="flex flex-col items-center justify-center space-y-4 mt-40">
-    <h1 class="text-brand-500 text-4xl font-bold">
-        KU Courses 2.0 the electric boogaloo (WIP! everything is broken)
-    </h1>
+<!--pressing enter anywhere should cause it to search------------------------->
+<main class="flex flex-col items-center justify-center space-y-4 mt-10">
+    <h1 class="text-brand-500 text-4xl font-bold">KU Courses 2.0</h1>
 
     <TextSearch bind:searches={$queryStore.searches} />
     <!--Search button, this sends us to /browse------------------------------->
-    <button class="bg-blue-500 text-white px-4 py-0">
-        <a href="/browse">Search</a>
-    </button>
-    <div
-        class="flex flex-col justify-center space-y-4 md:space-y-0 md:flex-row md:space-x-4"
+    <button
+        class="bg-blue-500 text-white px-4 py-0 text-4xl hover:bg-blue-700 w-1/2"
+        on:click={() => {
+            window.location.href = "/browse";
+        }}
     >
+        Search
+    </button>
+    <div class="grid grid-cols-2 gap-4 md:grid-cols-4">
         <CheckboxMenu
             header_name="Block"
             options={["1", "2", "3", "4", "5"]}

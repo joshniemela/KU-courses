@@ -71,18 +71,26 @@
 {#if loading}
     <Loader />
 {:else}
-    <div class="main-container">
+    <div class="main-container mt-10">
+        <button
+            class="fixed top-0 mx-auto bg-kuRed hover:bg-blue-700 text-white font-bold py-2 px-6"
+            on:click={() => {
+                window.history.back();
+            }}
+        >
+            Back
+        </button>
         <div class="content-container">
             <div class="content-container-left">
                 <div class="header-container">
                     <div>
-                        <h1>{course.title}</h1>
+                        <h1 class="text-4xl font-bold">{course.title}</h1>
                         <h2>{course.course_id} - SCIENCE</h2>
                     </div>
                 </div>
                 {#each course.description as de}
                     {#if de.type == "h1"}
-                        <h1>{de.string}</h1>
+                        <h1 class="text-xl font-bold">{de.string}</h1>
                     {:else if de.type == "li"}
                         <p>* {de.string}</p>
                     {:else}
@@ -192,18 +200,6 @@
                 </div>
             </div>
         </div>
-        <button
-            class="back-button"
-            style="
-            --bg-color: {buttonBgColor};
-            --text-color: {buttonTextColor};
-            --bg-color-hover : {buttonBgColorHover};
-            --text-color-hover: {buttonTextColorHover};
-            "
-            on:click={goBack}
-            ><!--!TODO! why not link -->
-            Go back
-        </button>
     </div>
 {/if}
 
@@ -254,7 +250,6 @@
         background-color: var(--bg-color);
         color: var(--text-color);
         padding: 2%;
-        border-radius: 10px;
     }
 
     .side-card-heading {
@@ -275,24 +270,5 @@
         font-size: 1rem;
         color: var(--brand-color);
         margin-bottom: 1vh;
-    }
-
-    .back-button {
-        background: none;
-        font-size: var(--font-size);
-        border: 0;
-        border-color: var(--text-color);
-        color: var(--text-color);
-        margin-bottom: 0.5vh;
-        height: 3vh;
-        width: 15vw;
-        background-color: var(--bg-color);
-        transition: ease-in-out 0.1s;
-    }
-
-    .back-button {
-        border-color: var(--text-color-hover);
-        color: var(--text-color-hover);
-        background-color: var(--bg-color-hover);
     }
 </style>

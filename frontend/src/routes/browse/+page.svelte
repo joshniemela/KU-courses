@@ -37,9 +37,10 @@
     });
 </script>
 
-<div class="browse-container">
+<div class="flex flex-col items-center h-screen">
+    <!--Position button at the top centre of the page-->
     <button
-        class="text-2xl font-bold bg-blue-500 text-white rounded-lg px-4 py-2 m-2"
+        class="fixed top-0 mx-auto bg-kuRed hover:bg-blue-700 text-white font-bold py-2 px-6 "
         on:click={() => {
             window.location.href = "/";
         }}
@@ -47,37 +48,19 @@
         Back
     </button>
     {#if loading}
+        <!--put the loader in the centre of the screen always----------------->
         <Loader />
     {:else}
-        <div class="card-container">
-            {#if courses.length === 0}
-                <h1>No courses found, try broadening your search</h1>
-            {/if}
+        <div class="grid grid-flow-row grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 m-4 mt-12">
             {#each courses as card, i}
                 <OverviewCard stagger={i} course={card} />
             {/each}
         </div>
+
+            {#if courses.length === 0}
+                <h1 class="text-3xl text-center mt-10">
+                No courses found, try broadening your search</h1>
+            {/if}
     {/if}
 </div>
 
-<style scoped>
-    .browse-container {
-        height: 100vh;
-        width: 100%;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-    }
-
-    .card-container {
-        height: 100%;
-        width: 96%;
-        margin: 2%;
-        display: grid;
-
-        grid-template-columns: repeat(auto-fit, minmax(30em, 1fr));
-        justify-content: center;
-        align-items: center;
-        gap: 2vh;
-    }
-</style>
