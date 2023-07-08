@@ -4,8 +4,7 @@
             [db-manager.db :refer [find-email-by-name
                                    get-course-ids
                                    get-course-by-id
-                                   get-courses
-                                   get-courses-new]]))
+                                   get-courses]]))
 
 (def ping-route
   ["/ping"
@@ -39,16 +38,6 @@
                                         {:status 200
                                          :body (get-course-ids db)})}}]
 
-    ; this takes a map of query params, and returns a list of courses
-   ["/find-courses" {:post {:parameters {:body {:predicates [[map?]]}}
-                            :responses {200 {:body map?}}
-                            :handler (fn [{{{:keys [predicates]} :body} :parameters}]
-                                       {:status 200
-                                        :body (let [courses (get-courses db predicates)]
-                                                {:count (count courses)
-                                                 :keys (keys (first courses))
-                                                 :courses courses})})}}]
-
    ["/get-course" {:get {:parameters {:query {:id string?}}
                          :responses {200 {:body map?}}
                          :summary "Get a course by its id"
@@ -68,7 +57,7 @@
                                      :handler (fn [request]
                                                 (let [body (-> request :parameters :body)]
                                                   {:status 200
-                                                   :body (let [courses (get-courses-new db body)]
+                                                   :body (let [courses (get-courses db body)]
                                                            {:count (count courses)
                                                             :keys (keys (first courses))
                                                             :courses courses})}))}}]])

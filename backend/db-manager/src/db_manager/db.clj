@@ -7,7 +7,7 @@
             [honey.sql.helpers :refer :all :as h]
             [clojure.set :as set]
             [clojure.data.json :as json]
-            [db-manager.querier :refer [generate-courses-query generate-courses-query-new]]))
+            [db-manager.querier :refer [generate-course-by-id-query generate-courses-query]]))
 
 (defn nuke-db! [db]
   (jdbc/with-transaction [tx db]
@@ -106,19 +106,6 @@
                         (from :course)
                         (sql/format))))
 
-(defn get-exams [db course-id]
-  (jdbc/execute! db ["SELECT exam_type, minutes FROM exam WHERE course_id = ?" course-id]))
-
-(defn get-workloads [db course-id]
-  (jdbc/execute! db ["SELECT workload_type, hours FROM workload WHERE course_id = ?" course-id]))
-
-(defn get-schedules [db course-id]
-  (jdbc/execute! db ["SELECT schedule_type FROM schedule WHERE course_id = ?" course-id]))
-
-(defn get-coordinators [db course-id]
-  (jdbc/execute! db ["SELECT * FROM employee
-                      WHERE email IN (SELECT email FROM coordinates WHERE course_id = ?)" course-id]))
-
 (defn fix-json [course]
   ; exams, schedules, workloads, and coordinators are text that needs to be parsed to json
   (assoc course
@@ -128,17 +115,10 @@
          :employees (json/read-str (:employees course))
          :course/description (json/read-str (:course/description course))))
 
+(defn get-course-by-id [db course-id]
+  (fix-json (jdbc/execute-one! db [(generate-course-by-id-query course-id)])))
+
 (defn get-courses [db predicates]
   (let [courses (jdbc/execute! db [(generate-courses-query predicates)])]
-    ; sort the list of maps alphabetically according to course/title
-    (sort-by #(:course/title %) (map fix-json courses))))
-
-(defn get-course-by-id [db course-id]
-  (first (get-courses db [[{:op "="
-                            :key "course_id"
-                            :value course-id}]])))
-
-(defn get-courses-new [db predicates]
-  (let [courses (jdbc/execute! db [(generate-courses-query-new predicates)])]
     ; sort the list of maps alphabetically according to course/title
     (sort-by #(:course/title %) (map fix-json courses))))
