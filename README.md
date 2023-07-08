@@ -26,9 +26,6 @@ This entire module is strongly overdue a complete rework into a lighter language
 ### Frontend
 Frontend is built in Svelte/Typescript.
 
-*TODO:*
-The frontend currently does not support portrait mode and other thin aspect ratios. The UI needs an overhaul.
-
 <!--
 ### PgAdmin
 We've included a container running PgAdmin to provide a GUI for interacting 
