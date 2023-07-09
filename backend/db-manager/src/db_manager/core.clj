@@ -43,11 +43,6 @@
 
 (def db (jdbc/get-datasource db-config))
 
-(defn wrap-allow-caching [handler]
-  (fn [req]
-    (let [resp (handler req)]
-      (assoc-in resp [:headers "Cache-Control"] "private, max-age=900"))))
-
 ; https://andersmurphy.com/2022/03/27/clojure-removing-namespace-from-keywords-in-response-middleware.html
 (defn transform-keys
   [t coll]
@@ -84,7 +79,6 @@
                                                           "content-type"
                                                           "origin"}]
 
-                         wrap-allow-caching
                          #(wrap-rate-limit % rate-limit-config)
                          parameters/parameters-middleware
                          muuntaja/format-middleware
