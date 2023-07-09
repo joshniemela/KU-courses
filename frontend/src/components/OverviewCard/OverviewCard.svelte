@@ -84,7 +84,7 @@
             <p class="">{course.summary}</p>
         </div>
     </div>
-    <div class="bg-kuGray text-white relative">
+    <div class="bg-kuGray text-white relative w-full">
         {#each course.exams as exam}
             <p class="">
                 {convertExamToString(exam.exam_type)}
