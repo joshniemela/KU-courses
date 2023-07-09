@@ -73,7 +73,7 @@
 {:else}
     <div class="main-container mt-10">
         <button
-            class="fixed top-0 mx-auto bg-kuRed hover:bg-blue-700 text-white font-bold py-2 px-6"
+            class="fixed top-0 mx-auto bg-kuRed text-white font-bold py-2 px-6"
             on:click={() => {
                 window.history.back();
             }}
