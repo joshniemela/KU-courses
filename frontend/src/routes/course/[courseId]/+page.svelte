@@ -63,7 +63,8 @@
     });
 
     // SEO
-    const title = `DISKU - ${course.title}`;
+    const title = `KU Courses 2.0 - ${courseId}`;
+
     const description =
         "A more precise, user-friendly way to browse courses offered by University of Copenhagen which acutally gives you the information you were looking for";
     const url = "https://disku.jniemela.dk";
