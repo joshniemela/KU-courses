@@ -57,7 +57,7 @@
 
 <svelte:head>
     <title>{title}</title>
-    <meta name={title} content={description} />
+    <meta name="description" content={description} />
 
     <!-- Facebook Meta Tags -->
     <meta property="og:url" content={url} />
