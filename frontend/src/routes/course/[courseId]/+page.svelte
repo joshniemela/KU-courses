@@ -79,12 +79,6 @@
             <h1 class="text-2xl font-bold md:text-4xl">{course.title}</h1>
             <h2>{course.course_id} - SCIENCE</h2>
 
-            <a
-                href={`https://kurser.ku.dk/course/${course.course_id}`}
-                class="text-kuRed font-bold"
-            >
-                Go to official page
-            </a>
         </div>
         <div class="w-full flex flex-col md:flex-row justify-center">
             <div class="px-4">
@@ -107,6 +101,18 @@
                         <p class="">{emp.email}</p>
                     {/each}
                 </SideCard>
+
+                <SideCard heading={"Exam"}>
+                    {#each course.exams as exam}
+                        <p class="">
+                            {convertExamToString(exam.exam_type)}
+                            {#if exam.minutes}
+                                - ({formatExamDuration(exam.minutes)})
+                            {/if}
+                        </p>
+                    {/each}
+                </SideCard>
+
                 <SideCard heading={"Course Info"}>
                     <p class="">{course.study_level} course</p>
                     <p class="">ECTS: {course.credits}</p>
@@ -128,6 +134,13 @@
                             {/if}
                         {/each}
                     </p>
+
+            <a
+                href={`https://kurser.ku.dk/course/${course.course_id}`}
+                class="text-kuRed font-bold"
+            >
+                Go to official page
+            </a>
                 </SideCard>
                 <SideCard heading={"Workload"}>
                     <!--arrange in a table------------------------------------>
@@ -140,16 +153,6 @@
                         {/each}
                     </table>
                     <p class="font-bold">Total: {totalHours}h</p>
-                </SideCard>
-                <SideCard heading={"Exam"}>
-                    {#each course.exams as exam}
-                        <p class="">
-                            {convertExamToString(exam.exam_type)}
-                            {#if exam.minutes}
-                                - ({formatExamDuration(exam.minutes)})
-                            {/if}
-                        </p>
-                    {/each}
                 </SideCard>
             </div>
         </div>

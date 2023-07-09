@@ -84,7 +84,7 @@
             <p class="">{course.summary}</p>
         </div>
     </div>
-    <div class="bg-kuGray text-white">
+    <div class="bg-kuGray text-white relative">
         {#each course.exams as exam}
             <p class="">
                 {convertExamToString(exam.exam_type)}
@@ -93,12 +93,13 @@
                 {/if}
             </p>
         {/each}
-        {#if false}
+        <!--put this relatively in the bottom right corner of the card-->
+        <div class="w-8 h-8 absolute -bottom-2 right-0">
             {#if course.course_language == "da"}
                 <Dk />
             {:else}
                 <Gb />
             {/if}
-        {/if}
+        </div>
     </div>
 </button>
