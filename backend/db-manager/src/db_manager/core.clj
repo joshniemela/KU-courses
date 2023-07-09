@@ -30,7 +30,6 @@
    :password "admin"
    :stringtype "unspecified"})
 
-
 (def storage (storage/local-storage))
 
 ; limit to 500 requests per hour
@@ -43,6 +42,11 @@
 (def json-dir (str data-dir "json/"))
 
 (def db (jdbc/get-datasource db-config))
+
+(defn wrap-allow-caching [handler]
+  (fn [req]
+    (let [resp (handler req)]
+      (assoc-in resp [:headers "Cache-Control"] "private, max-age=900"))))
 
 ; https://andersmurphy.com/2022/03/27/clojure-removing-namespace-from-keywords-in-response-middleware.html
 (defn transform-keys
@@ -70,7 +74,7 @@
       (api-routes db)]]
     {:data {:coercion reitit.coercion.spec/coercion
             :muuntaja m/instance
-            :middleware [[wrap-cors 
+            :middleware [[wrap-cors
                           :access-control-allow-origin [#".*"]
                           :access-control-allow-methods [:get :post]
                           :access-control-allow-headers #{"accept"
@@ -78,7 +82,9 @@
                                                           "accept-language"
                                                           "authorization"
                                                           "content-type"
-                                                          "origin"}] 
+                                                          "origin"}]
+
+                         wrap-allow-caching
                          #(wrap-rate-limit % rate-limit-config)
                          parameters/parameters-middleware
                          muuntaja/format-middleware

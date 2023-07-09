@@ -9,36 +9,6 @@
   (filter #(seq %) predicates))
 
 ; NEW CODE HERE
-(defn course-query-template [where-clause]
-  (str "SELECT
-	course.title,
-    course.course_id,
-	course.study_level,
-	course.start_block,
-    course.course_language,
-	course.credits,
-	course.duration,
-    course.description,
-    jsonb_agg(DISTINCT to_jsonb(exam) - 'course_id')::TEXT AS exams,
-    jsonb_agg(DISTINCT to_jsonb(employee))::TEXT AS employees,
-	jsonb_agg(DISTINCT to_jsonb(schedule) - 'course_id')::TEXT AS schedules,
-    jsonb_agg(DISTINCT to_jsonb(workload) - 'course_id')::TEXT AS workloads
-FROM
-    course
-JOIN
-    workload ON course.course_id = workload.course_id
-JOIN
-    coordinates ON course.course_id = coordinates.course_id
-JOIN
-    exam ON course.course_id = exam.course_id
-JOIN
-	schedule ON course.course_id = schedule.course_id
-JOIN
-	employee ON employee.email = coordinates.email"
-       (if (empty? (str/replace where-clause #"\(|\)" "")) ; improve this, just check if it is empty
-         ""
-         (str "\nWHERE " where-clause))
-       " GROUP BY course.course_id;"))
 
 (defn generate-search-statements [search-statement]
   (let [category (case (str/lower-case (:category search-statement))
@@ -83,9 +53,66 @@ JOIN
                                         ""
                                         (str/join " AND " searches)))))))
 
-(defn generate-courses-query [predicates]
-  (let [prepared-predicate (generate-statements predicates)]
-    (course-query-template prepared-predicate)))
+(defn course-overview-template [where-clause]
+  (str "SELECT
+	course.title,
+    course.course_id,
+	course.study_level,
+	course.start_block,
+    course.course_language,
+	course.credits,
+	course.duration,
+    course.raw_description,
+    jsonb_agg(DISTINCT to_jsonb(exam) - 'course_id')::TEXT AS exams,
+	jsonb_agg(DISTINCT to_jsonb(schedule) - 'course_id')::TEXT AS schedules
+FROM
+    course
+JOIN
+    coordinates ON course.course_id = coordinates.course_id
+JOIN
+    exam ON course.course_id = exam.course_id
+JOIN
+	schedule ON course.course_id = schedule.course_id
+JOIN
+	employee ON employee.email = coordinates.email"
+       (if (empty? (str/replace where-clause #"\(|\)" "")) ; improve this, just check if it is empty
+         ""
+         (str "\nWHERE " where-clause))
+       " GROUP BY course.course_id;"))
 
+(defn generate-overview-query [predicates]
+  (let [prepared-predicate (generate-statements predicates)]
+    (course-overview-template prepared-predicate)))
+
+(defn course-query-template [where-clause]
+  (str "SELECT
+	course.title,
+    course.course_id,
+	course.study_level,
+	course.start_block,
+    course.course_language,
+	course.credits,
+	course.duration,
+    course.description,
+    jsonb_agg(DISTINCT to_jsonb(exam) - 'course_id')::TEXT AS exams,
+    jsonb_agg(DISTINCT to_jsonb(employee))::TEXT AS employees,
+	jsonb_agg(DISTINCT to_jsonb(schedule) - 'course_id')::TEXT AS schedules,
+    jsonb_agg(DISTINCT to_jsonb(workload) - 'course_id')::TEXT AS workloads
+FROM
+    course
+JOIN
+    workload ON course.course_id = workload.course_id
+JOIN
+    coordinates ON course.course_id = coordinates.course_id
+JOIN
+    exam ON course.course_id = exam.course_id
+JOIN
+	schedule ON course.course_id = schedule.course_id
+JOIN
+	employee ON employee.email = coordinates.email"
+       (if (empty? (str/replace where-clause #"\(|\)" "")) ; improve this, just check if it is empty
+         ""
+         (str "\nWHERE " where-clause))
+       " GROUP BY course.course_id;"))
 (defn generate-course-by-id-query [course-id]
   (course-query-template (str "course.course_id = " (stringify course-id))))

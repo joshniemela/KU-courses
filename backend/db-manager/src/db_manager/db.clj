@@ -7,7 +7,7 @@
             [honey.sql.helpers :refer :all :as h]
             [clojure.set :as set]
             [clojure.data.json :as json]
-            [db-manager.querier :refer [generate-course-by-id-query generate-courses-query]]))
+            [db-manager.querier :refer [generate-course-by-id-query generate-overview-query]]))
 
 (defn nuke-db! [db]
   (jdbc/with-transaction [tx db]
@@ -118,7 +118,18 @@
 (defn get-course-by-id [db course-id]
   (fix-json (jdbc/execute-one! db [(generate-course-by-id-query course-id)])))
 
+(defn fix-overview-query [course]
+  ; exams, schedules, workloads, and coordinators are text that needs to be parsed to json
+  (let [raw-desc (:course/raw_description course)
+        max-len 200]
+    (dissoc (assoc course
+                   :exams (json/read-str (:exams course))
+                   :schedules (json/read-str (:schedules course))
+                   :summary (subs raw-desc 0 (min (count raw-desc) max-len)))
+
+            :course/raw_description)))
+
 (defn get-courses [db predicates]
-  (let [courses (jdbc/execute! db [(generate-courses-query predicates)])]
+  (let [courses (jdbc/execute! db [(generate-overview-query predicates)])]
     ; sort the list of maps alphabetically according to course/title
-    (sort-by #(:course/title %) (map fix-json courses))))
+    (sort-by #(:course/title %) (map fix-overview-query courses))))

@@ -2,25 +2,10 @@
     import { goto } from "$app/navigation";
     import Dk from "../../assets/Dk.svelte";
     import Gb from "../../assets/Gb.svelte";
-    import theme from "../../theme.js";
-    import { empty_course } from "../../course";
-    import type { Course } from "../../course";
+    import { empty_overview } from "../../course";
+    import type { Overview } from "../../course";
     export let stagger = 0;
-    export let course: Course = structuredClone(empty_course);
-
-    /**
-     * Function to extract the first <charLimit> letters from the paragraphs to use for the summary.
-     * @function extractSummary
-     */
-    function extractSummary(charLimit: number): string {
-        return (
-            course.description
-                .map((x) => x.string)
-                .join()
-                .slice(0, charLimit) + "..."
-        );
-    }
-    let summary = extractSummary(200);
+    export let course: Overview = structuredClone(empty_overview);
 
     /**
      * Function to navigate to the course corresponding with the course_id
@@ -53,7 +38,6 @@
 <button
     class="w-full border-2 border-black animate-fadeIn flex flex-col justify-between hover:bg-gray-100"
     on:click={navigateToCourse}
-    on:keydown={navigateToCourse}
 >
     <div class="p-2">
         <div class="flex flex-row justify-between">
@@ -97,9 +81,7 @@
             </table>
         </div>
         <div class="">
-            <!--Remove the first 19 chars to remove "Course Description,"-->
-            <!--TODO: figure out why this happens----------------------------->
-            <p class="">{summary.slice(19)}</p>
+            <p class="">{course.summary}</p>
         </div>
     </div>
     <div class="bg-kuGray text-white">
