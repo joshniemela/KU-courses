@@ -2,8 +2,8 @@
     import { page } from "$app/stores";
     import { empty_course, total_hours } from "../../../course";
     import { onMount } from "svelte";
-    import theme from "../../../theme";
     import Loader from "../../../components/Loader/Loader.svelte";
+    import SideCard from "../../../components/SideCard.svelte";
     import { apiUrl } from "../../../stores";
     import { goto } from "$app/navigation";
 
@@ -61,33 +61,33 @@
         course = res;
         totalHours = total_hours(course);
     });
-
-    const buttonTextColor = theme.colors.brand[200];
-    const buttonBgColor = theme.colors.brand[800];
-    const buttonTextColorHover = theme.colors.brand[900];
-    const buttonBgColorHover = theme.colors.brand[500];
 </script>
 
 {#if loading}
     <Loader />
 {:else}
-    <div class="main-container mt-10">
+    <div class="mt-10 flex flex-col items-center">
         <button
-            class="fixed top-0 mx-auto bg-kuRed text-white font-bold py-2 px-6"
+            class="fixed top-0 mx-auto bg-kuRed text-white font-bold py-1 px-6"
             on:click={() => {
                 window.history.back();
             }}
         >
             Back
         </button>
-        <div class="content-container">
-            <div class="content-container-left">
-                <div class="header-container">
-                    <div>
-                        <h1 class="text-4xl font-bold">{course.title}</h1>
-                        <h2>{course.course_id} - SCIENCE</h2>
-                    </div>
-                </div>
+        <div class="items-left mb-5 px-4">
+            <h1 class="text-2xl font-bold md:text-4xl">{course.title}</h1>
+            <h2>{course.course_id} - SCIENCE</h2>
+
+            <a
+                href={`https://kurser.ku.dk/course/${course.course_id}`}
+                class="text-kuRed font-bold"
+            >
+                Go to official page
+            </a>
+        </div>
+        <div class="w-full flex flex-col md:flex-row justify-center">
+            <div class="px-4">
                 {#each course.description as de}
                     {#if de.type == "h1"}
                         <h1 class="text-xl font-bold">{de.string}</h1>
@@ -98,53 +98,20 @@
                     {/if}
                 {/each}
             </div>
-            <div class="content-container-right">
-                <div
-                    class="side-card"
-                    style="
-                        --bg-color: {theme.colors.neutral[800]};
-                        --text-color: {theme.colors.neutral[200]};
-                        --sub-title-color: {theme.colors.neutral[600]};
-                        --brand-color: {theme.colors.brand[500]};
-                        "
-                >
-                    <h3 class="side-card-heading">Coordinators</h3>
+            <div class="">
+                <SideCard heading={"Coordinators"}>
                     {#each course.employees as emp}
-                        <div class="side-card-name-title">
-                            <p class="side-card-name">{emp.full_name}</p>
+                        <div class="">
+                            <p class="">{emp.full_name}</p>
                         </div>
-                        <p class="side-card-clickable">{emp.email}</p>
+                        <p class="">{emp.email}</p>
                     {/each}
-                </div>
-                <div
-                    class="side-card"
-                    style="
-                        --bg-color: {theme.colors.neutral[800]};
-                        --text-color: {theme.colors.neutral[200]};
-                        --sub-title-color: {theme.colors.neutral[600]};
-                        --brand-color: {theme.colors.brand[500]};
-                        "
-                >
-                    <h3 class="side-card-heading">Info</h3>
-                    <p class="side-card-name">{course.study_level} course</p>
-                    <p class="side-card-name">ECTS: {course.credits}</p>
-                    <a href={`https://kurser.ku.dk/course/${course.course_id}`}>
-                        <p class="side-card-clickable">
-                            https://kurser.ku.dk/course/{course.course_id}
-                        </p>
-                    </a>
-                </div>
-                <div
-                    class="side-card"
-                    style="
-                        --bg-color: {theme.colors.neutral[800]};
-                        --text-color: {theme.colors.neutral[200]};
-                        --sub-title-color: {theme.colors.neutral[600]};
-                        --brand-color: {theme.colors.brand[500]};
-                        "
-                >
-                    <h3 class="side-card-heading">Schedule</h3>
-                    <p class="side-card-name">
+                </SideCard>
+                <SideCard heading={"Course Info"}>
+                    <p class="">{course.study_level} course</p>
+                    <p class="">ECTS: {course.credits}</p>
+
+                    <p class="">
                         Block: {course.start_block}
                         {#if Number(course.duration) > 1}
                             - {Number(course.start_block) +
@@ -152,7 +119,7 @@
                                 1}
                         {/if}
                     </p>
-                    <p class="side-card-name">
+                    <p class="">
                         Schedule group(s): {#each course.schedules as sch}
                             {#if sch != course.schedules[course.schedules.length - 1]}
                                 {sch.schedule_type}, &nbsp
@@ -161,114 +128,30 @@
                             {/if}
                         {/each}
                     </p>
-                </div>
-                <div
-                    class="side-card"
-                    style="
-                        --bg-color: {theme.colors.neutral[800]};
-                        --text-color: {theme.colors.neutral[200]};
-                        --sub-title-color: {theme.colors.neutral[600]};
-                        --brand-color: {theme.colors.brand[500]};
-                        "
-                >
-                    <h3 class="side-card-heading">Workload</h3>
-                    {#each course.workloads as wl}
-                        <p class="side-card-name">
-                            {convertExamToString(wl.workload_type)}: {wl.hours}h
-                        </p>
-                    {/each}
-                    <p class="side-card-clickable">Total: {totalHours}h</p>
-                </div>
-                <div
-                    class="side-card"
-                    style="
-                        --bg-color: {theme.colors.neutral[800]};
-                        --text-color: {theme.colors.neutral[200]};
-                        --sub-title-color: {theme.colors.neutral[600]};
-                        --brand-color: {theme.colors.brand[500]};
-                        "
-                >
-                    <h3 class="side-card-heading">Exam</h3>
+                </SideCard>
+                <SideCard heading={"Workload"}>
+                    <!--arrange in a table------------------------------------>
+                    <table>
+                        {#each course.workloads as wl}
+                            <tr class="border-b-4 border-kuGray">
+                                <td class=""> {wl.workload_type}</td>
+                                <td class="pl-2">{wl.hours}h</td>
+                            </tr>
+                        {/each}
+                    </table>
+                    <p class="font-bold">Total: {totalHours}h</p>
+                </SideCard>
+                <SideCard heading={"Exam"}>
                     {#each course.exams as exam}
-                        <p class="side-card-name">
+                        <p class="">
                             {convertExamToString(exam.exam_type)}
                             {#if exam.minutes}
                                 - ({formatExamDuration(exam.minutes)})
                             {/if}
                         </p>
                     {/each}
-                </div>
+                </SideCard>
             </div>
         </div>
     </div>
 {/if}
-
-<style scoped>
-    .main-container {
-        display: flex;
-        width: 100%;
-        height: 100vh;
-        flex-direction: column;
-        justify-content: center;
-        align-items: center;
-    }
-
-    .header-container {
-        display: flex;
-        width: 100%;
-        flex-direction: row;
-        justify-content: start;
-        align-items: center;
-    }
-
-    .content-container {
-        height: 100%;
-        width: 100%;
-        display: grid;
-        grid-template: 1fr / 4fr 1fr;
-    }
-
-    .content-container-right {
-        height: 92%;
-        width: 92%;
-        padding: 4%;
-        display: flex;
-        flex-direction: column;
-        justify-content: start;
-        align-items: center;
-    }
-
-    .content-container-left {
-        height: 92%;
-        width: 92%;
-        padding: 4%;
-    }
-
-    .side-card {
-        width: 90%;
-        margin-bottom: 2vh;
-        background-color: var(--bg-color);
-        color: var(--text-color);
-        padding: 2%;
-    }
-
-    .side-card-heading {
-        font-size: 1.5rem;
-        color: var(--text-color);
-    }
-    .side-card-name-title {
-        display: flex;
-        flex-direction: row;
-        justify-content: start;
-    }
-    .side-card-name {
-        font-size: 1rem;
-        color: var(--text-color);
-    }
-
-    .side-card-clickable {
-        font-size: 1rem;
-        color: var(--brand-color);
-        margin-bottom: 1vh;
-    }
-</style>
