@@ -9,7 +9,7 @@
     import { onMount } from "svelte";
     import OverviewCard from "../components/OverviewCard/OverviewCard.svelte";
     import type { Overview } from "../course";
- import { browser } from "$app/environment";
+    import { browser } from "$app/environment";
     let loading = true;
     // grab time for testing performance
     let start = new Date().getTime();
@@ -82,6 +82,7 @@
         class="bg-brand-500 text-white px-4 py-0"
         on:click={() => {
             clearAll();
+            collapsed = true;
         }}
     >
         Clear All
