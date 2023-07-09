@@ -47,7 +47,38 @@
     $: $queryStore, browser && fetchCourses();
     // Automatically open the collapsible menu if there are fewer than 100 courses
     $: if (courses.length != 0 && courses.length < 100) collapsed = false;
+
+    // SEO
+    const title = "DISKU - KU Courses 2.0";
+    const description =
+        "A more precise, user-friendly way to browse courses offered by University of Copenhagen which acutally gives you the information you were looking for";
+    const url = "https://disku.jniemela.dk";
 </script>
+
+<svelte:head>
+    <title>{title}</title>
+    <meta name={title} content={description} />
+
+    <!-- Facebook Meta Tags -->
+    <meta property="og:url" content={url} />
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:image" content={`/assets/og-image.png`} />
+    <meta property="og:image:alt" content="DISKU - KU Courses 2.0" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+
+    <!-- Twitter Meta Tags -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta property="twitter:domain" content="disku.jniemela.dk" />
+    <meta property="twitter:url" content={url} />
+    <meta name="twitter:title" content={title} />
+    <meta name="twitter:description" content={description} />
+    <meta name="twitter:image" content={`/assets/og-image.png`} />
+
+    <link rel="canonical" href={url} />
+</svelte:head>
 
 <main class="flex flex-col items-center justify-center space-y-4 mt-10">
     <h1 class="text-brand-500 text-4xl font-bold">KU Courses 2.0</h1>

@@ -61,7 +61,38 @@
         course = res;
         totalHours = total_hours(course);
     });
+
+    // SEO
+    const title = `DISKU - ${course.title}`;
+    const description =
+        "A more precise, user-friendly way to browse courses offered by University of Copenhagen which acutally gives you the information you were looking for";
+    const url = "https://disku.jniemela.dk";
 </script>
+
+<svelte:head>
+    <title>{title}</title>
+    <meta name={title} content={description} />
+
+    <!-- Facebook Meta Tags -->
+    <meta property="og:url" content={url} />
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:image" content={`/assets/og-image.png`} />
+    <meta property="og:image:alt" content="DISKU - KU Courses 2.0" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+
+    <!-- Twitter Meta Tags -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta property="twitter:domain" content="disku.jniemela.dk" />
+    <meta property="twitter:url" content={url} />
+    <meta name="twitter:title" content={title} />
+    <meta name="twitter:description" content={description} />
+    <meta name="twitter:image" content={`/assets/og-image.png`} />
+
+    <link rel="canonical" href={url} />
+</svelte:head>
 
 {#if loading}
     <Loader />
@@ -78,7 +109,6 @@
         <div class="items-left mb-5 px-4">
             <h1 class="text-2xl font-bold md:text-4xl">{course.title}</h1>
             <h2>{course.course_id} - SCIENCE</h2>
-
         </div>
         <div class="w-full flex flex-col md:flex-row justify-center">
             <div class="px-4">
@@ -135,12 +165,12 @@
                         {/each}
                     </p>
 
-            <a
-                href={`https://kurser.ku.dk/course/${course.course_id}`}
-                class="text-kuRed font-bold"
-            >
-                Go to official page
-            </a>
+                    <a
+                        href={`https://kurser.ku.dk/course/${course.course_id}`}
+                        class="text-kuRed font-bold"
+                    >
+                        Go to official page
+                    </a>
                 </SideCard>
                 <SideCard heading={"Workload"}>
                     <!--arrange in a table------------------------------------>
