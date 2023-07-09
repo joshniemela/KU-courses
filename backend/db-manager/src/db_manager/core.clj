@@ -33,7 +33,7 @@
 (def storage (storage/local-storage))
 
 ; limit to 500 requests per hour
-(def limit (ip-rate-limit :limit-id 500 (java.time.Duration/ofHours 1)))
+(def limit (ip-rate-limit :limit-id 1000 (java.time.Duration/ofHours 1)))
 
 (def rate-limit-config {:storage storage :limit limit})
 

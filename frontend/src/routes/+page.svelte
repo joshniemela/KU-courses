@@ -3,32 +3,56 @@
     import TextSearch from "../components/TextSearch.svelte";
     import { queryStore, clearAll } from "../stores";
 
-    // if enter is pressed anywhere, it should search unless in a text box
-    if (typeof window !== "undefined") {
-        window.addEventListener("keydown", (e) => {
-            if (e.key === "Enter") {
-                if (document.activeElement?.tagName !== "INPUT") {
-                    window.location.href = "/browse";
-                }
-            }
+    // browse route content
+    import Loader from "../components/Loader/Loader.svelte";
+    import { apiUrl } from "../stores";
+    import { onMount } from "svelte";
+    import OverviewCard from "../components/OverviewCard/OverviewCard.svelte";
+    import type { Overview } from "../course";
+ import { browser } from "$app/environment";
+    let loading = true;
+    // grab time for testing performance
+    let start = new Date().getTime();
+    let API_URL = apiUrl();
+    let courses: Overview[] = [];
+    let collapsed: boolean = true;
+    const fetchCourses = async () => {
+        loading = true;
+        const filters = $queryStore;
+        console.log(filters);
+        const res = await fetch(`${API_URL}/find-course-overviews`, {
+            method: "POST",
+            headers: {
+                accept: "application/json",
+                "Content-Type": "application/json",
+                // Add caching to save previous API calls
+                "Cache-Control": "max-age=300",
+            },
+            body: JSON.stringify(filters),
         });
-    }
+
+        const json = await res.json();
+        console.log(json.courses[0]);
+        loading = false;
+        console.log(
+            `Time taken to fetch courses: ${new Date().getTime() - start}ms`
+        );
+        courses = json.courses;
+    };
+    onMount(async () => {
+        await fetchCourses();
+    });
+
+    // If the store changes, we should fetch new courses
+    $: $queryStore, browser && fetchCourses();
+    // Automatically open the collapsible menu if there are fewer than 100 courses
+    $: if (courses.length != 0 && courses.length < 100) collapsed = false;
 </script>
 
-<!--pressing enter anywhere should cause it to search------------------------->
 <main class="flex flex-col items-center justify-center space-y-4 mt-10">
     <h1 class="text-brand-500 text-4xl font-bold">KU Courses 2.0</h1>
 
     <TextSearch bind:searches={$queryStore.searches} />
-    <!--Search button, this sends us to /browse------------------------------->
-    <button
-        class="bg-blue-500 text-white px-4 py-0 text-4xl hover:bg-blue-700 w-1/2"
-        on:click={() => {
-            window.location.href = "/browse";
-        }}
-    >
-        Search
-    </button>
     <div class="grid grid-cols-2 gap-4 md:grid-cols-4">
         <CheckboxMenu
             header_name="Block"
@@ -62,4 +86,45 @@
     >
         Clear All
     </button>
+
+    <!--make a collapsible menu that contains the text "foobar" which automatically opens if theres fewer than 100 courses-->
+    <div class="flex flex-col w-full">
+        <div class="flex flex-col w-full">
+            <button
+                class="bg-brand-500 text-white text-xl px-4 py-0"
+                on:click={() => {
+                    collapsed = !collapsed;
+                }}
+            >
+                {collapsed ? "Show" : "Hide"} Courses
+            </button>
+            <div class="bg-kuGray text-center">
+                <p class="text-white px-4 py-0">
+                    {courses.length} courses found
+                </p>
+            </div>
+        </div>
+    </div>
+    {#if !collapsed}
+        <div class="flex flex-col items-center h-screen">
+            {#if loading}
+                <!--put the loader in the centre of the screen always----------------->
+                <Loader />
+            {:else}
+                <div
+                    class="grid grid-flow-row grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 m-4"
+                >
+                    {#each courses as card, i}
+                        <OverviewCard stagger={i} course={card} />
+                    {/each}
+                </div>
+
+                {#if courses.length === 0}
+                    <h1 class="text-3xl text-center mt-10">
+                        No courses found, try broadening your search
+                    </h1>
+                {/if}
+            {/if}
+        </div>
+    {/if}
 </main>
