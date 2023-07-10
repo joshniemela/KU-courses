@@ -1,6 +1,7 @@
 <script lang="ts">
     import CheckboxMenu from "../components/CheckboxMenu.svelte";
     import TextSearch from "../components/TextSearch.svelte";
+    import Footer from "../components/Footer/Footer.svelte";
     import { queryStore, clearAll } from "../stores";
 
     // browse route content
@@ -160,3 +161,5 @@
         </div>
     {/if}
 </main>
+
+<Footer />
