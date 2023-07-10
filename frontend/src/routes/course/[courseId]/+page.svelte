@@ -4,6 +4,7 @@
     import { onMount } from "svelte";
     import Loader from "../../../components/Loader/Loader.svelte";
     import SideCard from "../../../components/SideCard.svelte";
+    import Footer from "../../../components/Footer/Footer.svelte";
     import { apiUrl } from "../../../stores";
     import { goto } from "$app/navigation";
 
@@ -188,4 +189,6 @@
             </div>
         </div>
     </div>
+
+    <Footer></Footer>
 {/if}
