@@ -6,7 +6,7 @@
     <div class="text-sm">
         <span class="block">
             Developed by
-            <a class="underline font-bold" href="jniemela.dk">
+            <a class="underline font-bold" href="https://jniemela.dk">
                 Joshua Niemelä
             </a>
             and
