@@ -190,5 +190,5 @@
         </div>
     </div>
 
-    <Footer></Footer>
+    <Footer />
 {/if}

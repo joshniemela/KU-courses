@@ -162,4 +162,4 @@
     {/if}
 </main>
 
-<Footer></Footer>
+<Footer />
