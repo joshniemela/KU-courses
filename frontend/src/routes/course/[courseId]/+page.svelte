@@ -24,8 +24,6 @@
             },
         });
         const json = await res.json();
-        console.log(json);
-        console.log(json.employees[0].email);
         loading = false;
         return json;
     };
@@ -57,9 +55,7 @@
     }
 
     onMount(async () => {
-        const res = await fetchCourse(courseId);
-        console.log(res.employees);
-        course = res;
+        const course = await fetchCourse(courseId);
         totalHours = total_hours(course);
     });
 

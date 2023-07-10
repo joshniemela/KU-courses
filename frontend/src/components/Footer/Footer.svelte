@@ -1,8 +1,18 @@
 <script lang="ts">
     import Github from "../../assets/Github.svelte";
+    import { obfuscateEmail } from "../../stores";
+    import { onMount } from "svelte";
+
+    let email_fn = () => "";
+
+    onMount(() => {
+        email_fn = obfuscateEmail("josh@jniemela.dk");
+    });
 </script>
 
-<footer class="mt-10 px-2 md:w-1/2 md:px-0 mx-auto py-4 border-t-2 border-kuGray flex justify-between items-center">
+<footer
+    class="mt-10 px-2 md:w-1/2 md:px-0 mx-auto py-4 border-t-2 border-kuGray flex justify-between items-center"
+>
     <div class="text-sm">
         <span class="block">
             Developed by
@@ -10,20 +20,26 @@
                 Joshua Niemelä
             </a>
             and
-            <a class="underline font-bold"
+            <a
+                class="underline font-bold"
                 href="https://github.com/joshniemela/KU-courses/graphs/contributors"
             >
                 others
             </a>
         </span>
         <span class="block">
-            <a class="underline font-bold" href="mailto:josh@jniemela.dk">josh@jniemela.dk</a>
+            <a class="underline font-bold" href="mailto:{email_fn()}">
+                {email_fn()}
+            </a>
         </span>
     </div>
     <div class="flex space-x-4 text-sm">
-        
-        <a class="block animated-icon" target="_blank" href="https://github.com/joshniemela/KU-courses">
-            <Github classes="w-6 h-6"></Github>
+        <a
+            class="block animated-icon"
+            target="_blank"
+            href="https://github.com/joshniemela/KU-courses"
+        >
+            <Github classes="w-6 h-6" />
         </a>
     </div>
 </footer>

@@ -65,3 +65,14 @@ export function apiUrl() {
   // if running on another host, assume we are in prod
   return "https://" + hostname + "/api";
 }
+
+function xorString(str: string, key: number): string {
+  return str.split("").map(char => String.fromCharCode(char.charCodeAt(0) ^ key)).join("");
+}
+// mail obfuscator/deobfuscator using XOR, this should return a function with no arguments that returns a string
+export function obfuscateEmail(email: string): () => string {
+  // generate the key by summing the char codes of the email and mod 256
+  const key = email.split("").reduce((acc, char) => acc + char.charCodeAt(0), 0) % 256;
+  const obfuscated = xorString(email, key);
+  return () => xorString(obfuscated, key);
+}
