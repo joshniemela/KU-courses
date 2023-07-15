@@ -65,7 +65,7 @@
 
     const description =
         "A more precise, user-friendly way to browse courses offered by University of Copenhagen which acutally gives you the information you were looking for";
-    const url = "https://disku.jniemela.dk";
+    const url = "https://disku.jniemela.dk/course/" + courseId;
 </script>
 
 <svelte:head>
