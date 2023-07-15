@@ -139,7 +139,7 @@
         </div>
     </div>
     {#if !collapsed}
-        <div class="flex flex-col items-center h-screen">
+        <div class="flex flex-col items-center">
             {#if loading}
                 <!--put the loader in the centre of the screen always----------------->
                 <Loader />

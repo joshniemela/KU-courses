@@ -55,7 +55,8 @@
     }
 
     onMount(async () => {
-        const course = await fetchCourse(courseId);
+        const res = await fetchCourse(courseId);
+        course = res;
         totalHours = total_hours(course);
     });
 
