@@ -8,7 +8,15 @@
     // </Navbar>
 </script>
 
-<Analytics />
+<svelte:head>
+
+<!-- analtyics -->
+	<script 
+		async
+		src='//gc.zgo.at/count.js'
+		data-goatcounter='https://jnimela.goatcounter.com/count'
+	></script>
+</svelte:head>
 
 <div class="main">
     <div class="slot-container content-offset">
