@@ -8,7 +8,7 @@
 
 <div class="">
     <div class="bg-kuGray text-white text-center px-2 py-1 w-full">
-        <h1>{header_name}</h1>
+        <h2>{header_name}</h2>
     </div>
 
     <div class="flex flex-col">
