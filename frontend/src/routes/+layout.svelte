@@ -1,7 +1,6 @@
 <script lang="ts">
     import Navbar from "../components/Navbar/Navbar.svelte";
     import "../app.css";
-    import Analytics from "../components/Analytics.svelte";
 
     // <Navbar>
     //     <slot name="navbar" />
@@ -14,7 +13,7 @@
 	<script 
 		async
 		src='//gc.zgo.at/count.js'
-		data-goatcounter='https://jnimela.goatcounter.com/count'
+		data-goatcounter='https://disku.goatcounter.com/count'
 	></script>
 </svelte:head>
 
