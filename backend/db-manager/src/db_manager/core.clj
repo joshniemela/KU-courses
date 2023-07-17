@@ -16,7 +16,6 @@
             [db-manager.cli :refer [parse-cli scrape-courses!]]
             [next.jdbc :as jdbc]
             [next.jdbc.types :refer [as-other]]
-            [honey.sql :as sql]
             [ring.middleware.cors :refer [wrap-cors]]
             [io.staticweb.rate-limit.storage :as storage]
             [io.staticweb.rate-limit.middleware :refer [wrap-rate-limit ip-rate-limit]])
@@ -29,19 +28,16 @@
    :user "admin"
    :password "admin"
    :stringtype "unspecified"})
+(def db (jdbc/get-datasource db-config))
 
 (def storage (storage/local-storage))
 
-; limit to 500 requests per hour
+; limit each IP to 1000 api calls per hour
 (def limit (ip-rate-limit :limit-id 1000 (java.time.Duration/ofHours 1)))
-
 (def rate-limit-config {:storage storage :limit limit})
 
 (def data-dir "../../data/")
-
 (def json-dir (str data-dir "json/"))
-
-(def db (jdbc/get-datasource db-config))
 
 ; https://andersmurphy.com/2022/03/27/clojure-removing-namespace-from-keywords-in-response-middleware.html
 (defn transform-keys
@@ -69,6 +65,7 @@
       (api-routes db)]]
     {:data {:coercion reitit.coercion.spec/coercion
             :muuntaja m/instance
+            ; TODO: fix the CORS middleware, it seems to not work for Chromium
             :middleware [[wrap-cors
                           :access-control-allow-origin [#".*"]
                           :access-control-allow-methods [:get :post]
@@ -90,7 +87,7 @@
                                            :url "/api/swagger.json"})
     (ring/create-default-handler))))
 
-; read every json in data-dir
+; Read every json in data-dir
 (defn read-json [file]
   (json/read-str (slurp (str json-dir file)) :key-fn keyword))
 
@@ -100,6 +97,7 @@
 
 (def courses (map read-json course-files))
 
+; This is responsible for coercing the data into the enums expected by Postgres
 (defn coerce-as-other [course-map]
   ; make schedule_group into "as-other"
   (-> course-map
@@ -121,7 +119,6 @@
 (def coerced-courses (pmap coerce-as-other courses))
 
 (def main-config {:port 3000})
-
 (defn -main [& args]
   (let [args (parse-cli args)]
     ; this runs if -s is passed

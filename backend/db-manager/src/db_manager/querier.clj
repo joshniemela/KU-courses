@@ -1,14 +1,13 @@
 (ns db-manager.querier
   (:require [clojure.string :as str]))
 
+; Postgres has both ordinary strings and double dollar strings,
+; this function converts ordinary strings to double dollar strings to avoid SQL injection
 (defn stringify [val]
-  ; psql has double dollar seprated strings, this is used to avoid injection, and therefore we need to remove any $ in the string
   (str "$$" (clojure.string/replace val #"\$" "") "$$"))
 
 (defn rm-empty [predicates]
   (filter #(seq %) predicates))
-
-; NEW CODE HERE
 
 (defn generate-search-statements [search-statement]
   (let [category (case (str/lower-case (:category search-statement))
@@ -23,7 +22,27 @@
          category " %> " (stringify query) " ))")))
 
 ; input example
-;{"block":[],"study_level":[],"schedule_group":["C"],"examination_type":[],"searches":[{"category":"Title","query":"linear algebra","fuzzy":true},{"category":"Coordinator","query":"troels","fuzzy":true}]}
+;{
+;  "block": [],
+;  "study_level": [],
+;  "schedule_group": [
+;    "C"
+;  ],
+;  "examination_type": [],
+;  "searches": [
+;    {
+;      "category": "Title",
+;      "query": "linear algebra",
+;      "fuzzy": true
+;    },
+;    {
+;      "category": "Coordinator",
+;      "query": "troels",
+;      "fuzzy": true
+;    }
+;  ]
+;}
+; TODO: this should not be a function we need, but it is required since the parser and frontend are not in sync
 (defn convert-exam [exam-type]
   (stringify (case (str/lower-case exam-type)
                "written" "written_examination"
@@ -31,6 +50,7 @@
                "continuous assessment" "continuous_assessment"
                "assignment" "written_assignment")))
 
+; Takes the input JSON and generates a SQL snippet
 (defn generate-statements [predicates]
   (let [block (map stringify (:block predicates))
         study_level (map stringify (:study_level predicates))
@@ -53,6 +73,7 @@
                                         ""
                                         (str/join " AND " searches)))))))
 
+; Takes the input JSON and generates a SQL query
 (defn course-overview-template [where-clause]
   (str "SELECT
 	course.title,
