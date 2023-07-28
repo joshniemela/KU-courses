@@ -6,7 +6,8 @@ exam,
 title,
 coordinates,
 employee,
-workload;
+workload,
+department;
 DROP TYPE IF EXISTS schedule_enum,
 block_enum,
 exam_enum,

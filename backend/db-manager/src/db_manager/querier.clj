@@ -55,6 +55,7 @@
   (let [block (map stringify (:block predicates))
         study_level (map stringify (:study_level predicates))
         schedule_group (map stringify (:schedule_group predicates))
+        department (map stringify (:department predicates))
         examination_type (map convert-exam (:examination_type predicates))
         searches (map generate-search-statements (:searches predicates))]
     (str/join " AND " (rm-empty (list (if (empty? block)
@@ -69,6 +70,9 @@
                                       (if (empty? examination_type)
                                         ""
                                         (str "exam.exam_type IN ( " (str/join ", " examination_type) " )"))
+                                      (if (empty? department)
+                                        ""
+                                        (str "department.department_type IN ( " (str/join ", " department) " )"))
                                       (if (empty? searches)
                                         ""
                                         (str/join " AND " searches)))))))
@@ -95,7 +99,9 @@ JOIN
 JOIN
 	schedule ON course.course_id = schedule.course_id
 JOIN
-	employee ON employee.email = coordinates.email"
+	employee ON employee.email = coordinates.email
+JOIN
+    department ON course.course_id = department.course_id"
        (if (empty? (str/replace where-clause #"\(|\)" "")) ; improve this, just check if it is empty
          ""
          (str "\nWHERE " where-clause))
@@ -118,7 +124,8 @@ JOIN
     jsonb_agg(DISTINCT to_jsonb(exam) - 'course_id')::TEXT AS exams,
     jsonb_agg(DISTINCT to_jsonb(employee))::TEXT AS employees,
 	jsonb_agg(DISTINCT to_jsonb(schedule) - 'course_id')::TEXT AS schedules,
-    jsonb_agg(DISTINCT to_jsonb(workload) - 'course_id')::TEXT AS workloads
+    jsonb_agg(DISTINCT to_jsonb(workload) - 'course_id')::TEXT AS workloads,
+    jsonb_agg(DISTINCT to_jsonb(department) - 'course_id')::TEXT AS departments
 FROM
     course
 JOIN
@@ -130,7 +137,9 @@ JOIN
 JOIN
 	schedule ON course.course_id = schedule.course_id
 JOIN
-	employee ON employee.email = coordinates.email"
+	employee ON employee.email = coordinates.email
+JOIN
+    department ON course.course_id = department.course_id"
        (if (empty? (str/replace where-clause #"\(|\)" "")) ; improve this, just check if it is empty
          ""
          (str "\nWHERE " where-clause))

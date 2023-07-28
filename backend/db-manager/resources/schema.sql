@@ -38,6 +38,12 @@ CREATE TABLE IF NOT EXISTS schedule (
 	course_id char(10) NOT NULL,
 	schedule_type schedule_enum NOT NULL
 );
+
+CREATE TABLE IF NOT EXISTS department (
+	course_id char(10) NOT NULL,
+	department_type text NOT NULL
+);
+
 -- Add constraints
 ALTER TABLE exam
 ADD CONSTRAINT fk_course_id FOREIGN KEY (course_id) REFERENCES course (course_id);
@@ -51,4 +57,7 @@ ALTER TABLE workload
 ADD CONSTRAINT fk_course_id FOREIGN KEY (course_id) REFERENCES course (course_id);
 ALTER TABLE schedule
 ADD CONSTRAINT fk_course_id FOREIGN KEY (course_id) REFERENCES course (course_id);
+ALTER TABLE department
+ADD CONSTRAINT fk_course_id FOREIGN KEY (course_id) REFERENCES course (course_id);
+
 END;

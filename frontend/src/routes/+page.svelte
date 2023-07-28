@@ -1,5 +1,6 @@
 <script lang="ts">
     import CheckboxMenu from "../components/CheckboxMenu.svelte";
+    import BigCheckbox from "../components/BigCheckbox.svelte";
     import TextSearch from "../components/TextSearch.svelte";
     import Footer from "../components/Footer/Footer.svelte";
     import { queryStore, clearAll } from "../stores";
@@ -40,6 +41,31 @@
         );
         courses = json.courses;
     };
+    const institutes: string[] = [
+        "Department of Geoscience and Natural Resource Management", // 190
+        "Department of Mathematics", // 130
+        "Department of Food and Resource Economics", // 95
+        "Department of Biology", // 93
+        "Department of Computer Science", // 92
+        "The Niels Bohr Institute", // 90
+        "Department of Plant and Environmental Sciences", // 75
+        "Department of Chemistry", // 63
+        "Department of Nutrition, Exercise and Sports", // 53
+        "Department of Food Science", // 43
+        "Department of Sports Science and Clinical Biomechanics", // 16
+        "Department of Science Education", // 16
+        "The Natural History Museum", // 14
+        "Department of Veterinary and Animal Sciences", // 10
+        //"Department of Drug Design and Pharmacology", // 4
+        //"Department of Media, Cognition and Communication", // 3
+        //"Department of Public Health", // 2
+        //"Department of Pharmacy", // 2
+        //"Department of Neuroscience", // 1
+        //"Department of Veterinary Disease Biology", // 1
+        //"Department of Cellular and Molecular Medicine", // 1
+        //"Department of Biomedical Sciences", // 1
+    ];
+
     onMount(async () => {
         await fetchCourses();
     });
@@ -85,31 +111,45 @@
     <h1 class="text-brand-500 text-4xl font-bold">KU Courses 2.0</h1>
 
     <TextSearch bind:searches={$queryStore.searches} />
-    <div class="grid grid-cols-2 gap-4 md:grid-cols-4">
-        <CheckboxMenu
-            header_name="Block"
-            options={["1", "2", "3", "4", "5"]}
-            bind:selected={$queryStore.block}
-        />
+    <div>
+        <div class="grid grid-cols-2 gap-4 md:grid-cols-4">
+            <CheckboxMenu
+                header_name="Block"
+                options={["1", "2", "3", "4", "5"]}
+                bind:selected={$queryStore.block}
+            />
 
-        <CheckboxMenu
-            header_name="Study Level"
-            options={["Bachelor", "Master"]}
-            bind:selected={$queryStore.study_level}
-        />
+            <CheckboxMenu
+                header_name="Study Level"
+                options={["Bachelor", "Master"]}
+                bind:selected={$queryStore.study_level}
+            />
 
-        <CheckboxMenu
-            header_name="Schedule Group"
-            options={["A", "B", "C", "D"]}
-            bind:selected={$queryStore.schedule_group}
-        />
+            <CheckboxMenu
+                header_name="Schedule Group"
+                options={["A", "B", "C", "D"]}
+                bind:selected={$queryStore.schedule_group}
+            />
 
-        <CheckboxMenu
-            header_name="Examination Type"
-            options={["Written", "Oral", "Assignment", "Continuous Assessment"]}
-            bind:selected={$queryStore.examination_type}
+            <CheckboxMenu
+                header_name="Examination Type"
+                options={[
+                    "Written",
+                    "Oral",
+                    "Assignment",
+                    "Continuous Assessment",
+                ]}
+                bind:selected={$queryStore.examination_type}
+            />
+        </div>
+
+        <BigCheckbox
+            header_name="Department"
+            options={institutes}
+            bind:selected={$queryStore.department}
         />
     </div>
+
     <button
         class="bg-brand-500 text-white px-4 py-0"
         on:click={() => {

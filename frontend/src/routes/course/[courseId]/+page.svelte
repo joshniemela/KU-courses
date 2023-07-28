@@ -164,6 +164,8 @@
                         {/each}
                     </p>
 
+                    <p class="flex flex-col" />
+
                     <a
                         href={`https://kurser.ku.dk/course/${course.course_id}`}
                         class="text-kuRed font-bold"
@@ -171,6 +173,14 @@
                         Go to official page
                     </a>
                 </SideCard>
+                <SideCard heading={"Department(s)"}>
+                    {#each course.departments as dep}
+                        <p class="mb-2">
+                            {dep.department_type}
+                        </p>
+                    {/each}
+                </SideCard>
+
                 <SideCard heading={"Workload"}>
                     <!--arrange in a table------------------------------------>
                     <table>

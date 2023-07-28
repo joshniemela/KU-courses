@@ -35,6 +35,7 @@
               nodejs
               leiningen
               pipenv
+              python311
 
               # browsers for testing
               firefox
