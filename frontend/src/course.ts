@@ -37,6 +37,7 @@ export type Course = {
   workloads: Workload[];
   exams: Exam[];
   description: Description[];
+  departments: string[];
 };
 
 export const empty_course: Course = {
@@ -53,6 +54,7 @@ export const empty_course: Course = {
   workloads: [],
   exams: [],
   description: [],
+  departments: [],
 };
 
 
