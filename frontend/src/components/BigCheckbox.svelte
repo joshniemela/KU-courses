@@ -4,16 +4,21 @@
     export let header_name: string;
     export let options: string[];
     export let selected: string[];
+
+    export let show = false;
 </script>
 
-<div class="flex flex-col w-full">
-    <div class="bg-kuGray text-white text-center px-2 py-1">
-        <h2>{header_name}</h2>
+<div class="flex flex-col w-full text-sm md:text-base">
+    <div
+        class="bg-kuRed text-white text-center px-2 py-1"
+        on:click={() => (show = !show)}
+    >
+        <h2>{show ? "Hide" : "Show"} {header_name}s</h2>
     </div>
 
-    <div class="flex flex-col">
+    <div class="flex flex-col {show ? 'visible' : 'collapse'}">
         <button
-            class="bg-kuRed text-white text-center text-xs {selected.length
+            class="bg-kuRed text-white mt-2 text-center text-xs {selected.length
                 ? 'visible'
                 : 'invisible'}"
             on:click={() => (selected = [])}>Clear</button
