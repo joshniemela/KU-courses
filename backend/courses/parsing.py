@@ -815,7 +815,9 @@ def final_cleanup(c):
 def get_departments(course):
     departments = course["contracting departments"]
     departments = [translate_institute(d.replace("\n", " ")) for d in departments]
-    course["contracting departments"] = departments
+    # convert into a list of maps of {department_name: course_id}
+    course["departments"] = [{"department_type": d} for d in departments]
+    del course["contracting departments"]
     return course
 
 

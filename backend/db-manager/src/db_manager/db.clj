@@ -66,6 +66,12 @@
                                                         [:course_id :exam_type :minutes])
                                           exams))))
 
+(defn insert-departments! [ds course-emp-map]
+  (let [departments (:departments course-emp-map)]
+    (jdbc.sql/insert-multi! ds :department (map #(select-keys (assoc % :course_id (:course_id course-emp-map))
+                                                              [:course_id :department_type])
+                                                departments))))
+
 (defn insert-course-emp! [db course-emp-map]
   (jdbc/with-transaction [tx db]
     (insert-course! tx course-emp-map)
@@ -73,7 +79,8 @@
     (insert-coordinates! tx course-emp-map)
     (insert-workloads! tx course-emp-map)
     (insert-schedule-groups! tx course-emp-map)
-    (insert-exams! tx course-emp-map)))
+    (insert-exams! tx course-emp-map)
+    (insert-departments! tx course-emp-map)))
 
 (defn populate-courses! [db courses]
   (println (str "Populating database with " (count courses) " courses"))
@@ -113,6 +120,7 @@
          :schedules (json/read-str (:schedules course))
          :workloads (json/read-str (:workloads course))
          :employees (json/read-str (:employees course))
+         :departments (json/read-str (:departments course))
          :course/description (json/read-str (:course/description course))))
 
 (defn get-course-by-id [db course-id]

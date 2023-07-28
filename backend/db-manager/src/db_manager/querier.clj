@@ -118,7 +118,8 @@ JOIN
     jsonb_agg(DISTINCT to_jsonb(exam) - 'course_id')::TEXT AS exams,
     jsonb_agg(DISTINCT to_jsonb(employee))::TEXT AS employees,
 	jsonb_agg(DISTINCT to_jsonb(schedule) - 'course_id')::TEXT AS schedules,
-    jsonb_agg(DISTINCT to_jsonb(workload) - 'course_id')::TEXT AS workloads
+    jsonb_agg(DISTINCT to_jsonb(workload) - 'course_id')::TEXT AS workloads,
+    jsonb_agg(DISTINCT to_jsonb(department) - 'course_id')::TEXT AS departments
 FROM
     course
 JOIN
@@ -130,7 +131,9 @@ JOIN
 JOIN
 	schedule ON course.course_id = schedule.course_id
 JOIN
-	employee ON employee.email = coordinates.email"
+	employee ON employee.email = coordinates.email
+JOIN
+    department ON course.course_id = department.course_id"
        (if (empty? (str/replace where-clause #"\(|\)" "")) ; improve this, just check if it is empty
          ""
          (str "\nWHERE " where-clause))
