@@ -33,6 +33,7 @@ const emptyQuery = {
   schedule_group: [],
   examination_type: [],
   searches: [],
+  department: [],
 };
 
 export const queryStore = writableSession("query", emptyQuery);
@@ -45,6 +46,7 @@ export function clearAll() {
     store.schedule_group = [];
     store.examination_type = [];
     store.searches = [];
+    store.department = [];
     return store;
   });
 }
