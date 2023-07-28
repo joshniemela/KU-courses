@@ -43,6 +43,46 @@ dk_to_en_faculties = {
     "Det Samfundsvidenskabelige Fakultet": "Faculty of Social Sciences",
 }
 
+def translate_institute(institute):
+    danish_to_english_institutes = {
+        'Department of Mathematical Sciences': 'Department of Mathematics',
+        'Department of Science Education': 'Department of Science Education',
+        'Department of Pharmacy': 'Department of Pharmacy',
+        'Institut for Naturfagenes Didaktik': 'Department of Science Education',
+        'Institut for Plante- og Miljøvidenskab': 'Department of Plant and Environmental Sciences',
+        'The Natural History Museum of Denmark': 'The Natural History Museum',
+        'Department of Nutrition, Exercise and Sports': 'Department of Sports Science and Clinical Biomechanics',
+        'Department of Geoscience and Natural Resource Management': 'Department of Geoscience and Natural Resource Management',
+        'Department of Food and Resource Economics': 'Department of Food and Resource Economics',
+        'Department of Neuroscience and Pharmacology': 'Department of Neuroscience',
+        'Department of Food Science': 'Department of Food Science',
+        'The Niels Bohr Institute': 'The Niels Bohr Institute',
+        'Institut for Fødevarevidenskab': 'Department of Food Science',
+        'Institut for Veterinær Sygdomsbiologi': 'Department of Veterinary Disease Biology',
+        'Department of Computer Science': 'Department of Computer Science',
+        'Institut for Idræt og Ernæring': 'Department of Nutrition, Exercise and Sports',
+        'Department of Biology': 'Department of Biology',
+        'Department of Plant and Environmental Sciences': 'Department of Plant and Environmental Sciences',
+        'Institut for Lægemiddeldesign og Farmakologi': 'Department of Drug Design and Pharmacology',
+        'Niels Bohr Institutet': 'The Niels Bohr Institute',
+        'Institut for Fødevare- og Ressourceøkonomi': 'Department of Food and Resource Economics',
+        'Department of Veterinary and Animal Sciences': 'Department of Veterinary and Animal Sciences',
+        'Institut for Veterinær- og Husdyrvidenskab (IVH)': 'Department of Veterinary and Animal Sciences',
+        'Statens Naturhistoriske Museum': 'The Natural History Museum',
+        'Department of Cellular and Molecular Medicine': 'Department of Cellular and Molecular Medicine',
+        'Department of Biomedical Sciences': 'Department of Biomedical Sciences',
+        'Department of Public Health': 'Department of Public Health',
+        'Institut for Matematiske Fag': 'Department of Mathematics',
+        'Biologisk Institut': 'Department of Biology',
+        'Datalogisk Institut': 'Department of Computer Science',
+        'Department of Media, Cognition and Communication': 'Department of Media, Cognition and Communication',
+        'Department of Chemistry': 'Department of Chemistry',
+        'Kemisk Institut': 'Department of Chemistry',
+        'Department of Drug Design and Pharmacology': 'Department of Drug Design and Pharmacology',
+        'Institut for Geovidenskab og Naturforvaltning': 'Department of Geoscience and Natural Resource Management',
+    }
+    return danish_to_english_institutes[institute]
+
 
 def fixstring(sld):
     if isinstance(sld, str):
@@ -772,6 +812,13 @@ def final_cleanup(c):
     return c
 
 
+def get_departments(course):
+    departments = course["contracting departments"]
+    departments = [translate_institute(d.replace("\n", " ")) for d in departments]
+    course["contracting departments"] = departments
+    return course
+
+
 def get_all_info(url):
     site = {**get_panel_info(url), **get_course_items2(url)}
     # Translate keys to english
@@ -787,7 +834,7 @@ def get_all_info(url):
     else:
         site["contracting faculty"] = faculty
 
-    # Only keep the science dept:
+    # Only keep the science dept: #TODO: remove this when we have all departments
     if not site["contracting faculty"] == "Faculty of Science":
         return None
 
@@ -804,8 +851,9 @@ def get_all_info(url):
         normalise_examkeys,
         type_of_assessmentfixer,
         course_start_and_duration,
+        get_departments,
         fix_schedule_group,
-        final_cleanup,
+        final_cleanup
     ]
 
     for func in pipeline:
@@ -814,6 +862,7 @@ def get_all_info(url):
 
 
 # THIS IS USED TO DEOBFUSCATE TAGS IN COURSE COORDINATORS
+# TODO: both offset and mod affect the same variable, so they can be removed and replaced with a single variable
 def attempt_deobfuscate(s, mod, offset):
     s = s.split("-")
     if len(s) == 1:
