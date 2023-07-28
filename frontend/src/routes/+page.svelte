@@ -42,28 +42,28 @@
         courses = json.courses;
     };
     const institutes: string[] = [
-        "Department of Mathematics",
-        "Department of Science Education",
-        "Department of Pharmacy",
-        "Department of Plant and Environmental Sciences",
-        "The Natural History Museum",
-        "Department of Sports Science and Clinical Biomechanics",
-        "Department of Geoscience and Natural Resource Management",
-        "Department of Food and Resource Economics",
-        "Department of Neuroscience",
-        "Department of Food Science",
-        "The Niels Bohr Institute",
-        "Department of Veterinary Disease Biology",
-        "Department of Computer Science",
-        "Department of Nutrition, Exercise and Sports",
-        "Department of Biology",
-        "Department of Drug Design and Pharmacology",
-        "Department of Veterinary and Animal Sciences",
-        "Department of Cellular and Molecular Medicine",
-        "Department of Biomedical Sciences",
-        "Department of Public Health",
-        "Department of Media, Cognition and Communication",
-        "Department of Chemistry",
+        "Department of Geoscience and Natural Resource Management", // 190
+        "Department of Mathematics", // 130
+        "Department of Food and Resource Economics", // 95
+        "Department of Biology", // 93
+        "Department of Computer Science", // 92
+        "The Niels Bohr Institute", // 90
+        "Department of Plant and Environmental Sciences", // 75
+        "Department of Chemistry", // 63
+        "Department of Nutrition, Exercise and Sports", // 53
+        "Department of Food Science", // 43
+        "Department of Sports Science and Clinical Biomechanics", // 16
+        "Department of Science Education", // 16
+        "The Natural History Museum", // 14
+        "Department of Veterinary and Animal Sciences", // 10
+        //"Department of Drug Design and Pharmacology", // 4
+        //"Department of Media, Cognition and Communication", // 3
+        //"Department of Public Health", // 2
+        //"Department of Pharmacy", // 2
+        //"Department of Neuroscience", // 1
+        //"Department of Veterinary Disease Biology", // 1
+        //"Department of Cellular and Molecular Medicine", // 1
+        //"Department of Biomedical Sciences", // 1
     ];
 
     onMount(async () => {
