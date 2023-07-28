@@ -13,7 +13,10 @@
         class="bg-kuRed text-white text-center px-2 py-1"
         on:click={() => (show = !show)}
     >
-        <h2>{show ? "Hide" : "Show"} {header_name}s</h2>
+        <h2>
+            {show ? "Hide" : "Show"}
+            {header_name}s {selected.length ? `(${selected.length})` : ""}
+        </h2>
     </div>
 
     <div class="flex flex-col {show ? 'visible' : 'collapse'}">

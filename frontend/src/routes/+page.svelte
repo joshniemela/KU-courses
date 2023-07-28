@@ -46,8 +46,8 @@
         "Department of Mathematics", // 130
         "Department of Food and Resource Economics", // 95
         "Department of Biology", // 93
-        "Department of Computer Science", // 92
-        "The Niels Bohr Institute", // 90
+        "Department of Computer Science (DIKU)", // 92
+        "The Niels Bohr Institute (Physics)", // 90
         "Department of Plant and Environmental Sciences", // 75
         "Department of Chemistry", // 63
         "Department of Nutrition, Exercise and Sports", // 53
