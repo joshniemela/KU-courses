@@ -14,12 +14,9 @@
                    "title" "course.title"
                    "description" "course.raw_description"
                    "coordinator" "employee.full_name")
-        query (str/lower-case (:query search-statement))
-        ;fuzzy (:fuzzy search-statement)]
-        ]
-    ;TODO: implement exact search, right now it is always fuzzy
-    (str "(( " category " % " (stringify query) " ) OR ( "
-         category " %> " (stringify query) " ))")))
+        query (str/lower-case (:query search-statement))]
+    ; if category is course.raw_description, do not use %, but always use %> either way
+    (str "( " category " %> " (stringify query) (when-not (= category "course.raw_description") " OR " category " % " (stringify query)) ")")))
 
 ; input example
 ;{
