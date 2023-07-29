@@ -12,6 +12,9 @@ CREATE TABLE IF NOT EXISTS course (
 	credits numeric(3, 1),
 	study_level study_enum
 );
+
+CREATE INDEX IF NOT EXISTS desc_idx ON course USING GIN (raw_description gin_trgm_ops);
+
 CREATE TABLE IF NOT EXISTS exam (
 	course_id char(10) NOT NULL,
 	exam_type exam_enum NOT NULL,
