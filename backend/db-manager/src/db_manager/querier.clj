@@ -16,7 +16,7 @@
                    "coordinator" "employee.full_name")
         query (str/lower-case (:query search-statement))]
     ; if category is course.raw_description, do not use %, but always use %> either way
-    (str "( " category " %> " (stringify query) (when-not (= category "course.raw_description") " OR " category " % " (stringify query)) ")")))
+    (str "( " category " %> " (stringify query) (when-not (= category "course.raw_description") (str " OR " category " % " (stringify query))) ")")))
 
 ; input example
 ;{
