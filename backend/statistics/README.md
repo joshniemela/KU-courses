@@ -1,6 +1,5 @@
 # statistics
-
-A Clojure library designed to ... well, that part is up to you.
+This part is responsible for harvesting the statistics for courses
 
 ## Usage
 
