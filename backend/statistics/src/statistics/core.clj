@@ -29,6 +29,11 @@
 ; =>
 ; https://karakterstatistik.stads.ku.dk/Histogram/NDAA09023E/Winter-2022
 
+
+; scrape the table with the grades for reeksamen and the ordinary exam
+; only important information is the total numebr of people who took were signed up, total attending, passed and then the table with exam grades where only the numbers are important since hte order and percentage are known
+
+; Make one function that takes a map containing hte course code and the block name and returns the statistics map
 (defn -main
   "I don't do a whole lot ... yet."
   [& args]
