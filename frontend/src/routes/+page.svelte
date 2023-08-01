@@ -112,7 +112,7 @@
 
     <TextSearch bind:searches={$queryStore.searches} />
     <div>
-        <div class="grid grid-cols-2 gap-4 md:grid-cols-4">
+        <div class="grid grid-cols-2 gap-4 pb-2 md:grid-cols-4 md:pb-0">
             <CheckboxMenu
                 header_name="Block"
                 options={["1", "2", "3", "4", "5"]}
