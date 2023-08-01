@@ -19,7 +19,7 @@
         </h2>
     </div>
 
-    <div class="flex flex-col {show ? 'visible' : 'collapse'}">
+    <div class="flex flex-col {show ? 'visible' : 'hidden'}">
         <button
             class="bg-kuRed text-white mt-2 text-center text-xs {selected.length
                 ? 'visible'
