@@ -1,4 +1,4 @@
-(ns clojure-parser.core
+(ns statistics.core 
   (:import (org.jsoup Jsoup))
   (:require 
     [clojure.data.json :as json] 
