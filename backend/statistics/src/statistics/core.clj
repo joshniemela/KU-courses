@@ -1,6 +1,8 @@
-(ns statistics.core
-  (:require [clojure.data.json :as json]
-            [clojure.java.io :as io])
+(ns clojure-parser.core
+  (:import (org.jsoup Jsoup))
+  (:require 
+    [clojure.data.json :as json] 
+    [clojure.java.io :as io])
   (:gen-class))
 
 (def data-dir "../../data/")
@@ -34,7 +36,38 @@
 ; only important information is the total numebr of people who took were signed up, total attending, passed and then the table with exam grades where only the numbers are important since hte order and percentage are known
 
 ; Make one function that takes a map containing hte course code and the block name and returns the statistics map
+
+(def html-str (slurp "./Winter-2022"))
+
+(defn contains-colspan? [elem]
+  (let [attributes (.attributes elem)]
+    (= "2" (.get attributes "colspan"))))
+;TODO make sure both exam and reexam data is contained in HTML
+(defn fetch-html [html]
+  (filter contains-colspan? (-> html
+      Jsoup/parse
+      (.getElementsByTag "td"))))
+
+(defn fetch-data [table]
+  (map #(.text %) (map second (partition 3 (-> (second (.getElementsByTag table "tbody"))
+      (.getElementsByTag "td")
+      )))))
+
+(defn to-table-json [counts]
+  (let [grades ["12" "10" "7" "4" "2" "0" "-3" "not-present" "failed"]]
+    (map ( fn [grade count] 
+  {:grade grade :count count})
+grades counts)))
+
+(defn build-stats-json [tables]
+  (let [exam-table (first tables)
+        re-exam-table (second tables)]
+    {:exam (to-table-json (fetch-data exam-table))
+     :re-exam (to-table-json (fetch-data re-exam-table))}))
+
+(defn to-json [tables course-id]
+ (spit "dicks.json" (json/write-str (assoc tables :course_id course-id))))
+
 (defn -main
-  "I don't do a whole lot ... yet."
   [& args]
-  (println "Hello, World!"))
+  (to-json (build-stats-json (fetch-html html-str)) "dicks"))
