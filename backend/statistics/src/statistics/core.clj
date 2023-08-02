@@ -102,23 +102,22 @@
     false
     true))
 
+; take a list and add the grade map to it
+(defn assocer [grades-list three-elems]
+  (conj grades-list {:grade (.text (first three-elems))
+                     :count (.text (second three-elems))}))
+
 (defn fetch-data [table]
   (if (reeksamen-check table)
-    (map #(.text %) (map second (partition 3 (-> (second (.getElementsByTag table "tbody"))
-                                                 (.getElementsByTag "td")))))
+    (reduce assocer [] (partition 3 (-> (second (.getElementsByTag table "tbody"))
+                                        (.getElementsByTag "td"))))
     nil))
-
-(defn to-table-json [counts]
-  (let [grades ["12" "10" "7" "4" "2" "0" "-3" "not-present" "failed"]]
-    (map (fn [grade count]
-           {:grade grade :count count})
-         grades counts)))
 
 (defn build-stats-json [tables]
   (let [exam-table (first tables)
         re-exam-table (second tables)]
-    {:exam (to-table-json (fetch-data exam-table))
-     :re-exam (to-table-json (fetch-data re-exam-table))}))
+    {:exam (fetch-data exam-table)
+     :re-exam (fetch-data re-exam-table)}))
 
 (defn to-json [tables course-id]
   (spit (str out-dir course-id ".json") (json/write-str (assoc tables :course_id course-id))))
