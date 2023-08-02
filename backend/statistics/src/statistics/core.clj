@@ -122,12 +122,13 @@
 (defn to-json [tables course-id]
   (spit (str out-dir course-id ".json") (json/write-str (assoc tables :course_id course-id))))
 ; Parses all the html to json (ergo why the underscore is there)
-(defn parse_html [html]
-  (to-json (build-stats-json (fetch-html (:html html))) (:course-id html)))
+(defn parse-html [html]
+  (when (some? html)
+    (to-json (build-stats-json (fetch-html (:html html))) (:course-id html))))
 ; Goes over all html in html-seq and spits them out through parse_html TODO: make this only do one json at a time
 (defn spit-all-to-json []
   (doseq [html html-seq]
-    (parse_html html)))
+    (parse-html html)))
 
 (defn -main
   [& args]
