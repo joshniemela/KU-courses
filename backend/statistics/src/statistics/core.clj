@@ -101,8 +101,16 @@
 (defn empty-exam? [table]
   (not (< (count (.getElementsByTag table "td")) 3)))
 
+
+(defn translate-grade [grade]
+  (case (lower-case grade)
+    "ej mødt" "absent"
+    "ikke bestået" "failed"
+    "bestået" "passed"
+    :else grade))
+
 (defn grade-count-reducer [grades-list three-elems]
-  (conj grades-list {:grade (.text (first three-elems))
+  (conj grades-list {:grade (translate-grade (.text (first three-elems)))
                      :count (Integer/parseInt (.text (second three-elems)))}))
 
 (defn fetch-data [table]
