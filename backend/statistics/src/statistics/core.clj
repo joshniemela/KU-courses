@@ -104,9 +104,9 @@
 
 (defn translate-grade [grade]
   (case (lower-case grade)
-    "ej mødt" "absent"
-    "ikke bestået" "failed"
-    "bestået" "passed"
+    "ej mødt" "Absent"
+    "ikke bestået" "Failed"
+    "bestået" "Passed"
     :else grade))
 
 (defn grade-count-reducer [grades-list three-elems]
