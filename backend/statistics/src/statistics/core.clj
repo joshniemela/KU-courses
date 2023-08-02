@@ -67,7 +67,7 @@
             (recur (rest years))
             html-id))))))
 
-(def html-seq (doseq [course course-infos]
+(def html-seq (for [course course-infos]
                 (attempt-fetch-latest-years course)))
 
 ; HOW TO GENERATE THE COURSE STATISTICS PAGE URL:
