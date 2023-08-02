@@ -8,6 +8,7 @@
 
 (def data-dir "../../data/")
 (def json-dir (str data-dir "json/"))
+(def out-dir (str data-dir "statistics_out/"))
 
 ; Read every json in data-dir
 (defn read-json [file]
@@ -36,7 +37,7 @@
                  (println "Error fetching statistics for course: " course-id)
                  (println "Status code: " status)
                  (throw e))))))))
-
+  
 ; find all jsons
 (def course-infos (for [file (file-seq (io/file json-dir))
                         :when (.endsWith (.getName file) ".json")]
@@ -46,6 +47,15 @@
                       {:course-id course-id
                        :start-block start-block
                        :semester (get-semester course)})))
+
+; Puts both html and course id in a single map
+(defn html-id-map [course year]
+  (let [html (get-statistics-html course year)
+        course-id (:course-id course)]
+    {:html html
+     :course-id course-id}))
+; The entire sequence of existing html file and their course-ids from 2022 should eventually be extended to include from other years
+(def html-seq (filter #(not= (:html %) nil) (map #(html-id-map % "2022") course-infos)))
 
 ; HOW TO GENERATE THE COURSE STATISTICS PAGE URL:
 ; start with base https://karakterstatistik.stads.ku.dk/Histogram/
@@ -63,20 +73,27 @@
 
 ; Make one function that takes a map containing hte course code and the block name and returns the statistics map
 
-(def html-str (slurp "./Winter-2022"))
-
+; Checks for colspan tag in html
 (defn contains-colspan? [elem]
   (let [attributes (.attributes elem)]
     (= "2" (.get attributes "colspan"))))
 ;TODO make sure both exam and reexam data is contained in HTML
 (defn fetch-html [html]
-  (filter contains-colspan? (-> html
+  (filter contains-colspan? (-> (str html)
                                 Jsoup/parse
                                 (.getElementsByTag "td"))))
+; checks if the reexam table is included
+(defn reeksamen-check [table]
+  (if (< (count (.getElementsByTag table "td")) 3)
+    false
+    true))
+    
 
 (defn fetch-data [table]
-  (map #(.text %) (map second (partition 3 (-> (second (.getElementsByTag table "tbody"))
-                                               (.getElementsByTag "td"))))))
+  (if (reeksamen-check table)
+    (map #(.text %) (map second (partition 3 (-> (second (.getElementsByTag table "tbody"))
+                                               (.getElementsByTag "td")))))
+    nil))
 
 (defn to-table-json [counts]
   (let [grades ["12" "10" "7" "4" "2" "0" "-3" "not-present" "failed"]]
@@ -91,10 +108,16 @@
      :re-exam (to-table-json (fetch-data re-exam-table))}))
 
 (defn to-json [tables course-id]
-  (spit "dicks.json" (json/write-str (assoc tables :course_id course-id))))
+  (spit (str out-dir course-id ".json") (json/write-str (assoc tables :course_id course-id))))
+; Parses all the html to json (ergo why the underscore is there)
+(defn parse_html [html]
+  (to-json (build-stats-json (fetch-html (:html html))) (:course-id html)))
+; Goes over all html in html-seq and spits them out through parse_html
+(defn spit-all-to-json []
+  (doseq [html html-seq]
+    (parse_html html)
+    ))
 
 (defn -main
   [& args]
-  (println (first course-infos))
-  (println (get-statistics-html (first course-infos) "2004")))
-  ;(to-json (build-stats-json (fetch-html html-str)) "dicks"))
+  (spit-all-to-json))
