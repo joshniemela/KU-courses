@@ -113,11 +113,11 @@
 
 
 (defn translate-grade [grade]
-  (case (lower-case grade)
+  (case (str/lower-case grade)
     "ej mødt" "Absent"
     "ikke bestået" "Failed"
     "bestået" "Passed"
-    :else grade))
+    grade))
 
 (defn grade-count-reducer [grades-list three-elems]
   (conj grades-list {:grade (translate-grade (.text (first three-elems)))
@@ -148,8 +148,5 @@
 
 (defn -main
   [& args]
-  (println course-infos)
-  (if (= (.exists (io/file out-dir)) true)
-    (spit-all-to-json)
-    ((.mkdir (io/file out-dir))
-     (spit-all-to-json))))
+  (io/make-parents (str out-dir "anything here"))
+  (spit-all-to-json))
