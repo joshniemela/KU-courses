@@ -8,7 +8,7 @@
 
 (def data-dir "../../data/")
 (def json-dir (str data-dir "json/"))
-(def out-dir (str data-dir "statistics_out/"))
+(def out-dir (str data-dir "statistics/"))
 
 ; Read every json in data-dir
 (defn read-json [file]
@@ -25,7 +25,7 @@
 (defn get-statistics-html [course year]
   (let [course-id (:course-id course)
         semester (get-semester course)]
-; https://karakterstatistik.stads.ku.dk/Histogram/NDAA09023E/Winter-2022
+    (Thread/sleep 200) ; Be nice to KU's servers
     (try (.get (Jsoup/connect (str "https://karakterstatistik.stads.ku.dk/Histogram/"
                                    (str/replace course-id "U" "E")
                                    "/" semester "-" year)))
@@ -37,7 +37,7 @@
                  (println "Error fetching statistics for course: " course-id)
                  (println "Status code: " status)
                  (throw e))))))))
-  
+
 ; find all jsons
 (def course-infos (for [file (file-seq (io/file json-dir))
                         :when (.endsWith (.getName file) ".json")]
@@ -48,14 +48,27 @@
                        :start-block start-block
                        :semester (get-semester course)})))
 
-; Puts both html and course id in a single map
+; Puts both html, year and course id in a single map
 (defn html-id-map [course year]
   (let [html (get-statistics-html course year)
         course-id (:course-id course)]
+    (println "Fetching statistics for course: " course-id " in year: " year "is it empty?" (nil? html))
     {:html html
+     :year year
      :course-id course-id}))
-; The entire sequence of existing html file and their course-ids from 2022 should eventually be extended to include from other years
-(def html-seq (filter #(not= (:html %) nil) (map #(html-id-map % "2022") course-infos)))
+
+(defn attempt-fetch-latest-years [course]
+  (let [this-year (.getYear (java.time.LocalDate/now))]
+    (loop [years (range this-year (- this-year 3) -1)]
+      (when-not (empty? years)
+        (let [year (first years)
+              html-id (html-id-map course year)]
+          (if (nil? (:html html-id))
+            (recur (rest years))
+            html-id))))))
+
+(def html-seq (doseq [course course-infos]
+                (attempt-fetch-latest-years course)))
 
 ; HOW TO GENERATE THE COURSE STATISTICS PAGE URL:
 ; start with base https://karakterstatistik.stads.ku.dk/Histogram/
@@ -87,12 +100,11 @@
   (if (< (count (.getElementsByTag table "td")) 3)
     false
     true))
-    
 
 (defn fetch-data [table]
   (if (reeksamen-check table)
     (map #(.text %) (map second (partition 3 (-> (second (.getElementsByTag table "tbody"))
-                                               (.getElementsByTag "td")))))
+                                                 (.getElementsByTag "td")))))
     nil))
 
 (defn to-table-json [counts]
@@ -112,11 +124,10 @@
 ; Parses all the html to json (ergo why the underscore is there)
 (defn parse_html [html]
   (to-json (build-stats-json (fetch-html (:html html))) (:course-id html)))
-; Goes over all html in html-seq and spits them out through parse_html
+; Goes over all html in html-seq and spits them out through parse_html TODO: make this only do one json at a time
 (defn spit-all-to-json []
   (doseq [html html-seq]
-    (parse_html html)
-    ))
+    (parse_html html)))
 
 (defn -main
   [& args]
