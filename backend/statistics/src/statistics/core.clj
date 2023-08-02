@@ -38,9 +38,17 @@
                  (println "Status code: " status)
                  (throw e))))))))
 
+(defn existing-json? [course-info]
+  (let [file (io/file (str out-dir (:course-id course-info) ".json"))]
+    (if (.exists file)
+      (let [data (json/read (io/reader file))]
+        (if (not= (:year data) "2023")
+          false
+          (= (:re-exam data) nil)))
+    true)))
 ; find all jsons
 ; TODO: filter out the ones that already exist
-(def course-infos (for [file (file-seq (io/file json-dir))
+(def course-infos-init (for [file (file-seq (io/file json-dir))
                         :when (.endsWith (.getName file) ".json")]
                     (let [course (read-json (.getName file))
                           course-id (:course_id course)
@@ -48,6 +56,8 @@
                       {:course-id course-id
                        :start-block start-block
                        :semester (get-semester course)})))
+
+(def course-infos (filter existing-json? course-infos-init))
 
 ; Puts both html, year and course id in a single map
 (defn html-id-map [course year]
@@ -125,12 +135,12 @@
     {:exam (fetch-data exam-table)
      :re-exam (fetch-data re-exam-table)}))
 
-(defn to-json [tables course-id]
-  (spit (str out-dir course-id ".json") (json/write-str (assoc tables :course_id course-id))))
+(defn to-json [tables course-id year]
+  (spit (str out-dir course-id ".json") (json/write-str (assoc tables :course_id course-id :year year))))
 ; Parses all the html to json (ergo why the underscore is there)
 (defn parse-html [html]
   (when (some? html)
-    (to-json (build-stats-json (fetch-html (:html html))) (:course-id html))))
+    (to-json (build-stats-json (fetch-html (:html html))) (:course-id html) (:year html))))
 ; Goes over all html in html-seq and spits them out through parse_html TODO: make this only do one json at a time
 (defn spit-all-to-json []
   (doseq [html html-seq]
@@ -138,4 +148,8 @@
 
 (defn -main
   [& args]
-  (spit-all-to-json))
+  (println course-infos)
+  (if (= (.exists (io/file out-dir)) true)
+    (spit-all-to-json)
+    ((.mkdir (io/file out-dir))
+     (spit-all-to-json))))
