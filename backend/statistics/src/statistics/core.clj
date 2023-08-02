@@ -103,7 +103,7 @@
 
 (defn grade-count-reducer [grades-list three-elems]
   (conj grades-list {:grade (.text (first three-elems))
-                     :count (.text (second three-elems))}))
+                     :count (Integer/parseInt (.text (second three-elems)))}))
 
 (defn fetch-data [table]
   (if (empty-exam? table)
