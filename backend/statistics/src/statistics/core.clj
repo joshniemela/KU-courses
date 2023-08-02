@@ -96,21 +96,19 @@
   (filter contains-colspan? (-> (str html)
                                 Jsoup/parse
                                 (.getElementsByTag "td"))))
-; checks if the reexam table is included
-(defn reeksamen-check [table]
-  (if (< (count (.getElementsByTag table "td")) 3)
-    false
-    true))
 
-; take a list and add the grade map to it
-(defn assocer [grades-list three-elems]
+; check if the exam table exists
+(defn empty-exam? [table]
+  (not (< (count (.getElementsByTag table "td")) 3)))
+
+(defn grade-count-reducer [grades-list three-elems]
   (conj grades-list {:grade (.text (first three-elems))
                      :count (.text (second three-elems))}))
 
 (defn fetch-data [table]
-  (if (reeksamen-check table)
-    (reduce assocer [] (partition 3 (-> (second (.getElementsByTag table "tbody"))
-                                        (.getElementsByTag "td"))))
+  (if (empty-exam? table)
+    (reduce grade-count-reducer [] (partition 3 (-> (second (.getElementsByTag table "tbody"))
+                                                    (.getElementsByTag "td"))))
     nil))
 
 (defn build-stats-json [tables]
