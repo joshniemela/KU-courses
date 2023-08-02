@@ -39,6 +39,7 @@
                  (throw e))))))))
 
 ; find all jsons
+; TODO: filter out the ones that already exist
 (def course-infos (for [file (file-seq (io/file json-dir))
                         :when (.endsWith (.getName file) ".json")]
                     (let [course (read-json (.getName file))
