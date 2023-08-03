@@ -5,28 +5,11 @@
     import Loader from "../../../components/Loader/Loader.svelte";
     import SideCard from "../../../components/SideCard.svelte";
     import Footer from "../../../components/Footer/Footer.svelte";
-    import { apiUrl } from "../../../stores";
     import { goto } from "$app/navigation";
 
-    const courseId = $page.params.courseId;
-    let API_URL = apiUrl();
-    let loading = true;
 
-    let totalHours = 0;
-    let course = empty_course;
-
-    const fetchCourse = async (courseId: string) => {
-        const res = await fetch(`${API_URL}/get-course?id=${courseId}`, {
-            method: "GET",
-            headers: {
-                accept: "application/json",
-                "Content-Type": "application/json",
-            },
-        });
-        const json = await res.json();
-        loading = false;
-        return json;
-    };
+    export let data;
+    let { courseId, course, totalHours, loading} = data;
 
     /**
      * TODO: remove this since it is duplicated in the project multiple times
@@ -53,12 +36,6 @@
     function goBack() {
         goto("/browse");
     }
-
-    onMount(async () => {
-        const res = await fetchCourse(courseId);
-        course = res;
-        totalHours = total_hours(course);
-    });
 
     // SEO
     const title = `KU Courses 2.0 - ${courseId}`;
