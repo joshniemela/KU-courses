@@ -1,16 +1,26 @@
 <script lang="ts">
-import GraphComponent from "../../components/GraphComponent/GraphComponent.svelte";
+import GradeGraph from "../../components/GradeGraph/GradeGraph.svelte";
+import data from "./NFYK18005U.json";
 </script>
 
 <div class="container">
     <h1> Graph example </h1>
     <p>A small GraphJS example 🚀</p>
+    <p style="font-size: 1rem;"> Using data from NFYK18005U </p>
     <div class="graphs">
         <div class="graph-sub-div">
-            <GraphComponent />
+            <GradeGraph
+                legend="Nr. of students"
+                title="Exam grades"
+                data={data["exam"]}
+            />
         </div>
         <div class="graph-sub-div">
-            <GraphComponent />
+            <GradeGraph 
+                legend="Nr. of students"
+                title="Re-exam grades"
+                data={data["re-exam"]}
+            />
         </div>
     </div>
 </div>
