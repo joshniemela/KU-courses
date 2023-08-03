@@ -53,23 +53,5 @@
   (let [grades (select-keys (transform-obj exam-table) grade-steps)]
     (= 0 (apply + (vals grades)))))
 
-; move this to the testing suite
-(def test-table
-  [{:grade "12", :count 13}
-   {:grade "10", :count 24}
-   {:grade "7", :count 30}
-   {:grade "4", :count 22}
-   {:grade "02", :count 13}
-   {:grade "00", :count 11}
-   {:grade "-3", :count 9}
-   {:grade "Failed", :count 17}])
-
-(def test-pass-fail [{:grade "Passed", :count 13}
-                     {:grade "Failed", :count 17}
-                     {:grade "02", :count 0}
-                     {:grade "00", :count 0}
-                     {:grade "-3", :count 0}])
-
-
-(defn stats-pass-fail [exam-table]
+;(defn stats-pass-fail [exam-table]
   
