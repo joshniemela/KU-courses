@@ -5,7 +5,7 @@ import data from "./NFYK18005U.json";
 
 <div class="container">
     <h1> Graph example </h1>
-    <p>A small GraphJS example 🚀</p>
+    <p>A small ChartJS example 🚀</p>
     <p style="font-size: 1rem;"> Using data from NFYK18005U </p>
     <div class="graphs">
         <div class="graph-sub-div">
