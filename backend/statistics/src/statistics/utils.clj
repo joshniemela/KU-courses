@@ -45,6 +45,7 @@
 (def failing-grades ["00" "-3" "Failed" "Absent"])
 
 (def grade-steps ["12" "10" "7" "4" "02" "00" "-3"])
+(def pass-fail-steps ["Passed" "Failed" "Absent"])
 
 ; if the sum of all the 7 grades is 0 then we can assume the course is a pass/fail course
 ; and not a graded course
@@ -53,5 +54,25 @@
   (let [grades (select-keys (transform-obj exam-table) grade-steps)]
     (= 0 (apply + (vals grades)))))
 
-;(defn stats-pass-fail [exam-table]
-  
+(defn total [exam-table]
+  (apply + (vals (transform-obj exam-table))))
+
+(defn pass-total [exam-table]
+  (let [grades (select-keys (transform-obj exam-table) passing-grades)]
+    (apply + (vals grades))))
+
+(defn fail-total [exam-table]
+  (let [grades (select-keys (transform-obj exam-table) failing-grades)]
+    (apply + (vals grades))))
+
+(defn pass-rate [exam-table]
+  (let [total-pass (pass-total exam-table)
+        total-fail (fail-total exam-table)]
+    (/ total-pass (+ total-pass total-fail))))
+
+(defn stats-pass-fail [exam-table]
+  {:pass-rate (pass-rate exam-table)
+   :total (total exam-table)
+   :pass (pass-total exam-table)
+   :fail (fail-total exam-table)
+   :absent ((transform-obj exam-table) "Absent")})
