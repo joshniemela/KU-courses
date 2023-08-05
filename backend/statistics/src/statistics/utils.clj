@@ -1,8 +1,4 @@
-(ns statistics.utils
-  (:require
-   [clojure.java.io :as io]
-   [clojure.string :as str]))
-
+(ns statistics.utils)
 ;  "exam": [
 ;    {
 ;      "grade": "12",
@@ -93,14 +89,20 @@
    :fail (fail-total exam-table)
    :absent ((transform-obj exam-table) "Absent")})
 
+(defn squared-diff [x mean]
+  (* (- x mean) (- x mean)))
+
 (defn stats-graded [exam-table]
-  ; calculate std dev, mean, median, mode
-    ; return a map of the form
-    ; {:std-dev 0.0 :mean 0.0 :median 0.0 :mode 0.0}
-  (let [grades (select-keys (transform-obj exam-table) grade-steps)
-          ; parse each key as an int and multiply by the val
-        sum (apply + (map (fn [x] (* (Integer/parseInt (key x)) (val x))) grades))
-        total (total exam-table)
-        mean (/ sum total)]
+  (let [repeats (grade-repeats exam-table)
+        sum (reduce + repeats)
+        total (count repeats)
+        mean (/ sum total)
+        var (/ (reduce + (map (fn [x] (squared-diff x mean)) repeats)) (- total 1))]
     {:mean mean
-     :median (median exam-table)}))
+     :median (median exam-table)
+     :var var}))
+
+(defn stats [exam-table]
+  (if (is-pass-fail? exam-table)
+    (assoc (stats-pass-fail exam-table) :graded false)
+    (assoc (merge (stats-pass-fail exam-table) (stats-graded exam-table)) :graded true)))

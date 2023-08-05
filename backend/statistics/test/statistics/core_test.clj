@@ -44,5 +44,6 @@
 
   (testing "Testing the graded stats function"
     (is (= (stats-graded graded-course)
-           {:mean 693/139
-            :median 7}))))
+           {:mean 693/122
+            :median 7
+            :var 279445/14762}))))
