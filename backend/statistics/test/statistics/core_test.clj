@@ -29,8 +29,20 @@
     (is (= 13/30 (pass-rate pass-fail-course)))
     (is (= 102/139 (pass-rate graded-course)))))
 
+(deftest median-test
+  (testing "Testing the median function"
+    (is (= 9/2 (median [{:grade "02" :count 3} {:grade "7" :count 3}])))
+    (is (= 7 (median [{:grade "02" :count 3} {:grade "7" :count 4}])))
+    (is (= 2 (median [{:grade "02" :count 4} {:grade "7" :count 3}])))
+    (is (= 7 (median [{:grade "02" :count 3} {:grade "7" :count 3} {:grade "10" :count 4}])))))
+
 (deftest stats-test
   (testing "Testing the pass-fail stats function"
     ; the stats function returns a map of the form
     ; {:total 30 :pass-rate 13/30 :pass 13 :fail 17 :absent 0}
-    (is (= {:total 30 :pass-rate 13/30 :pass 13 :fail 17 :absent 0} (stats-pass-fail pass-fail-course)))))
+    (is (= {:total 30 :pass-rate 13/30 :pass 13 :fail 17 :absent 0} (stats-pass-fail pass-fail-course))))
+
+  (testing "Testing the graded stats function"
+    (is (= (stats-graded graded-course)
+           {:mean 693/139
+            :median 7}))))
