@@ -20,7 +20,7 @@
   (let [course-schema [:course_id :title :course_language
                        :description :start_block :duration
                        :credits :study_level :url
-                       :raw_description]]
+                       :raw_description :pass_rate :avg_grade :median_grade]]
 
     (jdbc.sql/insert! ds :course (select-keys course-map course-schema))))
 

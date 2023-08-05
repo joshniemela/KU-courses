@@ -85,6 +85,9 @@
 	course.credits,
 	course.duration,
     course.raw_description,
+    course.pass_rate,
+    course.avg_grade,
+    course.median_grade,
     jsonb_agg(DISTINCT to_jsonb(exam) - 'course_id')::TEXT AS exams,
 	jsonb_agg(DISTINCT to_jsonb(schedule) - 'course_id')::TEXT AS schedules
 FROM

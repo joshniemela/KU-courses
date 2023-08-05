@@ -38,6 +38,7 @@
 
 (def data-dir "../../data/")
 (def json-dir (str data-dir "json/"))
+(def stats-dir (str data-dir "statistics/"))
 
 ; https://andersmurphy.com/2022/03/27/clojure-removing-namespace-from-keywords-in-response-middleware.html
 (defn transform-keys
@@ -95,6 +96,24 @@
 (def course-files (for [file (file-seq (io/file json-dir)) :when (.endsWith (.getName file) ".json")]
                     (.getName file)))
 
+(defn try-finding-stats [course-id]
+  (try
+    ; stats file is in stats-dir
+    (let [stats-file (str stats-dir course-id ".json")]
+      (json/read-str (slurp stats-file)))
+    (catch Exception e
+      nil)))
+
+(defn transform-stats [stats]
+  (when-not (nil? (stats "exam"))
+    (let [exam (stats "exam")
+          pass-rate (exam "pass-rate")
+          mean (exam "mean")
+          median (exam "median")]
+      {:pass_rate pass-rate
+       :avg_grade mean
+       :median_grade median})))
+
 (def courses (map read-json course-files))
 
 ; This is responsible for coercing the data into the enums expected by Postgres
@@ -116,7 +135,14 @@
                              (assoc exam :exam_type (as-other (:exam_type exam))))
                            %))))
 
-(def coerced-courses (pmap coerce-as-other courses))
+(def courses-w-stats (map (fn [course]
+                            (let [stats (try-finding-stats (:course_id course))]
+                              (if stats
+                                (merge course (transform-stats stats))
+                                course)))
+                          courses))
+
+(def coerced-courses (pmap coerce-as-other courses-w-stats))
 
 (def main-config {:port 3000})
 (defn -main [& args]
