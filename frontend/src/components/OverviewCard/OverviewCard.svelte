@@ -36,13 +36,13 @@
 </script>
 
 <button
-    class="w-full border-2 border-black animate-fadeIn flex flex-col justify-between hover:bg-gray-100"
+    class="w-full border-2 border-black animate-fadeIn flex flex-col justify-between hover:bg-gray-100 relative"
     on:click={navigateToCourse}
 >
     <div class="p-2">
         <div class="flex flex-row justify-between">
             <div class="flex flex-col w-full justify-start">
-                <h1 class="text-l font-bold text-center">
+                <h1 class="text-l font-bold text-center z-10">
                     {course.title}
                 </h1>
                 <h2>
@@ -84,22 +84,48 @@
             <p class="">{course.summary}</p>
         </div>
     </div>
-    <div class="bg-kuGray text-white relative w-full">
-        {#each course.exams as exam}
-            <p class="">
-                {convertExamToString(exam.exam_type)}
-                {#if exam.minutes}
-                    ({formatExamDuration(exam.minutes)})
-                {/if}
-            </p>
-        {/each}
-        <!--put this relatively in the bottom right corner of the card-->
-        <div class="w-8 h-8 absolute -bottom-2 right-0">
-            {#if course.course_language == "da"}
-                <Dk />
-            {:else}
-                <Gb />
-            {/if}
+    <div class="bg-kuGray text-white flex flex-row">
+        <div class="w-full items-center justify-center flex flex-col">
+            {#each course.exams as exam}
+                <p class="">
+                    {convertExamToString(exam.exam_type)}
+                    {#if exam.minutes}
+                        ({formatExamDuration(exam.minutes)})
+                    {/if}
+                </p>
+            {/each}
         </div>
+        <!--stats table, contains pass_rate, median_grade, and avg_grade-->
+        <table class="text-xs">
+            <tr>
+                <td class="border-e border-b border-white px-1"> Pass</td>
+                <td class="border-b border-white px-1" >
+                    {course.pass_rate == null
+                        ? "N/A"
+                        : `${Math.round(course.pass_rate * 10000) / 100}%`}
+            </tr>
+            <tr>
+                <td class="border-e border-white px-1"> Median</td>
+                <td class="border-white px-1">
+                    {course.median_grade == null
+                        ? "N/A"
+                        : course.median_grade}
+                </td>
+            </tr>
+            <tr>
+                <td class="border-e border-t border-white px-1"> Average </td>
+                <td class="border-t border-white px-1">
+                    {course.avg_grade == null ? "N/A" : course.avg_grade}
+                </td>
+            </tr>
+        </table>
+    </div>
+    <!--put this relatively in the bottom right corner of the card-->
+    <div class="w-8 h-8 absolute top-0 -top-px opacity-50">
+        {#if course.course_language == "da"}
+            <Dk />
+        {:else}
+            <Gb />
+        {/if}
     </div>
 </button>
