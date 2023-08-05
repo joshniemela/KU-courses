@@ -12,7 +12,7 @@
                     {:grade "-3" :count 9}
                     {:grade "Failed" :count 17}])
 
-(def pass-fail-course [{:grade "Absent" :count 0}
+(def pass-fail-course [{:grade "Absent" :count 1}
                        {:grade "Passed" :count 13}
                        {:grade "Failed" :count 17}
                        {:grade "02" :count 0}
@@ -26,7 +26,7 @@
 
 (deftest pass-rate-test
   (testing "Testing pass-rate function"
-    (is (= 13/30 (pass-rate pass-fail-course)))
+    (is (= 13/31 (pass-rate pass-fail-course)))
     (is (= 102/139 (pass-rate graded-course)))))
 
 (deftest median-test
@@ -40,7 +40,13 @@
   (testing "Testing the pass-fail stats function"
     ; the stats function returns a map of the form
     ; {:total 30 :pass-rate 13/30 :pass 13 :fail 17 :absent 0}
-    (is (= {:total 30 :pass-rate 13/30 :pass 13 :fail 17 :absent 0} (stats-pass-fail pass-fail-course))))
+    (is (= (stats-pass-fail pass-fail-course)
+           {:total 31
+            :pass-rate-w-absent 13/31
+            :pass-rate 13/30
+            :pass 13
+            :fail 18
+            :absent 1})))
 
   (testing "Testing the graded stats function"
     (is (= (stats-graded graded-course)

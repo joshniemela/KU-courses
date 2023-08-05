@@ -3,7 +3,8 @@
   (:require
    [clojure.data.json :as json]
    [clojure.java.io :as io]
-   [clojure.string :as str])
+   [clojure.string :as str]
+   [statistics.utils :refer [stats]])
   (:gen-class))
 
 (def data-dir "../../data/")
@@ -45,17 +46,17 @@
         (if (not= (:year data) "2023")
           false
           (= (:re-exam data) nil)))
-    true)))
+      true)))
 ; find all jsons
 ; TODO: filter out the ones that already exist
 (def course-infos-init (for [file (file-seq (io/file json-dir))
-                        :when (.endsWith (.getName file) ".json")]
-                    (let [course (read-json (.getName file))
-                          course-id (:course_id course)
-                          start-block (:start_block course)]
-                      {:course-id course-id
-                       :start-block start-block
-                       :semester (get-semester course)})))
+                             :when (.endsWith (.getName file) ".json")]
+                         (let [course (read-json (.getName file))
+                               course-id (:course_id course)
+                               start-block (:start_block course)]
+                           {:course-id course-id
+                            :start-block start-block
+                            :semester (get-semester course)})))
 
 (def course-infos (filter existing-json? course-infos-init))
 
@@ -111,7 +112,6 @@
 (defn empty-exam? [table]
   (not (< (count (.getElementsByTag table "td")) 3)))
 
-
 (defn translate-grade [grade]
   (case (str/lower-case grade)
     "ej mødt" "Absent"
@@ -129,11 +129,15 @@
                                                     (.getElementsByTag "td"))))
     nil))
 
+(defn add-stats [exam-table]
+  (when-not (nil? exam-table)
+    (stats exam-table)))
+
 (defn build-stats-json [tables]
   (let [exam-table (first tables)
         re-exam-table (second tables)]
-    {:exam (fetch-data exam-table)
-     :re-exam (fetch-data re-exam-table)}))
+    {:exam (add-stats (fetch-data exam-table))
+     :re-exam (add-stats (fetch-data re-exam-table))}))
 
 (defn to-json [tables course-id year]
   (spit (str out-dir course-id ".json") (json/write-str (assoc tables :course_id course-id :year year))))

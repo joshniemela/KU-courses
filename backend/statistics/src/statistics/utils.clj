@@ -41,7 +41,6 @@
 (def failing-grades ["00" "-3" "Failed" "Absent"])
 
 (def grade-steps ["12" "10" "7" "4" "02" "00" "-3"])
-(def pass-fail-steps ["Passed" "Failed" "Absent"])
 
 (defn grade-repeats [exam-table]
     ; find all the grade-steps that also exist in the exam-table
@@ -55,7 +54,8 @@
 (defn is-pass-fail? [exam-table]
   ; select the grades from the exam table that are in the 7 step scale
   (let [grades (select-keys (transform-obj exam-table) grade-steps)]
-    (= 0 (apply + (vals grades)))))
+    ; some weird courses like LNAK10082E have a single graded thing and otherwise pass
+    (> 5 (apply + (vals grades)))))
 
 (defn total [exam-table]
   (apply + (vals (transform-obj exam-table))))
@@ -83,7 +83,9 @@
       (/ (+ (nth-elem (/ total-count 2)) (nth-elem (dec (/ total-count 2)))) 2))))
 
 (defn stats-pass-fail [exam-table]
-  {:pass-rate (pass-rate exam-table)
+  {:pass-rate-w-absent (pass-rate exam-table)
+   ; remove the {:grade "Absent" :count x} from the exam-table which is a list of maps
+   :pass-rate (pass-rate (filter (fn [x] (not= (:grade x) "Absent")) exam-table))
    :total (total exam-table)
    :pass (pass-total exam-table)
    :fail (fail-total exam-table)
