@@ -3,7 +3,8 @@
             [db-manager.db :refer [find-email-by-name
                                    get-course-ids
                                    get-course-by-id
-                                   get-courses]]))
+                                   get-courses]]
+            [db-manager.cache :refer [cache]]))
 
 (def ping-route
   ["/ping"
@@ -56,9 +57,11 @@
    ; This route is used by the root route in the frontend, it returns an overview of all matching courses
    ["/find-course-overviews" {:post {:parameters {:body map?}
                                      :handler (fn [request]
-                                                (let [body (-> request :parameters :body)]
+                                                (let [predicates (-> request :parameters :body)]
                                                   {:status 200
-                                                   :body (let [courses (get-courses db body)]
+                                                   ; make get-courses a partial without the db argument
+                                                   :body (let [get-courses-partial (partial get-courses db)
+                                                               courses (cache predicates get-courses-partial)]
                                                            {:count (count courses)
                                                             :keys (keys (first courses))
                                                             :courses courses})}))}}]])
