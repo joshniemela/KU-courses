@@ -107,7 +107,9 @@
     <link rel="canonical" href={url} />
 </svelte:head>
 
-<main class="flex flex-col items-center justify-center space-y-4 mt-10">
+
+<div class="flex flex-col min-h-screen justify-between">
+<main class="flex flex-col items-center space-y-4 mt-10">
     <h1 class="text-brand-500 text-4xl font-bold">KU Courses 2.0</h1>
 
     <TextSearch bind:searches={$queryStore.searches} />
@@ -203,3 +205,4 @@
 </main>
 
 <Footer />
+</div>
