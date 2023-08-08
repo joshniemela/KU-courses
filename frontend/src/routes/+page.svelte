@@ -44,7 +44,6 @@ onMount(() => {
       loadMoreCourses();
     }
   };
-    let collapsed: boolean = true;
     const fetchCourses = async () => {
         loading = true;
         const filters = $queryStore;
@@ -187,20 +186,10 @@ onMount(() => {
 
     <!--make a collapsible menu that contains the text "foobar" which automatically opens if theres fewer than 100 courses-->
     <div class="flex flex-col w-full">
-        <div class="flex flex-col w-full">
-            <button
-                class="bg-brand-500 text-white text-xl px-4 py-0"
-                on:click={() => {
-                    collapsed = !collapsed;
-                }}
-            >
-                {collapsed ? "Show" : "Hide"} Courses
-            </button>
-            <div class="bg-kuGray text-center">
-                <p class="text-white px-4 py-0">
-                    {courses.length} courses found
-                </p>
-            </div>
+        <div class="bg-kuGray text-center">
+            <p class="text-white px-4 py-0">
+                {courses.length} courses found
+            </p>
         </div>
     </div>
 
