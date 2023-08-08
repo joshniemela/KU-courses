@@ -94,8 +94,6 @@ onMount(() => {
 
     // If the store changes, we should fetch new courses
     $: $queryStore, browser && fetchCourses();
-    // Automatically open the collapsible menu if there are fewer than 100 courses
-    $: if (courses.length != 0 && courses.length < 100) collapsed = false;
 
     // SEO
     const title = "DISKU - KU Courses 2.0";
@@ -178,7 +176,6 @@ onMount(() => {
         class="bg-brand-500 text-white px-4 py-0"
         on:click={() => {
             clearAll();
-            collapsed = true;
         }}
     >
         Clear All
