@@ -27,8 +27,6 @@
             headers: {
                 accept: "application/json",
                 "Content-Type": "application/json",
-                // Add caching to save previous API calls
-                "Cache-Control": "max-age=300",
             },
             body: JSON.stringify(filters),
         });
@@ -187,10 +185,10 @@
                 <Loader />
             {:else}
                 <div
-                    class="grid grid-flow-row grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 m-4"
+                class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 m-4"
                 >
-                    {#each courses as card, i}
-                        <OverviewCard stagger={i} course={card} />
+                    {#each courses as card}
+                        <OverviewCard course={card} />
                     {/each}
                 </div>
 

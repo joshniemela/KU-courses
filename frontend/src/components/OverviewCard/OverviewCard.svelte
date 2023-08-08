@@ -4,7 +4,6 @@
     import Gb from "../../assets/Gb.svelte";
     import { empty_overview } from "../../course";
     import type { Overview } from "../../course";
-    export let stagger = 0;
     export let course: Overview = structuredClone(empty_overview);
 
     /**
@@ -84,7 +83,7 @@
             <p class="">{course.summary}</p>
         </div>
     </div>
-    <div class="bg-kuGray text-white flex flex-row">
+    <div class="bg-kuGray text-white flex flex-row w-full">
         <div class="w-full items-center justify-center flex flex-col">
             {#each course.exams as exam}
                 <p class="">
@@ -99,17 +98,16 @@
         <table class="text-xs">
             <tr>
                 <td class="border-e border-b border-white px-1"> Pass</td>
-                <td class="border-b border-white px-1" >
+                <td class="border-b border-white px-1">
                     {course.pass_rate == null
                         ? "N/A"
                         : `${Math.round(course.pass_rate * 10000) / 100}%`}
-            </tr>
+                </td></tr
+            >
             <tr>
                 <td class="border-e border-white px-1"> Median</td>
                 <td class="border-white px-1">
-                    {course.median_grade == null
-                        ? "N/A"
-                        : course.median_grade}
+                    {course.median_grade == null ? "N/A" : course.median_grade}
                 </td>
             </tr>
             <tr>
