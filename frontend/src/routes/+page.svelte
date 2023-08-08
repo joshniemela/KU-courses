@@ -13,15 +13,41 @@
     import type { Overview } from "../course";
     import { browser } from "$app/environment";
     let loading = true;
-    // grab time for testing performance
-    let start = new Date().getTime();
     let API_URL = apiUrl();
     let courses: Overview[] = [];
+    let visibleCourses: Overview[] = [];
+    let remainingCourses: Overview[] = [];
+    const initialCourseNumber = 50;
+    const batchLoadSize = 25;
+
+    const loadMoreCourses = () => {
+        if (remainingCourses.length > 0) {
+            const nextBatch = remainingCourses.splice(0, batchLoadSize);
+            visibleCourses = [...visibleCourses, ...nextBatch];
+        }
+    };
+onMount(() => {
+     window.addEventListener('scroll', handleScroll);
+     return () => {
+         window.removeEventListener('scroll', handleScroll);
+     };
+});
+
+
+  const handleScroll = () => {
+    const threshold = 800; // Adjust as needed
+    const scrollPosition = window.scrollY || window.pageYOffset;
+    const windowHeight = window.innerHeight;
+    const contentHeight = document.body.offsetHeight;
+
+    if (contentHeight - (scrollPosition + windowHeight) < threshold) {
+      loadMoreCourses();
+    }
+  };
     let collapsed: boolean = true;
     const fetchCourses = async () => {
         loading = true;
         const filters = $queryStore;
-        console.log(filters);
         const res = await fetch(`${API_URL}/find-course-overviews`, {
             method: "POST",
             headers: {
@@ -32,12 +58,11 @@
         });
 
         const json = await res.json();
-        console.log(json.courses[0]);
         loading = false;
-        console.log(
-            `Time taken to fetch courses: ${new Date().getTime() - start}ms`
-        );
         courses = json.courses;
+
+  visibleCourses = courses.slice(0, initialCourseNumber); // Courses to show
+  remainingCourses = courses.slice(initialCourseNumber); // Courses to load in batches
     };
     const institutes: string[] = [
         "Department of Geoscience and Natural Resource Management", // 190
@@ -190,7 +215,7 @@
                 class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 m-4"
                 >
 
-                    {#each courses as card (card.course_id)}
+                    {#each visibleCourses as card (card.course_id)}
                         <OverviewCard course={card} />
                     {/each}
                 </div>
