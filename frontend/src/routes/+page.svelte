@@ -178,16 +178,19 @@
             </div>
         </div>
     </div>
-    {#if !collapsed}
-        <div class="flex flex-col items-center">
+
             {#if loading}
                 <!--put the loader in the centre of the screen always----------------->
                 <Loader />
-            {:else}
+            {/if}
+
+
+        <div class="flex flex-col items-center {collapsed ? 'collapse' : ''}">
                 <div
                 class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 m-4"
                 >
-                    {#each courses as card}
+
+                    {#each courses as card (card.course_id)}
                         <OverviewCard course={card} />
                     {/each}
                 </div>
@@ -197,9 +200,7 @@
                         No courses found, try broadening your search
                     </h1>
                 {/if}
-            {/if}
         </div>
-    {/if}
 </main>
 
 <Footer />

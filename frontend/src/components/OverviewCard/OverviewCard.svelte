@@ -35,12 +35,12 @@
 </script>
 
 <button
-    class="w-full border-2 border-black animate-fadeIn flex flex-col justify-between hover:bg-gray-100 relative"
+    class="w-full border-2 border-black animate-fadeIn hover:bg-gray-100 relative"
     on:click={navigateToCourse}
 >
     <div class="p-2">
         <div class="flex flex-row justify-between">
-            <div class="flex flex-col w-full justify-start">
+            <div class="w-full">
                 <h1 class="text-l font-bold text-center z-10">
                     {course.title}
                 </h1>
@@ -83,7 +83,7 @@
             <p class="">{course.summary}</p>
         </div>
     </div>
-    <div class="bg-kuGray text-white flex flex-row w-full">
+    <div class="bg-kuGray text-white flex flex-row">
         <div class="w-full items-center justify-center flex flex-col">
             {#each course.exams as exam}
                 <p class="">
