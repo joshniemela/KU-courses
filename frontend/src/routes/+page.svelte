@@ -204,28 +204,29 @@ onMount(() => {
         </div>
     </div>
 
-            {#if loading}
-                <!--put the loader in the centre of the screen always----------------->
-                <Loader />
-            {/if}
+    {#if loading}
+        <!--put the loader in the centre of the screen always----------------->
+        <Loader />
+    {:else}
 
 
-        <div class="flex flex-col items-center {collapsed ? 'collapse' : ''}">
-                <div
+        <div class="flex flex-col items-center">
+            <div
                 class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 m-4"
-                >
+            >
 
-                    {#each visibleCourses as card (card.course_id)}
-                        <OverviewCard course={card} />
-                    {/each}
-                </div>
+                {#each visibleCourses as card (card.course_id)}
+                    <OverviewCard course={card} />
+                {/each}
+            </div>
 
-                {#if courses.length === 0}
-                    <h1 class="text-3xl text-center mt-10">
-                        No courses found, try broadening your search
-                    </h1>
-                {/if}
+            {#if courses.length === 0}
+                <h1 class="text-3xl text-center mt-10">
+                    No courses found, try broadening your search
+                </h1>
+            {/if}
         </div>
+    {/if}
 </main>
 
 <Footer />

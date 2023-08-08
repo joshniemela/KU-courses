@@ -35,7 +35,7 @@
 </script>
 
 <button
-    class="w-full border-2 border-black animate-fadeIn hover:bg-gray-100 relative"
+    class="w-full border-2 border-black animate-fadeIn flex flex-col justify-betweenhover:bg-gray-100 relative"
     on:click={navigateToCourse}
 >
     <div class="p-2">
