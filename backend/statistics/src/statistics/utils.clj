@@ -102,7 +102,8 @@
         var (/ (reduce + (map (fn [x] (squared-diff x mean)) repeats)) (- total 1))]
     {:mean mean
      :median (median exam-table)
-     :var var}))
+     :var var
+     :grades exam-table}))
 
 (defn stats [exam-table]
   (if (is-pass-fail? exam-table)
