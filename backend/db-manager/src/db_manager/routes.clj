@@ -4,7 +4,22 @@
                                    get-course-ids
                                    get-course-by-id
                                    get-courses]]
+            [clojure.data.json :as json]
             [db-manager.cache :refer [cache]]))
+
+; TODO: fix code duplication, this also apperas in core.clj
+
+(def data-dir "../../data/")
+(def json-dir (str data-dir "json/"))
+(def stats-dir (str data-dir "statistics/"))
+
+(defn try-finding-stats [course-id]
+  (try
+    ; stats file is in stats-dir
+    (let [stats-file (str stats-dir course-id ".json")]
+      (json/read-str (slurp stats-file)))
+    (catch Exception e
+      nil)))
 
 (def ping-route
   ["/ping"
@@ -45,7 +60,8 @@
                          :description "Returns a course with the given id"
                          :handler (fn [{{{:keys [id]} :query} :parameters}]
                                     {:status 200
-                                     :body (get-course-by-id db id)})}}]
+                                     :body (assoc (get-course-by-id db id)
+                                                  :stats (try-finding-stats id))})}}]
 
    ; Better echo route, not used
    ["/echo" {:post {:parameters {:body map?}
