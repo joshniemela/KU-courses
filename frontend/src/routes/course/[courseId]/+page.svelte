@@ -7,6 +7,8 @@
     import Footer from "../../../components/Footer/Footer.svelte";
     import { goto } from "$app/navigation";
 
+    import GradeGraph from "../../../components/GradeGraph/GradeGraph.svelte";
+
     export let data;
     let { courseId, course, totalHours, loading } = data;
 
@@ -86,6 +88,16 @@
                 <h1 class="text-2xl font-bold md:text-4xl">{course.title}</h1>
                 <h2>{course.course_id} - SCIENCE</h2>
             </div>
+
+            <div class="w-[80%] text-center">
+                <h2 class="text-l font-bold">Grades</h2>
+                <GradeGraph
+                    legend="Frequency"
+                    title="Exam grades"
+                    data={course["stats"]["exam"]["grades"]}
+                />
+            </div>
+
             <div class="w-full flex flex-col md:flex-row justify-center">
                 <div class="px-4">
                     {#each course.description as de}
