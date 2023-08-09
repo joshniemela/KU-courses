@@ -5,6 +5,7 @@ export default {
     './node_modules/flowbite-svelte/**/*.{html,js,svelte,ts}'],
   theme: {
     extend: {
+      listStyleType: {square: "square",},
       colors: {
         kuRed: "#901A1E",
         kuGray: "#333333",

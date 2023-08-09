@@ -92,7 +92,7 @@
                         {#if de.type == "h1"}
                             <h1 class="text-xl font-bold">{de.string}</h1>
                         {:else if de.type == "li"}
-                            <p>* {de.string}</p>
+                            <li class="list-square list-inside">{de.string}</li>
                         {:else}
                             <p>{de.string}</p>
                         {/if}
