@@ -4,7 +4,7 @@ import { total_hours } from "../../../course";
 
 export async function load({ fetch, params }) {
     const { courseId } = params;
-    const API_URL = "http://localhost:3000/api";
+    const API_URL = apiUrl();
 
     const res = await fetch(`${API_URL}/get-course?id=${courseId}`, {
         method: "GET",
