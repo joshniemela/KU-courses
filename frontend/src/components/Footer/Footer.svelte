@@ -11,7 +11,7 @@
 </script>
 
 <footer
-    class="mt-10 px-2 md:w-1/2 md:px-0 mx-auto py-4 border-t-2 border-kuGray flex justify-between items-center"
+    class="mt-2 px-2 md:w-1/2 md:px-0 mx-auto py-4 border-t-2 border-kuGray flex justify-between items-center"
 >
     <div class="text-sm">
         <span class="block">
@@ -39,7 +39,20 @@
             target="_blank"
             href="https://github.com/joshniemela/KU-courses"
         >
-            <Github classes="w-6 h-6" />
+            <Github classes="w-8 h-8" />
+        </a>
+
+        <a
+            href="https://www.facebook.com/sharer/sharer.php?u=https%3A%2F%2Fdisku.jniemela.dk"
+            rel="noopener"
+            target="_blank"
+            class="block animated-icon"
+        >
+            <img
+                src="https://simplesharebuttons.com/images/somacro/facebook.png"
+                alt="Facebook"
+                class="w-8 h-8"
+            />
         </a>
     </div>
 </footer>

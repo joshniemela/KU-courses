@@ -20,6 +20,8 @@
     const initialCourseNumber = 40;
     const batchLoadSize = 20;
 
+    let expand_footer = false;
+
     const loadMoreCourses = () => {
         if (remainingCourses.length > 0) {
             const nextBatch = remainingCourses.splice(0, batchLoadSize);
@@ -128,7 +130,7 @@ onMount(() => {
 </svelte:head>
 
 
-<div class="flex flex-col min-h-screen justify-between">
+<div class="flex flex-col min-h-screen justify-between relative">
 <main class="flex flex-col items-center space-y-4 mt-10">
     <h1 class="text-brand-500 text-4xl font-bold">KU Courses 2.0</h1>
 
