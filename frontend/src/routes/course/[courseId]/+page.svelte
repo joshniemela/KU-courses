@@ -43,11 +43,11 @@
         if (exam["graded"]) {
             return exam["grades"]
         } else {
-            return {
-                "Absent": exam["absent"],
-                "Failed": exam["fail"],
-                "Passed": exam["pass"]
-                }
+            return [
+                {"grade": "Passed", "count": exam["pass"]},
+                {"grade": "Failed", "count": exam["fail"]},
+                {"grade": "Absent", "count": exam["absent"]}
+                ]
         }
     }
 
@@ -103,8 +103,8 @@
             </div>
 
             <div class="w-[80%] text-center">
-                <h2 class="text-l font-bold">Grades</h2>
                 {#if course["stats"] != null}
+                <h2 class="text-l font-bold">Grades</h2>
                 <GradeGraph
                     legend="Frequency"
                     title="Exam grades"
