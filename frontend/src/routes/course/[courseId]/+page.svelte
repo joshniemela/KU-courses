@@ -91,11 +91,13 @@
 
             <div class="w-[80%] text-center">
                 <h2 class="text-l font-bold">Grades</h2>
+                {#if course["stats"] != null}
                 <GradeGraph
                     legend="Frequency"
                     title="Exam grades"
                     data={course["stats"]["exam"]["grades"]}
                 />
+                {/if}
             </div>
 
             <div class="w-full flex flex-col md:flex-row justify-center">
