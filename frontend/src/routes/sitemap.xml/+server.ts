@@ -2,11 +2,12 @@
 // grab jsons from ../data/json if in devmode, otherwise from /data/json in prob
 import { dev } from "$app/environment";
 
-const jsons_dir = dev ? "../data/json" : "/data/json";
+const jsons_dir = dev ? "../data/json" : "jsons";
 
 const url = "https://disku.jniemela.dk";
 
 import * as fs from 'fs';
+
 function all_course_names(): string[] {
   return fs.readdirSync(jsons_dir).map((x) => x.replace(".json", ""))
 }
