@@ -17,8 +17,8 @@
     let courses: Overview[] = [];
     let visibleCourses: Overview[] = [];
     let remainingCourses: Overview[] = [];
-    const initialCourseNumber = 50;
-    const batchLoadSize = 25;
+    const initialCourseNumber = 40;
+    const batchLoadSize = 20;
 
     const loadMoreCourses = () => {
         if (remainingCourses.length > 0) {
