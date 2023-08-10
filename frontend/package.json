@@ -12,6 +12,7 @@
   "devDependencies": {
     "@sveltejs/adapter-node": "^1.2.4",
     "@sveltejs/kit": "^1.5.0",
+    "@types/node": "^20.4.9",
     "autoprefixer": "^10.4.14",
     "postcss": "^8.4.24",
     "prettier": "^2.8.8",
@@ -28,6 +29,7 @@
     "chart.js": "^4.3.3",
     "flowbite": "^1.7.0",
     "flowbite-svelte": "^0.39.2",
+    "fs": "^0.0.1-security",
     "lorem-ipsum": "^2.0.8",
     "postgres": "^3.3.4",
     "tailwind-merge": "^1.13.2"
