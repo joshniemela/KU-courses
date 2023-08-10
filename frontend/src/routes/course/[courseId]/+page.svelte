@@ -38,6 +38,19 @@
         goto("/browse");
     }
 
+
+    function transform_grades(exam) {
+        if (exam["graded"]) {
+            return exam["grades"]
+        } else {
+            return {
+                "Absent": exam["absent"],
+                "Failed": exam["fail"],
+                "Passed": exam["pass"]
+                }
+        }
+    }
+
     // SEO
     const title = `${course.title} - DISKU`;
 
@@ -95,7 +108,7 @@
                 <GradeGraph
                     legend="Frequency"
                     title="Exam grades"
-                    data={course["stats"]["exam"]["grades"]}
+                    data={transform_grades(course["stats"]["exam"])}
                 />
                 {/if}
             </div>
