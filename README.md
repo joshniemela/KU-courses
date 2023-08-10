@@ -11,8 +11,6 @@ The entire application is governed through the `docker-compose.yml` file and is 
 * STEP 4: PROFIT!!! 
 Docker may appear to hang on the `scraper` container, this is to be expected since it is downloading 5 courses a second of the ~3.5k and it may take up to 15 minutes to finish scraping since we want to be nice to KU's surprisingly fragile IT infrastructure.  
 
-BROKEN: The frontend has two modes, decided by the `NODE_ENV` variable (automatically set to `development` if run by `npm run dev`)... TO BE FINISHED (currently it will default to using `jniemela.dk` no matter what).  
-
 ### db-manager
 Our backend is built with Clojure, a functional programmering language based on Lisp which runs on the Java Virtual Machine.  
 This part of the project is responsible for gluing our web-scraper together with the frontend and the database. Furthermore, it is responsible for constructing our SQL queries that are served via the API.
@@ -26,6 +24,9 @@ This entire module is strongly overdue a complete rework into a lighter language
 ### Frontend
 Frontend is built in Svelte/Typescript.
 
+
+### Statistics
+Another module written in Clojure, this module is currently not automatically started by the `docker-compose` and should be run manually. It is responsible for scraping STADS for the statistics on all courses to add them to the returned JSONs from `db-manager`.
 <!--
 ### PgAdmin
 We've included a container running PgAdmin to provide a GUI for interacting 

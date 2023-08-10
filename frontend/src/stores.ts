@@ -53,8 +53,7 @@ export function clearAll() {
 
 // API URL
 export function apiUrl() {
-  // check NODE_ENV
-  // check that window is defined
+  // check that window is defined, this is used for checking if we are running in the browser
   if (typeof window === "undefined") {
     return "https://disku.jniemela.dk/api"; // SSR
   }
