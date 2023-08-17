@@ -1,17 +1,7 @@
-// look in the data folder and get the names of all files in the jsons
-// grab jsons from ../data/json if in devmode, otherwise from /data/json in prob
 import { dev } from "$app/environment";
 
-const jsons_dir = dev ? "../data/json" : "jsons";
 
-const url = "https://disku.jniemela.dk";
-
-import * as fs from 'fs';
-
-function all_course_names(): string[] {
-  return fs.readdirSync(jsons_dir).map((x) => x.replace(".json", ""))
-}
-
+const url = dev ? "http://localhost:3000" : "https://disku.jniemela.dk";
 
 function today_yyyy_mm_dd(): string {
   const d = new Date();
@@ -19,10 +9,10 @@ function today_yyyy_mm_dd(): string {
   return iso.substring(0, 10);
 }
 
-function generate_xml(course_name: string): string {
+function generate_xml(course_id: string): string {
   return `
     <url>
-        <loc>${url}/course/${course_name}</loc>
+        <loc>${url}/course/${course_id}</loc>
         <priority>0.8</priority>
         <lastmod>${today_yyyy_mm_dd()}</lastmod>
     </url>
@@ -30,8 +20,17 @@ function generate_xml(course_name: string): string {
 }
 
 
-
 export async function GET() {
+  // grab all course-ids from the get-course-ids endpoint which gives a list of json objects
+  // [{course_id: "course1"}, {course_id: "course2"}]
+  //
+  const res = await fetch(`${url}/api/get-course-ids`);
+  const json = await res.json();
+
+  let course_ids = json.map((x: any) => x.course_id);
+  // print how many course-ids we have
+  console.log(`Found ${course_ids.length} course-ids for sitemap`);
+
   return new Response(
     `
     <?xml version="1.0" encoding="UTF-8" ?>
@@ -51,7 +50,7 @@ export async function GET() {
         <priority>1.0</priority>
       </url>
       <!-- course pages -->
-      ${all_course_names().map(generate_xml).join("\n")}
+      ${course_ids.map(generate_xml).join("\n")}
 
     </urlset>`.trim(),
     {
