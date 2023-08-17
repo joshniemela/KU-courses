@@ -26,6 +26,7 @@ export async function GET() {
   //
   const res = await fetch(`${url}/api/get-course-ids`);
   const json = await res.json();
+  const today = today_yyyy_mm_dd();
 
   let course_ids = json.map((x: any) => x.course_id);
   // print how many course-ids we have
@@ -46,7 +47,7 @@ export async function GET() {
       <!-- root -->
        <url>
         <loc>${url}</loc>
-        <lastmod>${today_yyyy_mm_dd()}</lastmod>
+        <lastmod>${today}</lastmod>
         <priority>1.0</priority>
       </url>
       <!-- course pages -->
