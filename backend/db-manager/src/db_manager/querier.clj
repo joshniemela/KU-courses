@@ -146,3 +146,14 @@ JOIN
        " GROUP BY course.course_id;"))
 (defn generate-course-by-id-query [course-id]
   (course-query-template (str "course.course_id = " (stringify course-id))))
+
+; TODO: figure out why this query has fewer than just finding all courses
+(def find-course-ids-query
+  "SELECT DISTINCT course.course_id
+FROM course
+JOIN workload ON course.course_id = workload.course_id
+JOIN coordinates ON course.course_id = coordinates.course_id
+JOIN exam ON course.course_id = exam.course_id
+JOIN schedule ON course.course_id = schedule.course_id
+JOIN employee ON employee.email = coordinates.email
+JOIN department ON course.course_id = department.course_id")

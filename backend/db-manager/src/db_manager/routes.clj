@@ -46,7 +46,7 @@
                          :handler (fn [{{{:keys [name]} :query} :parameters}]
                                     {:status 200
                                      :body (find-email-by-name db name)})}}]
-  ; grab all course ids, not used
+
    ["/get-course-ids" {:get {:parameters {}
                              :responses {200 {:body [map?]}}
                              :handler (fn [_]
