@@ -3,7 +3,17 @@ import json
 import nltk
 from nltk import pos_tag
 import re
-from scraper import get_page
+DATA_DIR = "../../data"  # where to store the data
+# strip the url and get the page from DATA_DIR
+
+# helper functions:
+def name_from_url(url: str) -> str:
+    return url.split("/")[-1]
+
+def get_page(url: str) -> str:
+    file_path = f"{DATA_DIR}/pages/{name_from_url(url)}.html"
+    with open(file_path, "r") as f:
+        return f.read()
 
 # this module is responsible for parsing and extracting information from the html pages
 dk_to_en_keys = {
@@ -97,8 +107,8 @@ def fixstring(sld):
 def snakecase(string):
     return string.lower().replace(" ", "_").replace("-", "_")
 
-
-def get_panel_info(url: str) -> dict:
+# return none or dict
+def get_panel_info(url: str) -> dict | None:
     """
     This function attempts to grab:
     - Study board
@@ -110,7 +120,14 @@ def get_panel_info(url: str) -> dict:
     panel_bodies = soup.find_all("div", class_="panel-body")
 
     # Find the one with the most h5's, this is presumably the one we want
-    panel_body = max(panel_bodies, key=lambda x: len(x.find_all("h5")))
+    try:
+        panel_body = max(panel_bodies, key=lambda x: len(x.find_all("h5")))
+    except:
+        print("No panel body found")
+        print(url)
+        return None
+
+
 
     # Grabbing top elements
     dl = panel_body.find("dl", class_="dl-horizontal")
@@ -822,7 +839,11 @@ def get_departments(course):
 
 
 def get_all_info(url):
-    site = {**get_panel_info(url), **get_course_items2(url)}
+    # panel info might be None
+    panel_info = get_panel_info(url)
+    if panel_info is None:
+        return None
+    site = {**panel_info, **get_course_items2(url)}
     # Translate keys to english
     site = {dk_to_en_keys.get(k, k): v for k, v in site.items()}
 
