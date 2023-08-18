@@ -14,6 +14,7 @@
             [db-manager.routes :refer [ping-route api-routes]]
             [db-manager.db :refer [nuke-db! populate-courses!]]
             [db-manager.cli :refer [parse-cli scrape-courses!]]
+            [course-scraper.watcher :refer [sitemap-watcher scrape-course]]
             [next.jdbc :as jdbc]
             [next.jdbc.types :refer [as-other]]
             [ring.middleware.cors :refer [wrap-cors]]
@@ -152,7 +153,10 @@
       (println "Scraping courses from the web... (this may take a while)")
       (scrape-courses!))
 
-    ; this runs if -f is passed
+    ; concurrently run sitemap-watcher scrape-course
+    (future (sitemap-watcher scrape-course))
+
+; this runs if -f is passed
     (if (:force args)
       (do (println "Nuking database and repopulating with courses from" json-dir)
           (nuke-db! db)
