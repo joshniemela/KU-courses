@@ -2,6 +2,13 @@ use std::fs;
 const DATA_DIR: &str = "../../data";
 const PAGE_DIR: &str = "../../data/pages";
 
+trait KeyValueStore {
+    fn write(&self, key: &str, value: &str) -> Result<(), std::io::Error>;
+    fn read(&self, key: &str) -> Result<String, std::io::Error>;
+    fn delete(&self, key: &str) -> Result<(), std::io::Error>;
+    fn keys(&self) -> Result<Vec<String>, std::io::Error>;
+}
+
 fn get_course_filenames(path: &str) -> Result<Vec<String>, std::io::Error> {
     let mut filenames: Vec<String> = Vec::new();
 
