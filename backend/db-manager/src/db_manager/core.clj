@@ -13,7 +13,7 @@
             [org.httpkit.server :refer [run-server]]
             [db-manager.routes :refer [ping-route api-routes]]
             [db-manager.db :refer [nuke-db! populate-courses!]]
-            [db-manager.cli :refer [parse-cli scrape-courses!]]
+            [db-manager.cli :refer [parse-cli]]
             [course-scraper.watcher :refer [sitemap-watcher scrape-course]]
             [next.jdbc :as jdbc]
             [next.jdbc.types :refer [as-other]]
@@ -149,10 +149,6 @@
 (defn -main [& args]
   (let [args (parse-cli args)]
     ; this runs if -s is passed
-    (when (:scrape args)
-      (println "Scraping courses from the web... (this may take a while)")
-      (scrape-courses!))
-
     ; concurrently run sitemap-watcher scrape-course
     (future (sitemap-watcher scrape-course))
 

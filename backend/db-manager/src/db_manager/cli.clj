@@ -4,7 +4,6 @@
 
 (def cli-options
   [["-f" "--force" "Force reset the database and delete all harvested data"]
-   ["-s" "--scrape" "Scrape the data from the web"]
    ["-h" "--help" "Show help"]])
 
 (def help-message "Usage: db-manager [options]
@@ -40,15 +39,6 @@ Options:
         errfut   (future (print-return-stream stderr))
         proc-ret (.waitFor proc)]
     [proc-ret @outfut @errfut]))
-
-(defn scrape-courses! []
-  ; run exec stream and occasionally force an output
-  (let [[ret out err] (exec-stream "../courses" "pipenv" "run" "python" "main.py")]
-    (println "scrape.py returned" ret)
-    (println "stdout:")
-    (println out)
-    (println "stderr:")
-    (println err)))
 
 ; return the options that are relevant
 (defn parse-cli [args]
