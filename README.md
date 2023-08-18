@@ -16,7 +16,7 @@ Our backend is built with Clojure, a functional programmering language based on 
 This part of the project is responsible for gluing our web-scraper together with the frontend and the database. Furthermore, it is responsible for constructing our SQL queries that are served via the API.
 
 ### scraper
-The scraper runs in two stages, the true `scraper` and the `parser`, first part is responsible for scraping all of the HTMLs and caching them for future use, the parser will convert all the HTMLs into JSON so they can be inserted into the database.  
+The "scraper" confusingly runs the `parser`, It was previouslyresponsible for scraping all of the HTMLs and caching them for future use, the parser will convert all the HTMLs into JSON so they can be inserted into the database. The real scraper is now integrated into `db-manager`
 
 *TODO:*
 This entire module is strongly overdue a complete rework into a lighter language (Rust, Haskell, Clojure) since the module is bigger than the entire project combined when built, and takes a long time to parse HTMLs.
