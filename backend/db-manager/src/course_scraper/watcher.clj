@@ -2,7 +2,10 @@
   (:require [clojure.zip :as zip]
             [clojure.xml :as xml]
             [clojure.java.io :as io]
-            [org.httpkit.client :as http-kit])
+            [org.httpkit.client :as http])
+  (:import (javax.net.ssl SSLEngine SSLParameters SNIHostName)
+           (java.net URI))
+
   (:gen-class))
 
 (def data-dir "../../data/pages")
@@ -53,11 +56,25 @@
   (Thread/sleep (* 1000 60 60))
   (recur callback))
 
+(defn sni-configure
+  [^SSLEngine ssl-engine ^URI uri]
+  (let [^SSLParameters ssl-params (.getSSLParameters ssl-engine)]
+    (.setServerNames ssl-params [(SNIHostName. (.getHost uri))])
+    (.setSSLParameters ssl-engine ssl-params)))
+
+(def client (http/make-client {:ssl-configurer sni-configure}))
+
+(def options {:client client :timeout 10000})
+
 (defn scrape-course [course]
   ; slurp loc
   (let [loc (:loc course)]
     (println "Scraping" loc)
-    (let [page (http-kit/get loc)]
-      (do
-        (spit (str data-dir "/" (:id course) ".html") page)
-        (Thread/sleep 300)))))
+    (http/get loc options
+              (fn [{:keys [status headers body error]}] ;; asynchronous response handling
+                (if error
+                  (println "Failed, exception is " error)
+                  (do
+                    (println "Writing" loc)
+                    (spit (str data-dir "/" (:id course) ".html") body))))))
+  (Thread/sleep 300))

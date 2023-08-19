@@ -32,23 +32,13 @@ fn parse_course(html: &str) -> Result<Course, Box<dyn std::error::Error>> {
 
     // if there is no content element, we assume it is a new course
     if content.is_some() {
-        return parse_old_course(&dom);
+        return parse_course_info(&dom);
     }
 
-    // get the "main" tag
-    let content = dom.query_selector("panel");
-    if content.is_some() {
-        return parse_old_course(&dom);
-    }
-    // 558 courses are new
     Err("Unknown course html format".into())
 }
 
-fn parse_course_info(node: &tl::HTMLTag) -> Result<Course, Box<dyn std::error::Error>> {
-    Err("Not implemented (course info parser)".into())
-}
-
-fn parse_old_course(dom: &VDom) -> Result<Course, Box<dyn std::error::Error>> {
+fn parse_course_info(dom: &VDom) -> Result<Course, Box<dyn std::error::Error>> {
     // find all div class="panel-body" elements and assert that there is only one
     let mut panel_bodies = dom.get_elements_by_class_name("panel-body");
     let parser = dom.parser();
@@ -73,14 +63,10 @@ fn parse_old_course(dom: &VDom) -> Result<Course, Box<dyn std::error::Error>> {
                 // print the first 50 characters of the inner text
                 //println!("{}", node.inner_text(parser)[..51].to_string());
                 //println!("panel-body {}", i);
-                return parse_course_info(&node);
+                //println!("dl: {}", node.inner_text(parser));
+                return Err("Not implemented".into());
             }
             None => continue,
-        }
-        if dl_elements.next().is_some() {
-            return Err(
-                "Multiple dl elements found in the panel-body, this should be impossible".into(),
-            );
         }
     }
     Err("No dl element found in the panel-body".into())
