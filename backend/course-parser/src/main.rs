@@ -64,19 +64,6 @@ fn parse_old_course(dom: &VDom) -> Result<Course, Box<dyn std::error::Error>> {
     }
 }
 
-fn try_parsing(
-    html: &str,
-    parser_fn: fn(&str) -> Result<Course, Box<dyn std::error::Error>>,
-) -> bool {
-    match parser_fn(html) {
-        Ok(_) => true,
-        Err(err) => {
-            eprintln!("Error: {}", err);
-            false
-        }
-    }
-}
-
 fn main() {
     // time how long it takes to run this
     let start = std::time::Instant::now();
@@ -90,19 +77,14 @@ fn main() {
             for filename in filenames {
                 let path = format!("{}/{}", PAGE_DIR, filename);
                 let html = fs::read_to_string(path).unwrap();
-                let result = try_parsing(&html, parse_course);
-                if result {
-                    passes += 1;
-                } else {
-                    fails += 1;
-                    let new_parsed = parse_course(&html);
-                    match new_parsed {
-                        Ok(_) => {}
-                        Err(err) => {
-                            let err_string = format!("{}", err);
-                            let count = errors.entry(err_string).or_insert(0);
-                            *count += 1;
-                        }
+                let result = parse_course(&html);
+                match result {
+                    Ok(_) => passes += 1,
+                    Err(err) => {
+                        fails += 1;
+                        let err_string = format!("{}", err);
+                        let count = errors.entry(err_string).or_insert(0);
+                        *count += 1;
                     }
                 }
             }
