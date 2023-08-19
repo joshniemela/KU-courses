@@ -60,4 +60,4 @@
     (let [page (http-kit/get loc)]
       (do
         (spit (str data-dir "/" (:id course) ".html") page)
-        (Thread/sleep 150)))))
+        (Thread/sleep 300)))))

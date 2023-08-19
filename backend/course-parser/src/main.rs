@@ -35,8 +35,17 @@ fn parse_course(html: &str) -> Result<Course, Box<dyn std::error::Error>> {
         return parse_old_course(&dom);
     }
 
+    // get the "main" tag
+    let content = dom.query_selector("panel");
+    if content.is_some() {
+        return parse_old_course(&dom);
+    }
     // 558 courses are new
     Err("Unknown course html format".into())
+}
+
+fn parse_course_info(node: &tl::HTMLTag) -> Result<Course, Box<dyn std::error::Error>> {
+    Err("Not implemented (course info parser)".into())
 }
 
 fn parse_old_course(dom: &VDom) -> Result<Course, Box<dyn std::error::Error>> {
@@ -62,11 +71,16 @@ fn parse_old_course(dom: &VDom) -> Result<Course, Box<dyn std::error::Error>> {
                     .as_tag()
                     .ok_or("Failed to get node as tag")?;
                 // print the first 50 characters of the inner text
-                println!("{}", node.inner_text(parser)[..51].to_string());
-                println!("panel-body {}", i);
-                return Err("Not implemented (parse candidate_body)".into());
+                //println!("{}", node.inner_text(parser)[..51].to_string());
+                //println!("panel-body {}", i);
+                return parse_course_info(&node);
             }
             None => continue,
+        }
+        if dl_elements.next().is_some() {
+            return Err(
+                "Multiple dl elements found in the panel-body, this should be impossible".into(),
+            );
         }
     }
     Err("No dl element found in the panel-body".into())
@@ -93,6 +107,8 @@ fn main() {
                         let err_string = format!("{}", err);
                         let count = errors.entry(err_string).or_insert(0);
                         *count += 1;
+                        println!("Failed on course: {}", filename);
+                        println!("Error: {}", err);
                     }
                 }
             }
