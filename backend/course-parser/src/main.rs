@@ -84,14 +84,26 @@ fn main() {
         Ok(filenames) => {
             let mut fails = 0;
             let mut passes = 0;
+            // count the number of errors in a dictionary
+            let mut errors: std::collections::HashMap<String, u32> =
+                std::collections::HashMap::new();
             for filename in filenames {
                 let path = format!("{}/{}", PAGE_DIR, filename);
                 let html = fs::read_to_string(path).unwrap();
-                if try_parsing(&html, parse_course) {
+                let result = try_parsing(&html, parse_course);
+                if result {
                     passes += 1;
                 } else {
                     fails += 1;
-                    println!("Failed to parse {}", filename);
+                    let new_parsed = parse_course(&html);
+                    match new_parsed {
+                        Ok(_) => {}
+                        Err(err) => {
+                            let err_string = format!("{}", err);
+                            let count = errors.entry(err_string).or_insert(0);
+                            *count += 1;
+                        }
+                    }
                 }
             }
             println!(
@@ -100,6 +112,7 @@ fn main() {
                 fails,
                 passes as f64 / (passes + fails) as f64 * 100.0
             );
+            println!("errors: {:?}", errors);
         }
         Err(err) => eprintln!("Error: {}", err),
     }
