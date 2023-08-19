@@ -43,7 +43,10 @@ fn parse_old_course(dom: &VDom) -> Result<Course, Box<dyn std::error::Error>> {
     // find all div class="panel-body" elements and assert that there is only one
     let mut panel_bodies = dom.get_elements_by_class_name("panel-body");
     let parser = dom.parser();
-    let mut valid_bodies = 0;
+    let mut candidate_bodies = 0;
+
+    // there might be multiple panel-bodies, so we need to check each one
+    // for the dl element (only the course info should have a dl element)
     for panel_body in panel_bodies {
         let resulting = panel_body.get(parser).unwrap().as_tag().unwrap();
         let dls = resulting.query_selector(parser, "dl").unwrap();
@@ -51,18 +54,14 @@ fn parse_old_course(dom: &VDom) -> Result<Course, Box<dyn std::error::Error>> {
             let node = handle.get(parser).unwrap().as_tag().unwrap();
             // print the first 50 characters of the inner text
             println!("{}", node.inner_text(parser)[..51].to_string());
-            valid_bodies += 1;
+            candidate_bodies += 1;
         }
     }
-    if valid_bodies == 1 {
-        return Ok(Course {
-            id: "new course".to_string(),
-        });
-    } else if valid_bodies > 1 {
-        return Err("Multiple panel-bodies found".into());
+    match candidate_bodies {
+        0 => Err("No panel-body elements with a dl was found".into()),
+        1 => Ok(Course { id: "test".into() }),
+        _ => Err("Multiple panel-body elements with dls were found".into()),
     }
-
-    Err("dl was not found inside of a panel-body".into())
 }
 
 fn try_parsing(
