@@ -58,6 +58,8 @@ fn parse_old_course(dom: &VDom) -> Result<Course, Box<dyn std::error::Error>> {
         return Ok(Course {
             id: "new course".to_string(),
         });
+    } else if valid_bodies > 1 {
+        return Err("Multiple panel-bodies found".into());
     }
 
     Err("dl was not found inside of a panel-body".into())
