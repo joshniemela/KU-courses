@@ -59,7 +59,7 @@ fn parse_old_course(dom: &VDom) -> Result<Course, Box<dyn std::error::Error>> {
     }
     match candidate_bodies {
         0 => Err("No panel-body elements with a dl was found".into()),
-        1 => Ok(Course { id: "test".into() }),
+        1 => Err("Not implemented".into()),
         _ => Err("Multiple panel-body elements with dls were found".into()),
     }
 }
@@ -112,7 +112,9 @@ fn main() {
                 fails,
                 passes as f64 / (passes + fails) as f64 * 100.0
             );
-            println!("errors: {:?}", errors);
+            for (err, count) in errors.iter() {
+                println!("{}: {}", err, count);
+            }
         }
         Err(err) => eprintln!("Error: {}", err),
     }
