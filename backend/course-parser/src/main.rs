@@ -43,25 +43,33 @@ fn parse_old_course(dom: &VDom) -> Result<Course, Box<dyn std::error::Error>> {
     // find all div class="panel-body" elements and assert that there is only one
     let mut panel_bodies = dom.get_elements_by_class_name("panel-body");
     let parser = dom.parser();
-    let mut candidate_bodies = 0;
 
     // there might be multiple panel-bodies, so we need to check each one
     // for the dl element (only the course info should have a dl element)
-    for panel_body in panel_bodies {
-        let resulting = panel_body.get(parser).unwrap().as_tag().unwrap();
-        let dls = resulting.query_selector(parser, "dl").unwrap();
-        for handle in dls {
-            let node = handle.get(parser).unwrap().as_tag().unwrap();
-            // print the first 50 characters of the inner text
-            println!("{}", node.inner_text(parser)[..51].to_string());
-            candidate_bodies += 1;
+    for (i, panel_body) in panel_bodies.enumerate() {
+        let mut dl_elements = panel_body
+            .get(parser)
+            .ok_or("Failed to get panel-body")?
+            .as_tag()
+            .ok_or("Failed to get panel-body as tag")?
+            .query_selector(parser, "dl")
+            .ok_or("Failed to get dl from panel-body")?;
+        match dl_elements.next() {
+            Some(handle) => {
+                let node = handle
+                    .get(parser)
+                    .ok_or("Failed to get node")?
+                    .as_tag()
+                    .ok_or("Failed to get node as tag")?;
+                // print the first 50 characters of the inner text
+                println!("{}", node.inner_text(parser)[..51].to_string());
+                println!("panel-body {}", i);
+                return Err("Not implemented (parse candidate_body)".into());
+            }
+            None => continue,
         }
     }
-    match candidate_bodies {
-        0 => Err("No panel-body elements with a dl was found".into()),
-        1 => Err("Not implemented".into()),
-        _ => Err("Multiple panel-body elements with dls were found".into()),
-    }
+    Err("No dl element found in the panel-body".into())
 }
 
 fn main() {
