@@ -2,3 +2,4 @@ data/*
 .direnv
 .lsp
 .clj-kondo
+target
