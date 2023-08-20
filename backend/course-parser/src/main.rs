@@ -168,7 +168,7 @@ fn parse_language(language: &str) -> Result<Language, Box<dyn std::error::Error>
     match language {
         "English" => Ok(Language::English),
         "Dansk" => Ok(Language::Danish),
-        _ => Err("Unknown language".into()),
+        _ => Err(format!("Unknown language ({})", language).into()),
     }
 }
 
@@ -246,18 +246,17 @@ fn parse_schedule(schedule: &str) -> Result<Schedule, Box<dyn std::error::Error>
 }
 
 fn parse_block(block: &str) -> Result<Block, Box<dyn std::error::Error>> {
-    let block = block
-        .chars()
-        .take_while(|c| c.is_numeric())
-        .collect::<String>()
-        .parse::<u32>()
-        .map_err(|e| format!("Failed to parse block ({})", e))?;
-    match block {
-        1 => Ok(Block::One),
-        2 => Ok(Block::Two),
-        3 => Ok(Block::Three),
-        4 => Ok(Block::Four),
-        5 => Ok(Block::Five),
+    let first_three_chars = block.chars().take(3).collect::<String>();
+    if first_three_chars != "Blo" {
+        return Err("Course does not use blocks".into());
+    }
+    let last_char = block.chars().last().ok_or("Failed to get last char")?;
+    match last_char.to_string().as_str() {
+        "1" => Ok(Block::One),
+        "2" => Ok(Block::Two),
+        "3" => Ok(Block::Three),
+        "4" => Ok(Block::Four),
+        "5" => Ok(Block::Five),
         _ => Err("Unknown block".into()),
     }
 }
@@ -285,6 +284,17 @@ fn coerce_course_info(
     let mut degree: Option<Vec<Degree>> = None;
     let mut capacity: Option<u32> = None;
 
+    for (key, value) in &course_info {
+        // first iterate through only to find the block, since  this will tell us if we
+        // are dealing with the faculty of science (they use blocks) or the other faculties
+        // Check the first 5 chars of the key to see if it is "Place"
+        println!("key: {}", key);
+        let chopped_key = key.chars().take(5).collect::<String>();
+        if chopped_key == "Place" {
+            block = Some(parse_block(&value)?);
+        }
+    }
+
     for (key, value) in course_info {
         match key.as_str() {
             "Language" => language = Some(parse_language(&value)?),
@@ -294,8 +304,6 @@ fn coerce_course_info(
             "Point" => ects = Some(parse_ects(&value)?), // "Point" is the danish version of "Credit"
             "Level" => degree = Some(parse_degree(&value)?),
             "Duration" => duration = Some(parse_duration(&value)?),
-            "Placement" => block = Some(parse_block(&value)?),
-            "Placering" => block = Some(parse_block(&value)?), // "Placering" is the danish version of "Placement
             "Schedule" => schedule = Some(parse_schedule(&value)?),
             "Course capacity" => capacity = Some(parse_capacity(&value)?),
             _ => continue,
