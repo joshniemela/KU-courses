@@ -52,8 +52,8 @@
           course-lastmod (:timestamp course-info)]
       (when (> course-lastmod course-mod-date)
         (callback course-info))))
-  ; go to sleep for 1 hour
-  (Thread/sleep (* 1000 60 60))
+  ; go to sleep for 30 minutes
+  (Thread/sleep (* 1000 60 30))
   (recur callback))
 
 (defn sni-configure
