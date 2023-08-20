@@ -288,7 +288,6 @@ fn coerce_course_info(
         // first iterate through only to find the block, since  this will tell us if we
         // are dealing with the faculty of science (they use blocks) or the other faculties
         // Check the first 5 chars of the key to see if it is "Place"
-        println!("key: {}", key);
         let chopped_key = key.chars().take(5).collect::<String>();
         if chopped_key == "Place" {
             block = Some(parse_block(&value)?);
