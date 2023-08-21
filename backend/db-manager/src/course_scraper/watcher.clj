@@ -34,27 +34,27 @@
 (defn sitemap-watcher
   "Watches the course sitemap for last-mod newer than time"
   [callback]
-  (def sitemap-url "https://kurser.ku.dk/sitemap.xml")
-
-  (def sitemap-zipper (zip/xml-zip (xml/parse sitemap-url)))
-
-; skip the first element, which is the page index, then grab everything
-  (def courses (-> sitemap-zipper
-                   zip/down
-                   zip/right
-                   zip/rights))
+  (let [sitemap-url "https://kurser.ku.dk/sitemap.xml"
+        sitemap-zipper (zip/xml-zip (xml/parse sitemap-url))
+        ; skip the first element, which is the page index, then grab everything
+        courses (-> sitemap-zipper
+                    zip/down
+                    zip/right
+                    zip/rights)]
   ; for every course, grab mod date and check if it's newer than the file
   ; if it is, grab the info from the course and pass it to the callback
-  (doseq [course courses]
-    (let [course-info (grab-info-from-course course)
-          course-id (:id course-info)
-          course-mod-date (grab-mod-date course-id)
-          course-lastmod (:timestamp course-info)]
-      (when (> course-lastmod course-mod-date)
-        (callback course-info))))
+    (println "[course scraper]: Scraping courses")
+    (doseq [course courses]
+      (let [course-info (grab-info-from-course course)
+            course-id (:id course-info)
+            course-mod-date (grab-mod-date course-id)
+            course-lastmod (:timestamp course-info)]
+        (when (> course-lastmod course-mod-date)
+          (callback course-info))))
   ; go to sleep for 30 minutes
-  (Thread/sleep (* 1000 60 30))
-  (recur callback))
+    (println "[course scraper]: Finished scraping, going to sleep")
+    (Thread/sleep (* 1000 60 60))
+    (recur callback)))
 
 (defn sni-configure
   [^SSLEngine ssl-engine ^URI uri]
@@ -64,7 +64,7 @@
 
 (def client (http/make-client {:ssl-configurer sni-configure}))
 
-(def options {:client client :timeout 10000})
+(def options {:client client :timeout (* 1000 60 5)})
 
 (defn scrape-course [course]
   ; slurp loc
