@@ -31,6 +31,19 @@ use std::{fs, io::{Read, Write}};
 /// file!");
 /// println!("{}", &nested_res);
 ///
+/// // We can also list files in directories, as well as subdirectories up to a specified depth.
+///
+/// // Depth 0, only find test.txt:
+/// let zero_depth = storage.list("", &0).expect("Error listing files");
+/// // Notice we can choose the sub directory from where to start the search:
+/// // Below we just find nested_file.txt
+/// let zero_depth_subdir = storage.list("nested_dir", &0).expect("Error listing files");
+///
+/// // Lastly we can find all the files in our example, by specifying the root, and a depth of 1:
+/// // Here we get both test.txt and nested_dir/test.txt.
+/// let all_files = storage.list("", &1).expect("Error listing files");
+///
+///
 /// storage.delete("test.txt").expect("Error deleting file");
 /// storage.delete("nested_dir/nested_file.txt").expect("Error deleting nested file");
 /// ```
@@ -82,6 +95,27 @@ pub trait Storage {
     /// # Returns
     /// Either returns Ok or the error incurred.
     fn delete(&self, filepath: &str) -> Result<(), Box<dyn std::error::Error>>;
+
+    /// Lists all the files in a directory + subdirectories up to the depth specified.
+    ///
+    /// # Structure
+    /// Given a structure
+    /// /file.txt
+    /// /subdir/filetwo.txt
+    /// /subdir/another/filethree.txt
+    ///
+    /// If you call list with depth 1, it will return a vector of the Strings:
+    /// ["file.txt", "subdir/filetwo.txt"]
+    ///
+    /// # Parameters
+    /// * `&self` - Reference to itself, in order to get at possible values defined on the struct.
+    /// * `path: &str` - The path corresponding to where you want to start the search.
+    /// * `depth: &i64` - The desired depth of your search, starting at 0 meaning _just_ files in
+    /// the starting directory.
+    ///
+    /// # Returns
+    /// Returns either a vector of Strings, or _some_ error depending on the implementation.
+    fn list(&self, path: &str, depth: &i64) -> Result<Vec<String>, Box<dyn std::error::Error>>;
 }
 
 
@@ -116,6 +150,28 @@ impl LocalStorage {
         let r = self.config.root.as_str();
         let fp = format!("{}/{}", r, new_file_path);
         fp
+    }
+
+    fn list_recursive(&self, filepath: &str, depth: &i64, current_depth: i64, current_path: &str) -> Result<Vec<String>, Box<dyn std::error::Error>> {
+        if current_depth > *depth {
+            return Ok(Vec::new()); // Return an empty vector if depth is exhausted
+        }
+
+        let mut filenames: Vec<String> = Vec::new();
+        let entries = fs::read_dir(filepath)?;
+        for entry in entries {
+            let entry = entry?;
+            let file_type = entry.file_type()?;
+            if file_type.is_file() {
+                let file_name = entry.file_name();
+                filenames.push(format!("{}/{}", current_path, file_name.to_string_lossy().to_string()));
+            } else if file_type.is_dir() {
+                let dir_name = entry.file_name().to_string_lossy().to_string();
+                let sub_files = self.list_recursive(self.construct_filepath(&dir_name).as_str(), depth, current_depth + 1, &format!("{}/{}", current_path, dir_name))?;
+                filenames.extend(sub_files);
+            }
+        }
+        Ok(filenames)
     }
 }
 
@@ -171,6 +227,13 @@ impl Storage for LocalStorage {
         fs::remove_file(self.construct_filepath(filepath))?;
         Ok(())
     }
+
+    // List implementation for local storage
+    fn list(&self, path: &str, depth: &i64) -> Result<Vec<String>, Box<dyn std::error::Error>> {
+            let filenames = self.list_recursive(self.construct_filepath(path).as_str(), depth, 0, path)?;
+            Ok(filenames)
+    }
+
 
 }
 
@@ -250,7 +313,7 @@ mod tests {
     #[test]
     #[should_panic]
     fn delete_file() {
-        let root: String = String::from(std::env::current_exe().unwrap().as_path().to_string_lossy());
+        let root: String = String::from(std::env::current_exe().unwrap().parent().unwrap().to_string_lossy());
         println!("{}", root);
         let conf = LocalStorageConfig{ root };
         let storage = LocalStorage::new(conf).unwrap();
@@ -266,4 +329,62 @@ mod tests {
         let read_file = storage.read("test.txt").unwrap();
         println!("{}", read_file);
     }
+
+    #[test]
+    fn list() {
+        let root: String = String::from(std::env::current_exe().unwrap().parent().unwrap().to_string_lossy());
+        println!("{}", root);
+        let conf = LocalStorageConfig{ root };
+        let storage = LocalStorage::new(conf).unwrap();
+
+        let filenames = vec!("test/t1.txt", "test/t2.txt", "test/ndir/t3.txt");
+        
+        
+        // Write a file
+        let data = String::from("Hello world! 2.0");
+        filenames.iter().for_each(|x| storage.write(x, &data).expect("Err writing file"));
+        println!("Succesfuly wrote test files");
+
+
+        // Read in one of the files
+        let tf = storage.read("test/t1.txt").unwrap();
+        
+        let normalized_filenames: Vec<String> = filenames
+            .iter()
+            .map(|x| {
+                let path_buf = std::path::Path::new(x);
+                path_buf.to_string_lossy().to_string()
+            })
+            .collect();
+        // List the files (depth 0)
+        let listed_files = storage.list("test", &0).expect("Err listing depth 0");
+        
+        // List the files (depth 1)
+        let listed_nested_files = storage.list("test", &1).expect("Err listing depth 1");
+        assert_eq!(&normalized_filenames[..2], listed_files);
+        assert!(&filenames.iter().all(|file| listed_nested_files.contains(&file.to_string())));
+
+    }
+
+    #[test]
+    fn stops_at_overflow() {
+        let root: String = String::from(std::env::current_exe().unwrap().parent().unwrap().to_string_lossy());
+        println!("{}", root);
+        let conf = LocalStorageConfig{ root };
+        let storage = LocalStorage::new(conf).unwrap();
+
+        let filenames = vec!("test/t1.txt", "test/t2.txt", "test/ndir/t3.txt");
+        
+        
+        // Write a file
+        let data = String::from("Hello world! 2.0");
+        filenames.iter().for_each(|x| storage.write(x, &data).expect("Err writing file"));
+        println!("Succesfuly wrote test files");
+
+        // List the files (depth 0)
+        let listed_files = storage.list("test", &30).expect("Err listing depth 0");
+        assert!(&filenames.iter().all(|file| listed_files.contains(&file.to_string())));
+    }
+
+
 }
