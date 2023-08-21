@@ -15,29 +15,52 @@
 (defn read-json [file]
   (json/read-str (slurp (str json-dir file)) :key-fn keyword))
 
-; each course has a key called "start_block", if it's 1 or 2 then it is winter,
-; if it's 3 or 4 then it is summer
-(defn get-semester [course]
-  (let [start-block (:start-block course)]
-    (if (or (= start-block 1) (= start-block 2))
-      "Winter"
-      "Summer")))
+(defn generate-url-combinations [course-id]
+  (let [base-url "https://karakterstatistik.stads.ku.dk/Histogram/"
+        ; if the last letter is a U, replace it with an E
+        exam-name (if (= \U (last course-id))
+                    (str/replace course-id "U" "E")
+                    course-id)]
+    ; generate all combinations of year from now to 2020 and semester (summer, winter)
+    (for [year (range (.getYear (java.time.LocalDate/now)) 2020 -1)
+          semester ["Summer" "Winter"]]
+      {:url (str base-url exam-name "/" semester "-" year)
+       :course-id course-id
+       :year year})))
 
-(defn get-statistics-html [course year]
+(defn try-scraping
+  "Tries to scrape the given url and returns nil if it fails,
+  if the error code is 500 it returns nil, otherwise it throws an exception"
+  [url]
+  (println "Trying: " (subs url (inc (.lastIndexOf url "/")) (count url)))
+  (try (.get (Jsoup/connect url))
+       (catch Exception e
+         (let [status (.getStatusCode e)]
+           (if (= 500 status)
+             nil
+             (do
+               (println "Error fetching: " url)
+               (println "Status code: " status)
+               (throw e)))))))
+
+(defn get-statistics-html
+  "Takes a map with the course-id, year and url and associates the html with it if it exists,
+  otherwise it returns nil"
+  [course]
   (let [course-id (:course-id course)
-        semester (get-semester course)]
-    (Thread/sleep 200) ; Be nice to KU's servers
-    (try (.get (Jsoup/connect (str "https://karakterstatistik.stads.ku.dk/Histogram/"
-                                   (str/replace course-id "U" "E")
-                                   "/" semester "-" year)))
-         (catch Exception e
-           (let [status (.getStatusCode e)]
-             (if (= 500 status)
-               nil
-               (do
-                 (println "Error fetching statistics for course: " course-id)
-                 (println "Status code: " status)
-                 (throw e))))))))
+        combinations (generate-url-combinations course-id)]
+    (loop [combinations combinations]
+      (when-not (empty? combinations)
+        (let [combination (first combinations)
+              url (:url combination)
+              html (try-scraping url)]
+          (if (nil? html)
+            ; Sleep 200ms to be nice to the server
+            (do (Thread/sleep 200)
+                (recur (rest combinations)))
+            (do
+              (println "Found exam for: " course-id)
+              (assoc combination :html html))))))))
 
 (defn existing-json? [course-info]
   (let [file (io/file (str out-dir (:course-id course-info) ".json"))]
@@ -49,38 +72,19 @@
       true)))
 ; find all jsons
 ; TODO: filter out the ones that already exist
+; TODO: refactor this since we arent using the start block anymore
 (def course-infos-init (for [file (file-seq (io/file json-dir))
                              :when (.endsWith (.getName file) ".json")]
                          (let [course (read-json (.getName file))
                                course-id (:course_id course)
                                start-block (:start_block course)]
                            {:course-id course-id
-                            :start-block start-block
-                            :semester (get-semester course)})))
+                            :start-block start-block})))
 
 (def course-infos (filter existing-json? course-infos-init))
 
-; Puts both html, year and course id in a single map
-(defn html-id-map [course year]
-  (let [html (get-statistics-html course year)
-        course-id (:course-id course)]
-    (println "Fetching statistics for course: " course-id " in year: " year "is it empty?" (nil? html))
-    {:html html
-     :year year
-     :course-id course-id}))
-
-(defn attempt-fetch-latest-years [course]
-  (let [this-year (.getYear (java.time.LocalDate/now))]
-    (loop [years (range this-year (- this-year 3) -1)]
-      (when-not (empty? years)
-        (let [year (first years)
-              html-id (html-id-map course year)]
-          (if (nil? (:html html-id))
-            (recur (rest years))
-            html-id))))))
-
 (def html-seq (for [course course-infos]
-                (attempt-fetch-latest-years course)))
+                (get-statistics-html course)))
 
 ; HOW TO GENERATE THE COURSE STATISTICS PAGE URL:
 ; start with base https://karakterstatistik.stads.ku.dk/Histogram/

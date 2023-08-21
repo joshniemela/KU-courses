@@ -8,7 +8,7 @@
 
   (:gen-class))
 
-(def data-dir "../../data/pages")
+(def pages-dir "../../data/pages")
 
 (defn grab-info-from-course [course]
   (let [content (:content course)
@@ -26,7 +26,7 @@
 
 (defn grab-mod-date [course-id]
   ; grab the modification date of the file with the course-id as name
-  (let [file (io/file data-dir (str course-id ".html"))]
+  (let [file (io/file pages-dir (str course-id ".html"))]
     (if (.exists file)
       (.lastModified file)
       0)))
@@ -79,6 +79,13 @@
                   (println "[course scraper]: Failed, exception is " error)
                   (do
                     (println "[course scraper]: Writing " loc)
-                    (spit (str data-dir "/" (:id course) ".html") body)
+                    (spit (str pages-dir "/" (:id course) ".html") body)
                     (swap! newly-scraped conj course))))))
   (Thread/sleep 300))
+
+(defn generate-url-combinations [course-id]
+  (let [base-url "https://karakterstatistik.stads.ku.dk/Histogram/"]
+    ; generate all combinations of year from now to 2020 and semester (summer, winter)
+    (for [year (range (.getYear (java.time.LocalDate/now)) 2020 -1)
+          semester ["Summer" "Winter"]]
+      (str base-url course-id "/" semester "-" year))))
