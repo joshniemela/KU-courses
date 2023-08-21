@@ -6,8 +6,13 @@ version = 3
 name = "course-parser"
 version = "0.1.0"
 dependencies = [
+ "storage_manager",
  "tl",
 ]
+
+[[package]]
+name = "storage_manager"
+version = "0.1.0"
 
 [[package]]
 name = "tl"

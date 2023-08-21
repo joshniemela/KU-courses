@@ -1,25 +1,7 @@
-use std::fs;
 use tl;
 use tl::VDom;
+use storage_manager::{self, LocalStorageConfig, LocalStorage, Storage};
 const DATA_DIR: &str = "../../data";
-const PAGE_DIR: &str = "../../data/pages";
-
-fn get_course_filenames(path: &str) -> Result<Vec<String>, std::io::Error> {
-    let mut filenames: Vec<String> = Vec::new();
-
-    let entries = fs::read_dir(path)?;
-    for entry in entries {
-        let entry = entry?;
-        let file_type = entry.file_type()?;
-
-        if file_type.is_file() {
-            let file_name = entry.file_name();
-            filenames.push(file_name.to_string_lossy().to_string());
-        }
-    }
-
-    Ok(filenames)
-}
 
 struct Course {
     id: String,
@@ -332,9 +314,15 @@ fn coerce_course_info(
 }
 
 fn main() {
+    // Init connection to local storage
+    let root = String::from(DATA_DIR);
+    let conf = LocalStorageConfig{ root };
+    let storage = LocalStorage::new(conf).expect("Err creating storage");
+    let search_depth = 0;
+
     // time how long it takes to run this
     let start = std::time::Instant::now();
-    match get_course_filenames(PAGE_DIR) {
+    match storage.list("pages", &search_depth) {
         Ok(filenames) => {
             let mut fails = 0;
             let mut passes = 0;
@@ -342,9 +330,8 @@ fn main() {
             let mut errors: std::collections::HashMap<String, u32> =
                 std::collections::HashMap::new();
             for filename in filenames {
-                let path = format!("{}/{}", PAGE_DIR, filename);
-                let html = fs::read_to_string(path).unwrap();
-                let result = parse_course(&html);
+                let f = storage.read(filename.as_str()).expect("Err reading file");
+                let result = parse_course(&f);
                 match result {
                     Ok(_) => passes += 1,
                     Err(err) => {

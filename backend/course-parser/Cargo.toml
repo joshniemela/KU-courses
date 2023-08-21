@@ -7,3 +7,4 @@ edition = "2021"
 
 [dependencies]
 tl = "0.7.7"
+storage_manager = { path = "../rust/storage_manager" }
