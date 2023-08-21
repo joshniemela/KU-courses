@@ -72,13 +72,13 @@
 (defn scrape-course [course newly-scraped]
   ; slurp loc
   (let [loc (:loc course)]
-    (println "Scraping" loc)
+    (println "[course scraper]: Scraping" loc)
     (http/get loc options
               (fn [{:keys [status headers body error]}] ;; asynchronous response handling
                 (if error
-                  (println "Failed, exception is " error)
+                  (println "[course scraper]: Failed, exception is " error)
                   (do
-                    (println "Writing " loc)
+                    (println "[course scraper]: Writing " loc)
                     (spit (str data-dir "/" (:id course) ".html") body)
                     (swap! newly-scraped conj course))))))
   (Thread/sleep 300))
