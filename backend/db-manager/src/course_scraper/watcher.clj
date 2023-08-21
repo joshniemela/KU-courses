@@ -34,7 +34,8 @@
 (defn sitemap-watcher
   "Watches the course sitemap for last-mod newer than time"
   [callback]
-  (let [sitemap-url "https://kurser.ku.dk/sitemap.xml"
+  (let [newly-scraped (atom [])
+        sitemap-url "https://kurser.ku.dk/sitemap.xml"
         sitemap-zipper (zip/xml-zip (xml/parse sitemap-url))
         ; skip the first element, which is the page index, then grab everything
         courses (-> sitemap-zipper
@@ -50,9 +51,11 @@
             course-mod-date (grab-mod-date course-id)
             course-lastmod (:timestamp course-info)]
         (when (> course-lastmod course-mod-date)
-          (callback course-info))))
+          (callback course-info newly-scraped))))
   ; go to sleep for 30 minutes
     (println "[course scraper]: Finished scraping, going to sleep")
+    (println "[course scraper]: Modified" (count @newly-scraped) "courses")
+    (reset! newly-scraped [])
     (Thread/sleep (* 1000 60 60))
     (recur callback)))
 
@@ -66,7 +69,7 @@
 
 (def options {:client client :timeout (* 1000 60 5)})
 
-(defn scrape-course [course]
+(defn scrape-course [course newly-scraped]
   ; slurp loc
   (let [loc (:loc course)]
     (println "Scraping" loc)
@@ -75,6 +78,7 @@
                 (if error
                   (println "Failed, exception is " error)
                   (do
-                    (println "Writing" loc)
-                    (spit (str data-dir "/" (:id course) ".html") body))))))
+                    (println "Writing " loc)
+                    (spit (str data-dir "/" (:id course) ".html") body)
+                    (swap! newly-scraped conj course))))))
   (Thread/sleep 300))
