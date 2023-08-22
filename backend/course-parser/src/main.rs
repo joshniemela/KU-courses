@@ -3,9 +3,60 @@ use storage_manager::{self, LocalStorageConfig, LocalStorage, Storage};
 use eyre::Result;
 const DATA_DIR: &str = "../../data";
 
+///////////////////////////////////////////////////////////////////////////////
+// DATA STRUCTURE
+///////////////////////////////////////////////////////////////////////////////
 #[allow(dead_code)]
 struct Course {
     id: String,
+}
+
+#[allow(dead_code)]
+#[derive(Debug)]
+struct CourseInformation {
+    id: String,
+    ects: f32,
+    block: Block,
+    schedule: Schedule,
+    language: Language,
+    duration: Duration,
+    degree: Vec<Degree>,
+    capacity: u32,
+}
+
+#[derive(Debug)] enum Block {
+    One = 1,
+    Two = 2,
+    Three = 3,
+    Four = 4,
+    Five = 5,
+}
+
+#[derive(Debug)]
+enum Schedule {
+    A,
+    B,
+    C,
+    D,
+}
+
+#[derive(Debug)]
+enum Language {
+    Danish,
+    English,
+}
+
+#[derive(Debug)]
+enum Duration {
+    One = 1,
+    Two = 2,
+}
+
+#[derive(Debug, PartialEq, Eq, Ord, PartialOrd)]
+enum Degree {
+    Phd,
+    Bachelor,
+    Master,
 }
 
 // this function returns a Result type
@@ -99,54 +150,6 @@ fn parse_dl(
     Ok(result)
 }
 
-#[derive(Debug)]
-enum Block {
-    One = 1,
-    Two = 2,
-    Three = 3,
-    Four = 4,
-    Five = 5,
-}
-
-#[derive(Debug)]
-enum Schedule {
-    A,
-    B,
-    C,
-    D,
-}
-
-#[derive(Debug)]
-enum Language {
-    Danish,
-    English,
-}
-
-#[derive(Debug)]
-enum Duration {
-    One = 1,
-    Two = 2,
-}
-
-#[derive(Debug, PartialEq, Eq, Ord, PartialOrd)]
-enum Degree {
-    Phd,
-    Bachelor,
-    Master,
-}
-
-#[allow(dead_code)]
-#[derive(Debug)]
-struct CourseInformation {
-    id: String,
-    ects: f32,
-    block: Block,
-    schedule: Schedule,
-    language: Language,
-    duration: Duration,
-    degree: Vec<Degree>,
-    capacity: u32,
-}
 
 fn parse_language(language: &str) -> Result<Language, Box<dyn std::error::Error>> {
     match language {
