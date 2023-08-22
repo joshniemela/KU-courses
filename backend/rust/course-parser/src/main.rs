@@ -2,7 +2,7 @@ use storage_manager::{self, LocalStorageConfig, LocalStorage, Storage};
 use clap::Parser;
 pub mod parser;
 
-const DATA_DIR: &str = "../../data";
+const DATA_DIR: &str = "../../../data";
 
 const TEST_DIR: &str ="./test_data";
 
