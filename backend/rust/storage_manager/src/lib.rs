@@ -61,8 +61,11 @@ pub trait Storage {
     ///
     /// # Returns
     /// This function either returns an instance of `Self` (meaning that it was succesfully
-    /// initialized) or _some_ error (which depends on the specific implementation. For example,
-    /// errors from the local storage implementation will like be `std::io` related.
+    /// initialized) or _some_ error (which depends on the specific implementation).
+    ///
+    /// # Errors
+    /// Wide array of errors, as these are bubbled up from the specific implementations.
+    /// For example, `LocalStorage` will be bubbling up `std::io::Error`'s
     fn new(args: Self::Args) -> Result<Self, Box<dyn std::error::Error>> where Self: Sized;
 
     /// Used to read a file from storage.
@@ -73,6 +76,10 @@ pub trait Storage {
     /// 
     /// # Returns
     /// Either returns a `String` with the result or _some_ error depending on the implementation.
+    ///
+    /// # Errors
+    /// Wide array of errors, as these are bubbled up from the specific implementations.
+    /// For example, `LocalStorage` will be bubbling up `std::io::Error`'s
     fn read(&self, filepath: &str) -> Result<String, Box<dyn std::error::Error>>;
 
     /// Used to write a file to storage.
@@ -84,7 +91,11 @@ pub trait Storage {
     /// 
     /// # Returns
     /// Either returns either Ok or the error incurred.
-    fn write(&self, filepath: &str, input: &String) -> Result<(), Box<dyn std::error::Error>>;
+    ///
+    /// # Errors
+    /// Wide array of errors, as these are bubbled up from the specific implementations.
+    /// For example, `LocalStorage` will be bubbling up `std::io::Error`'s
+    fn write(&self, filepath: &str, input: &str) -> Result<(), Box<dyn std::error::Error>>;
 
     /// Used to delete a file from storage.
     ///
@@ -94,6 +105,10 @@ pub trait Storage {
     ///
     /// # Returns
     /// Either returns Ok or the error incurred.
+    ///
+    /// # Errors
+    /// Wide array of errors, as these are bubbled up from the specific implementations.
+    /// For example, `LocalStorage` will be bubbling up `std::io::Error`'s
     fn delete(&self, filepath: &str) -> Result<(), Box<dyn std::error::Error>>;
 
     /// Lists all the files in a directory + subdirectories up to the depth specified.
@@ -115,6 +130,10 @@ pub trait Storage {
     ///
     /// # Returns
     /// Returns either a vector of Strings, or _some_ error depending on the implementation.
+    ///
+    /// # Errors
+    /// Wide array of errors, as these are bubbled up from the specific implementations.
+    /// For example, `LocalStorage` will be bubbling up `std::io::Error`'s
     fn list(&self, path: &str, depth: &i64) -> Result<Vec<String>, Box<dyn std::error::Error>>;
 }
 
@@ -144,16 +163,17 @@ pub struct LocalStorageConfig {
 }
 
 impl LocalStorage {
-    /// Simple function that constructs the absolute path using the root path on the LocalStorage
+    /// Simple function that constructs the absolute path using the root path on the
+    /// `LocalStorage`
     /// and the new file path.
     fn construct_filepath(&self, new_file_path: &str) -> String {
         let r = self.config.root.as_str();
-        let fp = format!("{}/{}", r, new_file_path);
+        let fp = format!("{r}/{new_file_path}");
         fp
     }
 
-    fn list_recursive(&self, filepath: &str, depth: &i64, current_depth: i64, current_path: &str) -> Result<Vec<String>, Box<dyn std::error::Error>> {
-        if current_depth > *depth {
+    fn list_recursive(&self, filepath: &str, depth: i64, current_depth: i64, current_path: &str) -> Result<Vec<String>, Box<dyn std::error::Error>> {
+        if current_depth > depth {
             return Ok(Vec::new()); // Return an empty vector if depth is exhausted
         }
 
@@ -164,10 +184,10 @@ impl LocalStorage {
             let file_type = entry.file_type()?;
             if file_type.is_file() {
                 let file_name = entry.file_name();
-                filenames.push(format!("{}/{}", current_path, file_name.to_string_lossy().to_string()));
+                filenames.push(format!("{}/{}", current_path, file_name.to_string_lossy()));
             } else if file_type.is_dir() {
                 let dir_name = entry.file_name().to_string_lossy().to_string();
-                let sub_files = self.list_recursive(self.construct_filepath(&dir_name).as_str(), depth, current_depth + 1, &format!("{}/{}", current_path, dir_name))?;
+                let sub_files = self.list_recursive(self.construct_filepath(&dir_name).as_str(), depth, current_depth + 1, &format!("{current_path}/{dir_name}"))?;
                 filenames.extend(sub_files);
             }
         }
@@ -177,10 +197,10 @@ impl LocalStorage {
 
 impl Storage for LocalStorage {
     type Args = LocalStorageConfig;
-    /// Read implementation for LocalStorage.
+    /// Read implementation for `LocalStorage`.
     ///
     /// # Parameters
-    /// * `args: Self::Args` - When creating an instance of LocalStorage, the Args type from the
+    /// * `args: Self::Args` - When creating an instance of `LocalStorage`, the Args type from the
     /// storage interface is set to `LocalStorageConfig`.
     fn new(args: Self::Args) -> Result<Self, Box<dyn std::error::Error>> {
         // Check read / write / delete permissions
@@ -190,7 +210,7 @@ impl Storage for LocalStorage {
         if readonly {
             return Err(format!("No write permission to {}, storage implementation needs write permission", &args.root).into());
         }
-        Ok(LocalStorage{
+        Ok(Self{
             config: args
         })
     }
@@ -204,7 +224,7 @@ impl Storage for LocalStorage {
     }
     
     // Write implementation for local storage
-    fn write(&self, filepath: &str, input: &String) -> Result<(), Box<dyn std::error::Error>> {
+    fn write(&self, filepath: &str, input: &str) -> Result<(), Box<dyn std::error::Error>> {
         let full_filepath = self.construct_filepath(filepath);
 
         // extract the directory path from the full filepath
@@ -230,7 +250,7 @@ impl Storage for LocalStorage {
 
     // List implementation for local storage
     fn list(&self, path: &str, depth: &i64) -> Result<Vec<String>, Box<dyn std::error::Error>> {
-            let filenames = self.list_recursive(self.construct_filepath(path).as_str(), depth, 0, path)?;
+            let filenames = self.list_recursive(self.construct_filepath(path).as_str(), *depth, 0, path)?;
             Ok(filenames)
     }
 
