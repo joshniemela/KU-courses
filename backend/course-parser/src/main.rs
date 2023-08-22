@@ -1,9 +1,9 @@
-use tl;
 use tl::VDom;
 use storage_manager::{self, LocalStorageConfig, LocalStorage, Storage};
 use eyre::Result;
 const DATA_DIR: &str = "../../data";
 
+#[allow(dead_code)]
 struct Course {
     id: String,
 }
@@ -23,12 +23,12 @@ fn parse_course(html: &str) -> Result<Course, Box<dyn std::error::Error>> {
 
 fn parse_course_info(dom: &VDom) -> Result<Course, Box<dyn std::error::Error>> {
     // find all div class="panel-body" elements and assert that there is only one
-    let mut panel_bodies = dom.get_elements_by_class_name("panel-body");
+    let panel_bodies = dom.get_elements_by_class_name("panel-body");
     let parser = dom.parser();
 
     // there might be multiple panel-bodies, so we need to check each one
     // for the dl element (only the course info should have a dl element)
-    for (i, panel_body) in panel_bodies.enumerate() {
+    for (_i, panel_body) in panel_bodies.enumerate() {
         let mut dl_elements = panel_body
             .get(parser)
             .ok_or("Failed to get panel-body")?
@@ -48,11 +48,11 @@ fn parse_course_info(dom: &VDom) -> Result<Course, Box<dyn std::error::Error>> {
                 //println!("panel-body {}", i);
                 //println!("dl: {}", node.inner_text(parser));
                 // parse DL
-                let course_infos = parse_dl(&node, parser)?;
-                println!("{:?}", course_infos);
+                let course_infos = parse_dl(node, parser)?;
+                println!("{course_infos:?}");
                 // parse the course information
                 let coerced_course_info = coerce_course_info(course_infos)?;
-                println!("{:?}", coerced_course_info);
+                println!("{coerced_course_info:?}");
                 return Err("Not implemented".into());
             }
             None => continue,
@@ -71,7 +71,7 @@ fn parse_dl(
     // for even numbers, we expect a dt element, odd numbers we expect a dd element
     // make a pair of precisely two strings
     let mut pair: Vec<String> = Vec::with_capacity(2);
-    for (i, child) in children.top().iter().enumerate() {
+    for (_i, child) in children.top().iter().enumerate() {
         let node = child
             .get(parser)
             .ok_or("Failed to get node whilst parsing dl")?;
@@ -135,6 +135,7 @@ enum Degree {
     Master,
 }
 
+#[allow(dead_code)]
 #[derive(Debug)]
 struct CourseInformation {
     id: String,
@@ -151,7 +152,7 @@ fn parse_language(language: &str) -> Result<Language, Box<dyn std::error::Error>
     match language {
         "English" => Ok(Language::English),
         "Dansk" => Ok(Language::Danish),
-        _ => Err(format!("Unknown language ({})", language).into()),
+        _ => Err(format!("Unknown language ({language})").into()),
     }
 }
 
@@ -163,11 +164,12 @@ fn parse_ects(ects: &str) -> Result<f32, Box<dyn std::error::Error>> {
         .collect::<String>()
         // rename the potential error to something more meaningful
         .parse::<f32>()
-        .map_err(|e| format!("Failed to parse ects ({})", e))?;
+        .map_err(|e| format!("Failed to parse ects ({e})"))?;
 
     Ok(ects)
 }
 
+#[allow(dead_code)]
 fn parse_degree(degree: &str) -> Result<Vec<Degree>, Box<dyn std::error::Error>> {
     let mut result: Vec<Degree> = Vec::new();
     // Loop through the degree string and find all the degrees
@@ -195,7 +197,7 @@ fn parse_degree(degree: &str) -> Result<Vec<Degree>, Box<dyn std::error::Error>>
 
     // print if it was phd
     if result.contains(&Degree::Phd) {
-        return Err(format!("Phd course found ({})", degree).into());
+        return Err(format!("Phd course found ({degree})").into());
     }
 
     // Sort and deduplicate
@@ -214,7 +216,7 @@ fn parse_capacity(capacity: &str) -> Result<u32, Box<dyn std::error::Error>> {
         .take_while(|c| c.is_numeric())
         .collect::<String>()
         .parse::<u32>()
-        .map_err(|e| format!("Failed to parse capacity ({})", e))?;
+        .map_err(|e| format!("Failed to parse capacity ({e})"))?;
     Ok(capacity)
 }
 
@@ -250,8 +252,7 @@ fn parse_duration(duration: &str) -> Result<Duration, Box<dyn std::error::Error>
     let chopped_duration = duration.chars().take(3).collect::<String>();
     match chopped_duration.as_str() {
         "1 b" => Ok(Duration::One),
-        "2 b" => Ok(Duration::Two),
-        "1 s" => Ok(Duration::Two),
+        "2 b" | "1 s" => Ok(Duration::Two),
         _ => Err("Unknown duration".into()),
     }
 }
@@ -273,17 +274,15 @@ fn coerce_course_info(
         // Check the first 5 chars of the key to see if it is "Place"
         let chopped_key = key.chars().take(5).collect::<String>();
         if chopped_key == "Place" {
-            block = Some(parse_block(&value)?);
+            block = Some(parse_block(value)?);
         }
     }
 
     for (key, value) in course_info {
         match key.as_str() {
             "Language" => language = Some(parse_language(&value)?),
-            "Course code" => id = Some(value),
-            "Kursuskode" => id = Some(value), // "Kursuskode" is the danish version of "Course code
-            "Credit" => ects = Some(parse_ects(&value)?),
-            "Point" => ects = Some(parse_ects(&value)?), // "Point" is the danish version of "Credit"
+            "Kursuskode" | "Course code" => id = Some(value), // "Kursuskode" is the danish version of "Course code
+            "Point" | "Credit" => ects = Some(parse_ects(&value)?), // "Point" is the danish version of "Credit"
             "Level" => degree = Some(parse_degree(&value)?),
             "Duration" => duration = Some(parse_duration(&value)?),
             "Schedule" => schedule = Some(parse_schedule(&value)?),
@@ -299,7 +298,7 @@ fn coerce_course_info(
     let language = language.ok_or("Failed to get language")?;
     let duration = duration.ok_or("Failed to get duration")?;
     let degree = degree.ok_or("Failed to get degree")?;
-    println!("{}: {:?}", id, degree);
+    println!("{id}: {degree:?}");
     let capacity = capacity.ok_or("Failed to get capacity")?;
 
     Ok(CourseInformation {
@@ -315,48 +314,66 @@ fn coerce_course_info(
 }
 
 fn main() {
-    // Init connection to local storage
+    println!("Starting course parser...");
+    // Configuration variables
     let root = String::from(DATA_DIR);
     let conf = LocalStorageConfig{ root };
-    let storage = LocalStorage::new(conf).expect("Err creating storage");
     let search_depth = 0;
 
-    // time how long it takes to run this
-    let start = std::time::Instant::now();
-    match storage.list("pages", &search_depth) {
-        Ok(filenames) => {
-            let mut fails = 0;
-            let mut passes = 0;
-            // count the number of errors in a dictionary
-            let mut errors: std::collections::HashMap<String, u32> =
-                std::collections::HashMap::new();
-            for filename in filenames {
-                let f = storage.read(filename.as_str()).expect("Err reading file");
-                let result = parse_course(&f);
-                match result {
-                    Ok(_) => passes += 1,
-                    Err(err) => {
-                        fails += 1;
-                        let err_string = format!("{}", err);
-                        let count = errors.entry(err_string).or_insert(0);
-                        *count += 1;
-                        println!("Failed on course: {}", filename);
-                        println!("Error: {}", err);
-                    }
+    // We create the storage, and if succesful we start parsing
+    LocalStorage::new(conf).map_or_else(|error| {
+        eprintln!("Failed while creating storage, got err: {error}");
+        println!("exiting ...");
+    }, |storage| {
+        // time how long it takes to run this
+        let start = std::time::Instant::now();
+        match storage.list("pages", &search_depth) {
+
+            // If we get back any filenames we can continue.
+            Ok(filenames) => {
+                let mut fails = 0;
+                let mut passes = 0;
+
+                // count the number of errors in a dictionary
+                let mut errors: std::collections::HashMap<String, u32> =
+                    std::collections::HashMap::new();
+
+                for filename in filenames {
+                    // For each filename, we try to read it, if we succeed we then try to parse it.
+                    storage.read(filename.as_str()).map_or_else(|_| {
+                        println!("Couldn't read file associated with {filename}");
+                    }, |f| {
+                        let result = parse_course(&f);
+                        match result {
+                            Ok(_) => passes += 1,
+                            Err(err) => {
+                                fails += 1;
+                                let err_string = format!("{err}");
+                                let count = errors.entry(err_string).or_insert(0);
+                                *count += 1;
+                                // Print out information on the file we failed to parse
+                                println!("Failed on course: {filename}");
+                                println!("Error: {err}");
+                            }
+                        }
+                    });
+                }
+                
+                // Summary information
+                println!(
+                    "{} passes, {} fails\nparsed: {:.0}%",
+                    passes,
+                    fails,
+                    f64::from(passes) / f64::from(passes + fails)
+                );
+                for (err, count) in &errors {
+                    // print raw (without the newlines)
+                    println!("{}: {}\n", err.replace('\n', "\\n"), count);
                 }
             }
-            println!(
-                "{} passes, {} fails\nparsed: {:.0}%",
-                passes,
-                fails,
-                passes as f64 / (passes + fails) as f64 * 100.0
-            );
-            for (err, count) in errors.iter() {
-                // print raw (without the newlines)
-                println!("{}: {}\n", err.replace("\n", "\\n"), count);
-            }
+            Err(err) => eprintln!("Error: {err}"),
         }
-        Err(err) => eprintln!("Error: {}", err),
-    }
-    println!("Time elapsed: {:.2?}", start.elapsed());
+        println!("Time elapsed: {:.2?}", start.elapsed());
+    });
+    
 }
