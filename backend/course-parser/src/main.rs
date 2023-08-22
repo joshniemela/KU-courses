@@ -16,7 +16,9 @@ fn main() {
 
     // Collecting commandline args to enable switching between the different directories
     // Right now we just treat the first variable as the indication to what dir (i.e. DATA_DIR or
-    // TEST_DIR)
+    // TEST_DIR).
+    // I.e. if you wish to use the TEST_DIR (defined above), you pass TEST_DIR as the first cli
+    // argument. if nothing gets passed in we use the DATA_DIR (to maintain default functionality).
     let args = CliArgs::parse();
 
     // Configuration variables
