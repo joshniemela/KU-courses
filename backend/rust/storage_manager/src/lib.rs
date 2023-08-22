@@ -1,6 +1,7 @@
 //! # Storage handler
 //! Library to handle simple interactions with storage in a location agnostic manner.
 use std::{fs, io::{Read, Write}};
+use eyre::Result;
 
 /// Generic trait for interacting with file-system like storage.
 ///
@@ -364,10 +365,6 @@ mod tests {
         let data = String::from("Hello world! 2.0");
         filenames.iter().for_each(|x| storage.write(x, &data).expect("Err writing file"));
         println!("Succesfuly wrote test files");
-
-
-        // Read in one of the files
-        let tf = storage.read("test/t1.txt").unwrap();
         
         let normalized_filenames: Vec<String> = filenames
             .iter()
