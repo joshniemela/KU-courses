@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env sh
 
 cargo clippy -- \
     -W clippy::pedantic \
