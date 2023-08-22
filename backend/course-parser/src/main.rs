@@ -1,6 +1,7 @@
 use tl;
 use tl::VDom;
 use storage_manager::{self, LocalStorageConfig, LocalStorage, Storage};
+use eyre::Result;
 const DATA_DIR: &str = "../../data";
 
 struct Course {
