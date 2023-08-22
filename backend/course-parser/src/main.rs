@@ -1,12 +1,32 @@
 use storage_manager::{self, LocalStorageConfig, LocalStorage, Storage};
+use clap::Parser;
 pub mod parser;
 
 const DATA_DIR: &str = "../../data";
 
+const TEST_DIR: &str ="./test_data";
+
+#[derive(Parser)]
+struct CliArgs {
+    dir: Option<String>,
+}
+
 fn main() {
     println!("Starting course parser...");
+
+    // Collecting commandline args to enable switching between the different directories
+    // Right now we just treat the first variable as the indication to what dir (i.e. DATA_DIR or
+    // TEST_DIR)
+    let args = CliArgs::parse();
+
     // Configuration variables
-    let root = String::from(DATA_DIR);
+    let root = args.dir.map_or_else(|| String::from(DATA_DIR), |dir| {
+        match dir.as_str() {
+            "TEST_DIR" => String::from(TEST_DIR),
+            _ => String::from(DATA_DIR)
+        }
+    });
+        
     let conf = LocalStorageConfig{ root };
     let search_depth = 0;
 
