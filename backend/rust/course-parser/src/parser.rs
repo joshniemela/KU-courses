@@ -16,7 +16,7 @@ struct CourseInformation {
     ects: f32,
     block: Vec<Block>,
     schedule: Vec<Schedule>,
-    language: Language,
+    language: Vec<Language>,
     duration: Duration,
     degree: Vec<Degree>,
     capacity: Capacity,
@@ -163,26 +163,41 @@ fn parse_dl(
 }
 
 
-fn parse_language(language: &str) -> Result<Language, Box<dyn std::error::Error>> {
+fn parse_language(language: &str) -> Result<Vec<Language>, Box<dyn std::error::Error>> {
     // println!("Language information passed in: {language}");
-    match language {
-        "English" => Ok(Language::English),
-        "Dansk" => Ok(Language::Danish),
-        _ => Err(format!("Unknown language ({language})").into()),
+   
+    let mut languages: Vec<Language> = Vec::new();
+
+    if language.contains("Danish") | language.contains("Dansk") {
+        languages.push(Language::Danish);
+    }
+
+    if language.contains("English") | language.contains("Engelsk") {
+        languages.push(Language::English);
+    }
+
+    if languages.len() > 0 {
+        Ok(languages)
+    } else {
+        Err("Unable to parse languages".into())
     }
 }
 
 fn parse_ects(ects: &str) -> Result<f32, Box<dyn std::error::Error>> {
-    // expect to find either "15 ECTS" or "7.5 ECTS" in the string
-    let ects = ects
-        .chars()
-        .take_while(|c| c.is_numeric() || c == &'.')
-        .collect::<String>()
-        // rename the potential error to something more meaningful
-        .parse::<f32>()
-        .map_err(|e| format!("Failed to parse ects ({e})"))?;
+    println!("Ects info: {}", ects); // Fixed formatting string
 
-    Ok(ects)
+    // Extract numeric characters, '.' and ',' from the input string
+    let ects_info = ects.chars()
+        .take_while(|c| c.is_numeric() || *c == '.' || *c == ',')
+        .collect::<String>();
+
+    // Replace ',' with '.' to ensure correct parsing
+    let ects_info = ects_info.replace(',', ".");
+
+    // Parse the string to a f32
+    let ects_value = ects_info.parse::<f32>()?;
+
+    Ok(ects_value)
 }
 
 #[allow(dead_code)]
@@ -193,19 +208,15 @@ fn parse_degree(degree: &str) -> Result<Vec<Degree>, Box<dyn std::error::Error>>
     // Look for either "Master", "Bachelor", "Kandidat" or "Ph.d."
 
     // loop through a 2 character sliding window and deal with the fact that they might not be alphabetic
-    for i in 0..degree.len() - 1 {
-        let sliding_window = &degree[i..i + 2];
+    const WINDOW_LENGTH: usize = 4;
+    for i in 0..degree.len() - WINDOW_LENGTH - 1 {
+        let sliding_window = &degree.to_lowercase()[i..i + WINDOW_LENGTH];
         match sliding_window {
-            "Ba" => result.push(Degree::Bachelor),
-            "Ma" | "Ka" => result.push(Degree::Master),
-            "Ph" => result.push(Degree::Phd),
+            "bach" => result.push(Degree::Bachelor),
+            "mast" | "kand" => result.push(Degree::Master),
+            "ph.d" => result.push(Degree::Phd),
             _ => continue,
         }
-    }
-
-    // print if it was phd
-    if result.contains(&Degree::Phd) {
-        return Err(format!("Phd course found ({degree})").into());
     }
 
     // Sort and deduplicate
@@ -298,7 +309,7 @@ fn coerce_course_info(
     let mut ects: Option<f32> = None;
     let mut block: Option<Vec<Block>> = None;
     let mut schedule: Option<Vec<Schedule>> = None;
-    let mut language: Option<Language> = None;
+    let mut language: Option<Vec<Language>> = None;
     let mut duration: Option<Duration> = None;
     let mut degree: Option<Vec<Degree>> = None;
     let mut capacity: Capacity = None;
