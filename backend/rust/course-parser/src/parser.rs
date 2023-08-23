@@ -14,7 +14,7 @@ pub struct Course {
 struct CourseInformation {
     id: String,
     ects: f32,
-    block: Block,
+    block: Vec<Block>,
     schedule: Schedule,
     language: Language,
     duration: Duration,
@@ -44,7 +44,7 @@ enum Language {
     English,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Eq, PartialEq)]
 enum Duration {
     One = 1,
     Two = 2,
@@ -230,6 +230,7 @@ fn parse_capacity(capacity: &str) -> Result<u32, Box<dyn std::error::Error>> {
 }
 
 fn parse_schedule(schedule: &str) -> Result<Schedule, Box<dyn std::error::Error>> {
+    println!("Schedule info passed in: {schedule}");
     match schedule {
         "A" => Ok(Schedule::A),
         "B" => Ok(Schedule::B),
@@ -239,19 +240,33 @@ fn parse_schedule(schedule: &str) -> Result<Schedule, Box<dyn std::error::Error>
     }
 }
 
-fn parse_block(block: &str) -> Result<Block, Box<dyn std::error::Error>> {
-    let first_three_chars = block.chars().take(3).collect::<String>();
-    if first_three_chars != "Blo" {
-        return Err("Course does not use blocks".into());
+fn parse_block(block: &str) -> Result<Vec<Block>, Box<dyn std::error::Error>> {
+    let mut blocks: Vec<Block> = Vec::new();
+
+    if block.contains("Blok 1") {
+        blocks.push(Block::One);
     }
-    let last_char = block.chars().last().ok_or("Failed to get last char")?;
-    match last_char.to_string().as_str() {
-        "1" => Ok(Block::One),
-        "2" => Ok(Block::Two),
-        "3" => Ok(Block::Three),
-        "4" => Ok(Block::Four),
-        "5" => Ok(Block::Five),
-        _ => Err("Unknown block".into()),
+
+    if block.contains("Blok 2") {
+        blocks.push(Block::Two);
+    }
+
+    if block.contains("Blok 3") {
+        blocks.push(Block::Three);
+    }
+
+    if block.contains("Blok 4") {
+        blocks.push(Block::Four);
+    }
+
+    if block.contains("Blok 5") {
+        blocks.push(Block::Five);
+    }
+
+    if blocks.len() > 0 {
+        Ok(blocks)
+    } else {
+        Err("Unknown block".into())
     }
 }
 
@@ -269,15 +284,17 @@ fn parse_duration(duration: &str) -> Result<Duration, Box<dyn std::error::Error>
 fn coerce_course_info(
     course_info: Vec<(String, String)>,
 ) -> Result<CourseInformation, Box<dyn std::error::Error>> {
+
+    dbg!(&course_info);
     let mut id: Option<String> = None;
     let mut ects: Option<f32> = None;
-    let mut block: Option<Block> = None;
+    let mut block: Option<Vec<Block>> = None;
     let mut schedule: Option<Schedule> = None;
     let mut language: Option<Language> = None;
     let mut duration: Option<Duration> = None;
     let mut degree: Option<Vec<Degree>> = None;
     let mut capacity: Option<u32> = None;
-
+    
     for (key, value) in &course_info {
         // first iterate through only to find the block, since  this will tell us if we
         // are dealing with the faculty of science (they use blocks) or the other faculties
