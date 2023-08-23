@@ -57,11 +57,7 @@ enum Degree {
     Master,
 }
 
-#[derive(Debug)]
-enum Capacity {
-    Text(String),
-    Number(u32)
-}
+type Capacity = Option<u32>;
 
 ///////////////////////////////////////////////////////////////////////////////
 // LOGIC
@@ -191,18 +187,14 @@ fn parse_ects(ects: &str) -> Result<f32, Box<dyn std::error::Error>> {
 
 #[allow(dead_code)]
 fn parse_degree(degree: &str) -> Result<Vec<Degree>, Box<dyn std::error::Error>> {
+    // println!("Degree information: {degree}");
     let mut result: Vec<Degree> = Vec::new();
     // Loop through the degree string and find all the degrees
     // Look for either "Master", "Bachelor", "Kandidat" or "Ph.d."
 
-    let alphabetic_degree = degree
-        .chars()
-        .take_while(|c| c.is_alphabetic())
-        .collect::<String>();
-
     // loop through a 2 character sliding window and deal with the fact that they might not be alphabetic
-    for i in 0..alphabetic_degree.len() - 1 {
-        let sliding_window = &alphabetic_degree[i..i + 2];
+    for i in 0..degree.len() - 1 {
+        let sliding_window = &degree[i..i + 2];
         match sliding_window {
             "Ba" => result.push(Degree::Bachelor),
             "Ma" | "Ka" => result.push(Degree::Master),
@@ -225,30 +217,16 @@ fn parse_degree(degree: &str) -> Result<Vec<Degree>, Box<dyn std::error::Error>>
     Ok(result)
 }
 
-fn parse_capacity(capacity: &str) -> Result<Capacity, Box<dyn std::error::Error>> {
-    // println!("Capacity information passed in: {capacity}");
+fn parse_capacity(capacity: &str) -> Capacity {
+    println!("Capacity information passed in: {capacity}");
     
     // find the first number and parse it
-    let capacity_numeric = capacity
+    capacity
         .chars()
         .take_while(|c| c.is_numeric())
         .collect::<String>()
-        .parse::<u32>();
-
-    let mut capacity_text = String::new();
-    
-    match capacity.to_lowercase() {
-        cap if cap.contains("ubegrænset") || cap.contains("ingen begrænsning") => { capacity_text = String::from("ubegrænset") },
-        _ => ()
-    }
-
-    if capacity_numeric.is_ok() {
-        Ok(Capacity::Number(capacity_numeric.unwrap()))
-    } else if capacity_text.len() > 0 {
-        Ok(Capacity::Text(capacity_text))
-    } else {
-        Err("Error parsing capacity".into())
-    }
+        .parse::<u32>()
+        .ok()
 }
 
 fn parse_schedule(schedule: &str) -> Result<Vec<Schedule>, Box<dyn std::error::Error>> {
@@ -279,7 +257,7 @@ fn parse_schedule(schedule: &str) -> Result<Vec<Schedule>, Box<dyn std::error::E
 }
 
 fn parse_block(input: &str) -> Result<Vec<Block>, Box<dyn std::error::Error>> {
-    println!("{input}");
+    // println!("{input}");
     let mut blocks: Vec<Block> = Vec::new();
 
     for c in input.chars() {
@@ -323,7 +301,7 @@ fn coerce_course_info(
     let mut language: Option<Language> = None;
     let mut duration: Option<Duration> = None;
     let mut degree: Option<Vec<Degree>> = None;
-    let mut capacity: Option<Capacity> = None;
+    let mut capacity: Capacity = None;
     
     for (key, value) in &course_info {
         // first iterate through only to find the block, since  this will tell us if we
@@ -338,12 +316,12 @@ fn coerce_course_info(
     for (key, value) in course_info {
         match key.as_str() {
             "Language" | "Sprog" => language = Some(parse_language(&value)?),
-            "Kursuskode" | "Course code" => id = Some(value), // "Kursuskode" is the danish version of "Course code
+            "Course code" | "Kursuskode" => id = Some(value), // "Kursuskode" is the danish version of "Course code
             "Point" | "Credit" => ects = Some(parse_ects(&value)?), // "Point" is the danish version of "Credit"
             "Level" | "Niveau" => degree = Some(parse_degree(&value)?),
             "Duration" | "Varighed" => duration = Some(parse_duration(&value)?),
             "Schedule" | "Skemagruppe" => schedule = Some(parse_schedule(&value)?),
-            "Course capacity" | "Kursuskapacitet" => capacity = Some(parse_capacity(&value)?),
+            "Course capacity" | "Kursuskapacitet" => capacity = parse_capacity(&value),
             _ => continue,
         }
     }
@@ -355,8 +333,7 @@ fn coerce_course_info(
     let language = language.ok_or("Failed to get language")?;
     let duration = duration.ok_or("Failed to get duration")?;
     let degree = degree.ok_or("Failed to get degree")?;
-    let capacity = capacity.ok_or("Failed to get capacity")?;
-    // println!("{id}: {degree:?}");
+    println!("{id}: {degree:?}");
 
     Ok(CourseInformation {
         id,
