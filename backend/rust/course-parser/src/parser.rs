@@ -277,28 +277,45 @@ fn parse_schedule(schedule: &str) -> Result<Vec<Schedule>, Box<dyn std::error::E
         Err("Unknown schedule".into())
     }
 }
+// fn parse_block(block: &str) -> Result<Block, Box<dyn std::error::Error>> {
+//     let mut blocks: Vec<Block> = Vec::new();
+//     // filter out spacebars and "c"
+//     let input = block
+//         .chars()
+//         .filter(|c| c.is_alphabetic() || c.is_numeric() || c == &'k')
+//         .collect::<String>();
+//     while !input.is_empty() {
+//         // check if it starts with either Blok or Block
+//         if input.starts_with("Blok") {
+//             input = input[4..];
+//             // grab the next char in input
+//             let block = input.chars().next().ok_or("Expected a block")?;
+//             match block.as_str() {
+//                 "1" => blocks.push(Block::One),
+//                 "2" => blocks.push(Block::Two),
+//                 "3" => blocks.push(Block::Three),
+//                 "4" => blocks.push(Block::Four),
+//                 "5" => blocks.push(Block::Five),
+//                 _ => return Err("Unknown block".into()),
+//             }
+//
+//         }
+//     }
+// }
 
-fn parse_block(block: &str) -> Result<Vec<Block>, Box<dyn std::error::Error>> {
+fn parse_block(input: &str) -> Result<Vec<Block>, Box<dyn std::error::Error>> {
+    println!("{input}");
     let mut blocks: Vec<Block> = Vec::new();
 
-    if block.contains("Blok 1") {
-        blocks.push(Block::One);
-    }
-
-    if block.contains("Blok 2") {
-        blocks.push(Block::Two);
-    }
-
-    if block.contains("Blok 3") {
-        blocks.push(Block::Three);
-    }
-
-    if block.contains("Blok 4") {
-        blocks.push(Block::Four);
-    }
-
-    if block.contains("Blok 5") {
-        blocks.push(Block::Five);
+    for c in input.chars() {
+        match c {
+            '1' => blocks.push(Block::One),
+            '2' => blocks.push(Block::Two),
+            '3' => blocks.push(Block::Three),
+            '4' => blocks.push(Block::Four),
+            '5' => blocks.push(Block::Five),
+            _ => ()
+        }
     }
 
     if blocks.len() > 0 {
