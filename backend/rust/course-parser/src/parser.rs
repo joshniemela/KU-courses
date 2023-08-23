@@ -6,7 +6,7 @@ use eyre::Result;
 ///////////////////////////////////////////////////////////////////////////////
 #[allow(dead_code)]
 pub struct Course {
-    id: String,
+    info: CourseInformation
 }
 
 #[allow(dead_code)]
@@ -19,7 +19,7 @@ struct CourseInformation {
     language: Language,
     duration: Duration,
     degree: Vec<Degree>,
-    capacity: u32,
+    capacity: Capacity,
 }
 
 #[derive(Debug)] enum Block {
@@ -57,6 +57,12 @@ enum Degree {
     Master,
 }
 
+#[derive(Debug)]
+enum Capacity {
+    Text(String),
+    Number(u32)
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // LOGIC
 ///////////////////////////////////////////////////////////////////////////////
@@ -76,16 +82,21 @@ pub fn parse_course(html: &str) -> Result<Course, Box<dyn std::error::Error>> {
 
     // if there is no content element, we assume it is a new course
     if content.is_some() {
-        return parse_course_info(&dom);
+        let parsed_course_info = parse_course_info(&dom)?;
+        println!("{:?}", &parsed_course_info);
+        return Ok(Course {
+            info: parsed_course_info
+        })
     }
 
     Err("Unknown course html format".into())
 }
 
-fn parse_course_info(dom: &VDom) -> Result<Course, Box<dyn std::error::Error>> {
+fn parse_course_info(dom: &VDom) -> Result<CourseInformation, Box<dyn std::error::Error>> {
     // find all div class="panel-body" elements and assert that there is only one
     let panel_bodies = dom.get_elements_by_class_name("panel-body");
     let parser = dom.parser();
+
 
     // there might be multiple panel-bodies, so we need to check each one
     // for the dl element (only the course info should have a dl element)
@@ -112,9 +123,8 @@ fn parse_course_info(dom: &VDom) -> Result<Course, Box<dyn std::error::Error>> {
                 let course_infos = parse_dl(node, parser)?;
                 println!("{course_infos:?}");
                 // parse the course information
-                let coerced_course_info = coerce_course_info(course_infos)?;
-                println!("{coerced_course_info:?}");
-                return Err("Not implemented".into());
+                let coerced_course_info = coerce_course_info(course_infos);
+                return coerced_course_info
             }
             None => continue,
         }
@@ -219,15 +229,29 @@ fn parse_degree(degree: &str) -> Result<Vec<Degree>, Box<dyn std::error::Error>>
     Ok(result)
 }
 
-fn parse_capacity(capacity: &str) -> Result<u32, Box<dyn std::error::Error>> {
+fn parse_capacity(capacity: &str) -> Result<Capacity, Box<dyn std::error::Error>> {
+    println!("Capacity information passed in: {capacity}");
+    
     // find the first number and parse it
-    let capacity = capacity
+    let capacity_numeric = capacity
         .chars()
         .take_while(|c| c.is_numeric())
         .collect::<String>()
-        .parse::<u32>()
-        .map_err(|e| format!("Failed to parse capacity ({e})"))?;
-    Ok(capacity)
+        .parse::<u32>();
+
+    let mut capacity_text = String::new();
+
+    if capacity.contains("ubegrænset") {
+        capacity_text = String::from("ubegrænset");
+    }
+
+    if capacity_numeric.is_ok() {
+        Ok(Capacity::Number(capacity_numeric.unwrap()))
+    } else if capacity_text.len() > 0 {
+        Ok(Capacity::Text(capacity_text))
+    } else {
+        Err("Error parsing capacity".into())
+    }
 }
 
 fn parse_schedule(schedule: &str) -> Result<Vec<Schedule>, Box<dyn std::error::Error>> {
@@ -302,7 +326,7 @@ fn coerce_course_info(
     course_info: Vec<(String, String)>,
 ) -> Result<CourseInformation, Box<dyn std::error::Error>> {
 
-    dbg!(&course_info);
+    // dbg!(&course_info);
     let mut id: Option<String> = None;
     let mut ects: Option<f32> = None;
     let mut block: Option<Vec<Block>> = None;
@@ -310,7 +334,7 @@ fn coerce_course_info(
     let mut language: Option<Language> = None;
     let mut duration: Option<Duration> = None;
     let mut degree: Option<Vec<Degree>> = None;
-    let mut capacity: Option<u32> = None;
+    let mut capacity: Option<Capacity> = None;
     
     for (key, value) in &course_info {
         // first iterate through only to find the block, since  this will tell us if we
@@ -327,10 +351,10 @@ fn coerce_course_info(
             "Language" | "Sprog" => language = Some(parse_language(&value)?),
             "Kursuskode" | "Course code" => id = Some(value), // "Kursuskode" is the danish version of "Course code
             "Point" | "Credit" => ects = Some(parse_ects(&value)?), // "Point" is the danish version of "Credit"
-            "Level" => degree = Some(parse_degree(&value)?),
-            "Duration" => duration = Some(parse_duration(&value)?),
+            "Level" | "Niveau" => degree = Some(parse_degree(&value)?),
+            "Duration" | "Varighed" => duration = Some(parse_duration(&value)?),
             "Schedule" | "Skemagruppe" => schedule = Some(parse_schedule(&value)?),
-            "Course capacity" => capacity = Some(parse_capacity(&value)?),
+            "Course capacity" | "Kursuskapacitet" => capacity = Some(parse_capacity(&value)?),
             _ => continue,
         }
     }
