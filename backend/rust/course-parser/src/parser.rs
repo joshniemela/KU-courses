@@ -83,7 +83,7 @@ pub fn parse_course(html: &str) -> Result<Course, Box<dyn std::error::Error>> {
     // if there is no content element, we assume it is a new course
     if content.is_some() {
         let parsed_course_info = parse_course_info(&dom)?;
-        println!("{:?}", &parsed_course_info);
+        // println!("{:?}", &parsed_course_info);
         return Ok(Course {
             info: parsed_course_info
         })
@@ -115,13 +115,9 @@ fn parse_course_info(dom: &VDom) -> Result<CourseInformation, Box<dyn std::error
                     .ok_or("Failed to get node")?
                     .as_tag()
                     .ok_or("Failed to get node as tag")?;
-                // print the first 50 characters of the inner text
-                //println!("{}", node.inner_text(parser)[..51].to_string());
-                //println!("panel-body {}", i);
-                //println!("dl: {}", node.inner_text(parser));
                 // parse DL
                 let course_infos = parse_dl(node, parser)?;
-                println!("{course_infos:?}");
+                // println!("{course_infos:?}");
                 // parse the course information
                 let coerced_course_info = coerce_course_info(course_infos);
                 return coerced_course_info
@@ -230,7 +226,7 @@ fn parse_degree(degree: &str) -> Result<Vec<Degree>, Box<dyn std::error::Error>>
 }
 
 fn parse_capacity(capacity: &str) -> Result<Capacity, Box<dyn std::error::Error>> {
-    println!("Capacity information passed in: {capacity}");
+    // println!("Capacity information passed in: {capacity}");
     
     // find the first number and parse it
     let capacity_numeric = capacity
@@ -240,9 +236,10 @@ fn parse_capacity(capacity: &str) -> Result<Capacity, Box<dyn std::error::Error>
         .parse::<u32>();
 
     let mut capacity_text = String::new();
-
-    if capacity.contains("ubegrænset") {
-        capacity_text = String::from("ubegrænset");
+    
+    match capacity.to_lowercase() {
+        cap if cap.contains("ubegrænset") || cap.contains("ingen begrænsning") => { capacity_text = String::from("ubegrænset") },
+        _ => ()
     }
 
     if capacity_numeric.is_ok() {
@@ -366,8 +363,8 @@ fn coerce_course_info(
     let language = language.ok_or("Failed to get language")?;
     let duration = duration.ok_or("Failed to get duration")?;
     let degree = degree.ok_or("Failed to get degree")?;
-    println!("{id}: {degree:?}");
     let capacity = capacity.ok_or("Failed to get capacity")?;
+    // println!("{id}: {degree:?}");
 
     Ok(CourseInformation {
         id,
