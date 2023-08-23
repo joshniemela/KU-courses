@@ -58,7 +58,8 @@ enum Degree {
     Master,
 }
 
-type Capacity = Option<u32>;
+#[derive(Debug)]
+struct Capacity(pub Option<u32>);
 
 ///////////////////////////////////////////////////////////////////////////////
 // LOGIC
@@ -247,12 +248,14 @@ fn parse_capacity(capacity: &str) -> Capacity {
     println!("Capacity information passed in: {capacity}");
 
     // find the first number and parse it
-    capacity
-        .chars()
-        .take_while(|c| c.is_numeric())
-        .collect::<String>()
-        .parse::<u32>()
-        .ok()
+    Capacity(
+        capacity
+            .chars()
+            .take_while(|c| c.is_numeric())
+            .collect::<String>()
+            .parse::<u32>()
+            .ok(),
+    )
 }
 
 fn parse_schedule(schedule: &str) -> Result<Vec<Schedule>, Box<dyn std::error::Error>> {
@@ -326,7 +329,7 @@ fn coerce_course_info(
     let mut language: Option<Vec<Language>> = None;
     let mut duration: Option<Duration> = None;
     let mut degree: Option<Vec<Degree>> = None;
-    let mut capacity: Capacity = None;
+    let mut capacity: Capacity = Capacity(None);
 
     for (key, value) in &course_info {
         // first iterate through only to find the block, since  this will tell us if we
