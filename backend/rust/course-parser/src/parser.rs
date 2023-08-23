@@ -15,7 +15,7 @@ struct CourseInformation {
     id: String,
     ects: f32,
     block: Vec<Block>,
-    schedule: Schedule,
+    schedule: Vec<Schedule>,
     language: Language,
     duration: Duration,
     degree: Vec<Degree>,
@@ -162,6 +162,7 @@ fn parse_dl(
 
 
 fn parse_language(language: &str) -> Result<Language, Box<dyn std::error::Error>> {
+    // println!("Language information passed in: {language}");
     match language {
         "English" => Ok(Language::English),
         "Dansk" => Ok(Language::Danish),
@@ -229,14 +230,30 @@ fn parse_capacity(capacity: &str) -> Result<u32, Box<dyn std::error::Error>> {
     Ok(capacity)
 }
 
-fn parse_schedule(schedule: &str) -> Result<Schedule, Box<dyn std::error::Error>> {
-    println!("Schedule info passed in: {schedule}");
-    match schedule {
-        "A" => Ok(Schedule::A),
-        "B" => Ok(Schedule::B),
-        "C" => Ok(Schedule::C),
-        "D" => Ok(Schedule::D),
-        _ => Err("Unknown schedule".into()),
+fn parse_schedule(schedule: &str) -> Result<Vec<Schedule>, Box<dyn std::error::Error>> {
+    // println!("Schedule info passed in: {schedule}");
+    let mut schedule_vec: Vec<Schedule> = Vec::new();
+    
+    if schedule.contains("A") {
+        schedule_vec.push(Schedule::A);
+    }
+
+    if schedule.contains("B") {
+        schedule_vec.push(Schedule::B);
+    }
+
+    if schedule.contains("C") {
+        schedule_vec.push(Schedule::C);
+    }
+
+    if schedule.contains("D") {
+        schedule_vec.push(Schedule::D);
+    }
+
+    if schedule_vec.len() > 0 {
+        Ok(schedule_vec)
+    } else {
+        Err("Unknown schedule".into())
     }
 }
 
@@ -289,7 +306,7 @@ fn coerce_course_info(
     let mut id: Option<String> = None;
     let mut ects: Option<f32> = None;
     let mut block: Option<Vec<Block>> = None;
-    let mut schedule: Option<Schedule> = None;
+    let mut schedule: Option<Vec<Schedule>> = None;
     let mut language: Option<Language> = None;
     let mut duration: Option<Duration> = None;
     let mut degree: Option<Vec<Degree>> = None;
@@ -307,12 +324,12 @@ fn coerce_course_info(
 
     for (key, value) in course_info {
         match key.as_str() {
-            "Language" => language = Some(parse_language(&value)?),
+            "Language" | "Sprog" => language = Some(parse_language(&value)?),
             "Kursuskode" | "Course code" => id = Some(value), // "Kursuskode" is the danish version of "Course code
             "Point" | "Credit" => ects = Some(parse_ects(&value)?), // "Point" is the danish version of "Credit"
             "Level" => degree = Some(parse_degree(&value)?),
             "Duration" => duration = Some(parse_duration(&value)?),
-            "Schedule" => schedule = Some(parse_schedule(&value)?),
+            "Schedule" | "Skemagruppe" => schedule = Some(parse_schedule(&value)?),
             "Course capacity" => capacity = Some(parse_capacity(&value)?),
             _ => continue,
         }
