@@ -1,12 +1,12 @@
-use tl::VDom;
 use eyre::Result;
+use tl::VDom;
 
 ///////////////////////////////////////////////////////////////////////////////
 // DATA STRUCTURE
 ///////////////////////////////////////////////////////////////////////////////
 #[allow(dead_code)]
 pub struct Course {
-    info: CourseInformation
+    info: CourseInformation,
 }
 
 #[allow(dead_code)]
@@ -22,7 +22,8 @@ struct CourseInformation {
     capacity: Capacity,
 }
 
-#[derive(Debug)] enum Block {
+#[derive(Debug)]
+enum Block {
     One = 1,
     Two = 2,
     Three = 3,
@@ -75,24 +76,38 @@ type Capacity = Option<u32>;
 pub fn parse_course(html: &str) -> Result<Course, Box<dyn std::error::Error>> {
     let dom = tl::parse(html, tl::ParserOptions::default())?;
     let content = dom.get_element_by_id("content");
+    let title = parse_title(&dom)?;
+    println!("title: {:?}", title);
 
     // if there is no content element, we assume it is a new course
     if content.is_some() {
         let parsed_course_info = parse_course_info(&dom)?;
         // println!("{:?}", &parsed_course_info);
         return Ok(Course {
-            info: parsed_course_info
-        })
+            info: parsed_course_info,
+        });
     }
 
     Err("Unknown course html format".into())
+}
+
+fn parse_title(dom: &VDom) -> Result<String, Box<dyn std::error::Error>> {
+    let title = dom
+        .get_elements_by_class_name("courseTitle")
+        .next()
+        .expect("All courses should contain a title in a class with the name courseTitle")
+        .get(dom.parser())
+        .expect("Failed to get title, this should not happen")
+        .as_tag()
+        .expect("Failed to get title as tag, this should not happen")
+        .inner_text(dom.parser());
+    Ok(title.to_string())
 }
 
 fn parse_course_info(dom: &VDom) -> Result<CourseInformation, Box<dyn std::error::Error>> {
     // find all div class="panel-body" elements and assert that there is only one
     let panel_bodies = dom.get_elements_by_class_name("panel-body");
     let parser = dom.parser();
-
 
     // there might be multiple panel-bodies, so we need to check each one
     // for the dl element (only the course info should have a dl element)
@@ -116,7 +131,7 @@ fn parse_course_info(dom: &VDom) -> Result<CourseInformation, Box<dyn std::error
                 // println!("{course_infos:?}");
                 // parse the course information
                 let coerced_course_info = coerce_course_info(course_infos);
-                return coerced_course_info
+                return coerced_course_info;
             }
             None => continue,
         }
@@ -162,10 +177,9 @@ fn parse_dl(
     Ok(result)
 }
 
-
 fn parse_language(language: &str) -> Result<Vec<Language>, Box<dyn std::error::Error>> {
     // println!("Language information passed in: {language}");
-   
+
     let mut languages: Vec<Language> = Vec::new();
 
     if language.contains("Danish") | language.contains("Dansk") {
@@ -187,7 +201,8 @@ fn parse_ects(ects: &str) -> Result<f32, Box<dyn std::error::Error>> {
     println!("Ects info: {}", ects); // Fixed formatting string
 
     // Extract numeric characters, '.' and ',' from the input string
-    let ects_info = ects.chars()
+    let ects_info = ects
+        .chars()
         .take_while(|c| c.is_numeric() || *c == '.' || *c == ',')
         .collect::<String>();
 
@@ -230,7 +245,7 @@ fn parse_degree(degree: &str) -> Result<Vec<Degree>, Box<dyn std::error::Error>>
 
 fn parse_capacity(capacity: &str) -> Capacity {
     println!("Capacity information passed in: {capacity}");
-    
+
     // find the first number and parse it
     capacity
         .chars()
@@ -243,7 +258,7 @@ fn parse_capacity(capacity: &str) -> Capacity {
 fn parse_schedule(schedule: &str) -> Result<Vec<Schedule>, Box<dyn std::error::Error>> {
     // println!("Schedule info passed in: {schedule}");
     let mut schedule_vec: Vec<Schedule> = Vec::new();
-    
+
     if schedule.contains("A") {
         schedule_vec.push(Schedule::A);
     }
@@ -278,7 +293,7 @@ fn parse_block(input: &str) -> Result<Vec<Block>, Box<dyn std::error::Error>> {
             '3' => blocks.push(Block::Three),
             '4' => blocks.push(Block::Four),
             '5' => blocks.push(Block::Five),
-            _ => ()
+            _ => (),
         }
     }
 
@@ -303,7 +318,6 @@ fn parse_duration(duration: &str) -> Result<Duration, Box<dyn std::error::Error>
 fn coerce_course_info(
     course_info: Vec<(String, String)>,
 ) -> Result<CourseInformation, Box<dyn std::error::Error>> {
-
     // dbg!(&course_info);
     let mut id: Option<String> = None;
     let mut ects: Option<f32> = None;
@@ -313,7 +327,7 @@ fn coerce_course_info(
     let mut duration: Option<Duration> = None;
     let mut degree: Option<Vec<Degree>> = None;
     let mut capacity: Capacity = None;
-    
+
     for (key, value) in &course_info {
         // first iterate through only to find the block, since  this will tell us if we
         // are dealing with the faculty of science (they use blocks) or the other faculties
