@@ -8,6 +8,7 @@ pub mod course_info;
 ///////////////////////////////////////////////////////////////////////////////
 #[allow(dead_code)]
 pub struct Course {
+    title: String,
     info: CourseInformation,
 }
 
@@ -77,6 +78,7 @@ struct Capacity(pub Option<u32>);
 /// # Errors
 /// Bubbles up the error resulting from any of functions called internally.
 pub fn parse_course(html: &str) -> Result<Course, Box<dyn std::error::Error>> {
+    println!("#####################################");
     let dom = tl::parse(html, tl::ParserOptions::default())?;
     let content = dom.get_element_by_id("content");
     let title = parse_title(&dom)?;
@@ -86,7 +88,9 @@ pub fn parse_course(html: &str) -> Result<Course, Box<dyn std::error::Error>> {
     if content.is_some() {
         let parsed_course_info = course_info::parse(&dom)?;
         println!("{parsed_course_info:?}");
+        println!("##################################### \n");
         return Ok(Course {
+            title,
             info: parsed_course_info,
         });
     }
