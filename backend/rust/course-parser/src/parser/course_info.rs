@@ -2,7 +2,19 @@
 use crate::parser;
 use tl::VDom;
 
-pub fn parse_course_info(dom: &VDom) -> Result<parser::CourseInformation, Box<dyn std::error::Error>> {
+
+/// Function that parsed the couse info section
+///
+/// # Parameters
+/// * `dom: &VDom` - Reference to the DOM containing the course we want to parse
+///
+/// # Returns
+/// A `CourseInformation` struct if succesful
+///
+/// # Errors
+/// This can return a variety of errors, either those resulting from the tl crate,
+/// or errors relating to unexpected failures in our business logic.
+pub fn parse(dom: &VDom) -> Result<parser::CourseInformation, Box<dyn std::error::Error>> {
     // find all div class="panel-body" elements and assert that there is only one
     let panel_bodies = dom.get_elements_by_class_name("panel-body");
     let parser = dom.parser();
@@ -88,15 +100,15 @@ fn parse_language(language: &str) -> Result<Vec<parser::Language>, Box<dyn std::
         languages.push(parser::Language::English);
     }
 
-    if languages.len() > 0 {
-        Ok(languages)
-    } else {
+    if languages.is_empty() {
         Err("Unable to parse languages".into())
+    } else {
+        Ok(languages)
     }
 }
 
 fn parse_ects(ects: &str) -> Result<f32, Box<dyn std::error::Error>> {
-    println!("Ects info: {}", ects); // Fixed formatting string
+    println!("Ects info: {ects}"); // Fixed formatting string
 
     // Extract numeric characters, '.' and ',' from the input string
     let ects_info = ects
@@ -116,12 +128,9 @@ fn parse_ects(ects: &str) -> Result<f32, Box<dyn std::error::Error>> {
 #[allow(dead_code)]
 fn parse_degree(degree: &str) -> Result<Vec<parser::Degree>, Box<dyn std::error::Error>> {
     // println!("parser::Degree information: {degree}");
-    let mut result: Vec<parser::Degree> = Vec::new();
-    // Loop through the degree string and find all the degrees
-    // Look for either "Master", "Bachelor", "Kandidat" or "Ph.d."
-
-    // loop through a 2 character sliding window and deal with the fact that they might not be alphabetic
     const WINDOW_LENGTH: usize = 4;
+    let mut result: Vec<parser::Degree> = Vec::new();
+    // loop through a 4 character sliding window and deal with the fact that they might not be alphabetic
     for i in 0..degree.len() - WINDOW_LENGTH - 1 {
         let sliding_window = &degree.to_lowercase()[i..i + WINDOW_LENGTH];
         match sliding_window {
@@ -159,26 +168,26 @@ fn parse_schedule(schedule: &str) -> Result<Vec<parser::Schedule>, Box<dyn std::
     // println!("parser::Schedule info passed in: {schedule}");
     let mut schedule_vec: Vec<parser::Schedule> = Vec::new();
 
-    if schedule.contains("A") {
+    if schedule.contains('A') {
         schedule_vec.push(parser::Schedule::A);
     }
 
-    if schedule.contains("B") {
+    if schedule.contains('B') {
         schedule_vec.push(parser::Schedule::B);
     }
 
-    if schedule.contains("C") {
+    if schedule.contains('C') {
         schedule_vec.push(parser::Schedule::C);
     }
 
-    if schedule.contains("D") {
+    if schedule.contains('D') {
         schedule_vec.push(parser::Schedule::D);
     }
 
-    if schedule_vec.len() > 0 {
-        Ok(schedule_vec)
-    } else {
+    if schedule_vec.is_empty() {
         Err("Unknown schedule".into())
+    } else {
+        Ok(schedule_vec)
     }
 }
 
@@ -197,10 +206,10 @@ fn parse_block(input: &str) -> Result<Vec<parser::Block>, Box<dyn std::error::Er
         }
     }
 
-    if blocks.len() > 0 {
-        Ok(blocks)
-    } else {
+    if blocks.is_empty() {
         Err("Unknown block".into())
+    } else {
+        Ok(blocks)
     }
 }
 

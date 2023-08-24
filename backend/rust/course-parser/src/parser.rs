@@ -1,7 +1,7 @@
 use eyre::Result;
 use tl::VDom;
 
-pub mod course_info_parser;
+pub mod course_info;
 
 ///////////////////////////////////////////////////////////////////////////////
 // DATA STRUCTURE
@@ -80,12 +80,12 @@ pub fn parse_course(html: &str) -> Result<Course, Box<dyn std::error::Error>> {
     let dom = tl::parse(html, tl::ParserOptions::default())?;
     let content = dom.get_element_by_id("content");
     let title = parse_title(&dom)?;
-    println!("title: {:?}", title);
+    println!("title: {title:?}");
 
     // if there is no content element, we assume it is a new course
     if content.is_some() {
-        let parsed_course_info = course_info_parser::parse_course_info(&dom)?;
-        println!("{:?}", &parsed_course_info);
+        let parsed_course_info = course_info::parse(&dom)?;
+        println!("{parsed_course_info:?}");
         return Ok(Course {
             info: parsed_course_info,
         });
@@ -98,25 +98,28 @@ fn parse_title(dom: &VDom) -> Result<String, Box<dyn std::error::Error>> {
     let title = dom
         .get_elements_by_class_name("courseTitle")
         .next()
-        .expect("All courses should contain a title in a class with the name courseTitle")
-        .get(dom.parser())
-        .expect("Failed to get title, this should not happen")
-        .as_tag()
-        .expect("Failed to get title as tag, this should not happen")
-        .inner_text(dom.parser());
-        
-    // First replace special characters
-    let binding = title
-        .replace("\u{a0}", " ")
-        .replace("\n", " ");
+        .ok_or_else::<Box<dyn std::error::Error>, _>(|| "Unable to grab course title from dom".into())
+        .and_then(|elem| {
+            elem.get(dom.parser())
+                .ok_or_else(|| "Unable to grab parser for the dom, this should not happen".into())
+                .map(|tag| {
+                    tag.inner_text(dom.parser())
+                })
+        });
+    
+    let binding = title.unwrap_or_else(|_ | "Error unwrapping html title".into()).replace(['\u{a0}', '\n'], " ");
     
     // Then split them
     let res: Vec<&str> = binding
-        .split(" ")
+        .split_whitespace()
         .collect();
     
     // Return only the part of the title without the course code
-    Ok(res[1..].join(" ").to_string())
+    if res.len() >= 2 {
+        Ok(res[1..].join(" "))
+    } else {
+        Err("Title does not conform to expected structure: <COURSECODE> <NAME>".into())
+    }
 
 }
 
