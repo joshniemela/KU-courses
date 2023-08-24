@@ -40,7 +40,7 @@ pub fn parse(dom: &VDom) -> Result<parser::CourseInformation, Box<dyn std::error
                 let course_infos = parse_dl(node, parser)?;
                 // println!("{course_infos:?}");
                 // parse the course information
-                let coerced_course_info = coerce_course_info(course_infos);
+                let coerced_course_info = coerce_course_info(course_infos, dom);
                 return coerced_course_info;
             }
             None => continue,
@@ -107,8 +107,8 @@ fn parse_language(language: &str) -> Result<Vec<parser::Language>, Box<dyn std::
     }
 }
 
-fn parse_ects(ects: &str) -> Result<f32, Box<dyn std::error::Error>> {
-    println!("Ects info: {ects}"); // Fixed formatting string
+fn parse_ects(ects: &str, dom: &VDom) -> Result<f32, Box<dyn std::error::Error>> {
+    // println!("Ects info: {ects}"); // Fixed formatting string
 
     // Extract numeric characters, '.' and ',' from the input string
     let ects_info = ects
@@ -120,9 +120,48 @@ fn parse_ects(ects: &str) -> Result<f32, Box<dyn std::error::Error>> {
     let ects_info = ects_info.replace(',', ".");
 
     // Parse the string to a f32
-    let ects_value = ects_info.parse::<f32>()?;
+    let ects_value = ects_info.parse::<f32>().unwrap_or_else( |_| {
+        // If we are unable to parse the ects values, it likely means that the field,
+        // is instead saying something like "see description". Therefore we perform a full 
+        // text search through the DOM as a last resort to see wether we can parse it.
+        // We return -1.0 if we are unable to find it.
+        let binding = dom.outer_html();
+        let occurences: Vec<_> = binding.match_indices("ECTS").collect();
+        println!("Despite being initially unable to parse float, found occurences of ECTS on indices:");
+        for x in &occurences {
+            println!("Index: {}", x.0);
+        }
 
-    Ok(ects_value)
+        // Next, if we're able to find some occurences of ECTS, we look at the potential numbers
+        // preceeding the index, and extract the floats.
+        let mut ects_values: Vec<f32> = Vec::new();
+        for x in &occurences {
+            let area = &binding[x.0-5..x.0+5];
+            println!("Window index from: {} to {}", x.0-5, x.0);
+            println!("Looking at window: {area}");
+            let ects_val = area
+                .chars()
+                .filter(|c| c.is_numeric() || *c == '.' || *c == ',')
+                .collect::<String>();
+
+            let parsed_ects_val = ects_val.replace(',', ".");
+
+            println!("Parsed ects value: {parsed_ects_val}");
+            parsed_ects_val.parse::<f32>().map_or_else(|_| {
+                println!("Unable to parse ects value in window, may just be because of a mention of ECTS without any number");
+                }, |res| {
+                    println!("Found ects value: {res} ECTS");
+                    ects_values.push(res);
+                });
+        }
+        let sum = ects_values.iter().sum();
+        sum
+    });
+    if ects_value > 0.0 {
+        Ok(ects_value)
+    } else {
+        Err("Unable to parse ECTS value!".into())
+    }
 }
 
 #[allow(dead_code)]
@@ -151,7 +190,7 @@ fn parse_degree(degree: &str) -> Result<Vec<parser::Degree>, Box<dyn std::error:
 }
 
 fn parse_capacity(capacity: &str) -> parser::Capacity {
-    println!("parser::Capacity information passed in: {capacity}");
+    // println!("parser::Capacity information passed in: {capacity}");
 
     // find the first number and parse it
     parser::Capacity(
@@ -226,6 +265,7 @@ fn parse_duration(duration: &str) -> Result<parser::Duration, Box<dyn std::error
 
 fn coerce_course_info(
     course_info: Vec<(String, String)>,
+    dom: &VDom
 ) -> Result<parser::CourseInformation, Box<dyn std::error::Error>> {
     // dbg!(&course_info);
     let mut id: Option<String> = None;
@@ -251,7 +291,7 @@ fn coerce_course_info(
         match key.as_str() {
             "Language" | "Sprog" => language = Some(parse_language(&value)?),
             "Course code" | "Kursuskode" => id = Some(value), // "Kursuskode" is the danish version of "Course code
-            "Point" | "Credit" => ects = Some(parse_ects(&value)?), // "Point" is the danish version of "Credit"
+            "Point" | "Credit" => ects = Some(parse_ects(&value, dom)?), // "Point" is the danish version of "Credit"
             "Level" | "Niveau" => degree = Some(parse_degree(&value)?),
             "Duration" | "Varighed" => duration = Some(parse_duration(&value)?),
             "Schedule" | "Skemagruppe" => schedule = Some(parse_schedule(&value)?),
@@ -267,7 +307,7 @@ fn coerce_course_info(
     let language = language.ok_or("Failed to get language")?;
     let duration = duration.ok_or("Failed to get duration")?;
     let degree = degree.ok_or("Failed to get degree")?;
-    println!("{id}: {degree:?}");
+    // println!("{id}: {degree:?}");
 
     Ok(parser::CourseInformation {
         id,
