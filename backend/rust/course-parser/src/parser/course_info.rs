@@ -38,7 +38,7 @@ pub fn parse(dom: &VDom) -> Result<parser::CourseInformation, Box<dyn std::error
                     .ok_or("Failed to get node as tag")?;
                 // parse DL
                 let course_infos = parse_dl(node, parser)?;
-                // println!("{course_infos:?}");
+                println!("{course_infos:?}");
                 // parse the course information
                 let coerced_course_info = coerce_course_info(course_infos, dom);
                 return coerced_course_info;
