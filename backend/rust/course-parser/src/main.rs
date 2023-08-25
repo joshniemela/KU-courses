@@ -1,7 +1,6 @@
 use storage_manager::{self, LocalStorageConfig, LocalStorage, Storage};
 use clap::Parser;
 pub mod parser;
-use unicase::UniCase;
 
 const DATA_DIR: &str = "../../../data";
 

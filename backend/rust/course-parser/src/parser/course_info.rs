@@ -40,7 +40,7 @@ pub fn parse(dom: &VDom) -> Result<parser::CourseInformation, Box<dyn std::error
                 let course_infos = parse_dl(node, parser)?;
                 println!("{course_infos:?}");
                 // parse the course information
-                let coerced_course_info = coerce_course_info(course_infos, dom);
+                let coerced_course_info = coerce_course_info(&course_infos, dom);
                 return coerced_course_info;
             }
             None => continue,
@@ -121,29 +121,26 @@ fn parse_ects(ects: &str, dom: &VDom) -> Result<f32, Box<dyn std::error::Error>>
         // If we are unable to parse the ects values, it likely means that the field,
         // is instead saying something like "see description". Therefore we perform a full 
         // text search through the DOM as a last resort to see wether we can parse it.
-        // We return -1.0 if we are unable to find it.
-        let binding = dom.outer_html().to_string();
+        
+        let binding = dom.outer_html();
         let occurences: Vec<_> = binding.match_indices("ECTS").collect();
-        println!("Despite being initially unable to parse float, found occurences of ECTS on indices:");
+        
+        // Extract the ECTS values from the occurences
         let mut ects_values: Vec<f32> = Vec::new();
         for x in &occurences {
-            println!("Index: {}", x.0);
-            let window = binding.get(x.0-4..x.0).unwrap();
-            println!("Looking at window: {window}");
-            let instance: String = window.chars()
-                .filter(|x| x.is_numeric() || *x == ',' || *x == '.')
-                .collect::<String>();
+            if let Some(window) = binding.get(x.0-4..x.0) {
+                let instance: String = window.chars()
+                    .filter(|x| x.is_numeric() || *x == ',' || *x == '.')
+                    .collect::<String>();
 
-            println!("Instance: {instance}");
-            if let Ok(parsed_instance) = instance.replace(',', ".").parse::<f32>() {
-                ects_values.push(parsed_instance)
+                if let Ok(parsed_instance) = instance.replace(',', ".").parse::<f32>() {
+                    ects_values.push(parsed_instance);
+                }
             }
 
         }
 
-
-        // Next, if we're able to find some occurences of ECTS, we look at the potential numbers
-        // preceeding the index, and extract the floats.
+        // After collecting the ects values, we sum them together for the final value
         let sum = ects_values.iter().sum();
         sum
     });
@@ -284,8 +281,8 @@ fn parse_duration(duration: &str) -> Result<parser::Duration, Box<dyn std::error
     match duration {
         x if duration.contains("blo") => {
             match x {
-                _ if x.contains("1") => Ok(parser::Duration::One),
-                _ if x.contains("2") => Ok(parser::Duration::Two),
+                _ if x.contains('1') => Ok(parser::Duration::One),
+                _ if x.contains('2') => Ok(parser::Duration::Two),
                 _ => Err("Unknown duration".into())
             }
         },
@@ -296,7 +293,7 @@ fn parse_duration(duration: &str) -> Result<parser::Duration, Box<dyn std::error
 }
 
 fn coerce_course_info(
-    course_info: Vec<(String, String)>,
+    course_info: &[(String, String)],
     dom: &VDom
 ) -> Result<parser::CourseInformation, Box<dyn std::error::Error>> {
     // dbg!(&course_info);
@@ -310,47 +307,44 @@ fn coerce_course_info(
     let mut capacity: parser::Capacity = parser::Capacity(None);
 
 
-    for (key, value) in &course_info {
+    for (key, value) in course_info {
         match key.as_str() {
-            "Language" | "Sprog" => language = Some(parse_language(&value)?),
+            "Language" | "Sprog" => language = Some(parse_language(value)?),
             "Course code" | "Kursuskode" => id = Some(value.clone()), // "Kursuskode" is the danish version of "Course code
-            "Point" | "Credit" => ects = Some(parse_ects(&value, dom)?), // "Point" is the danish version of "Credit"
-            "Level" | "Niveau" => degree = Some(parse_degree(&value)?),
-            "Duration" | "Varighed" => duration = Some(parse_duration(&value)?),
-            "Schedule" | "Skemagruppe" => schedule = Some(parse_schedule(&value)?),
-            "Course capacity" | "Kursuskapacitet" => capacity = parse_capacity(&value),
+            "Point" | "Credit" => ects = Some(parse_ects(value, dom)?), // "Point" is the danish version of "Credit"
+            "Level" | "Niveau" => degree = Some(parse_degree(value)?),
+            "Duration" | "Varighed" => duration = Some(parse_duration(value)?),
+            "Schedule" | "Skemagruppe" => schedule = Some(parse_schedule(value)?),
+            "Course capacity" | "Kursuskapacitet" => capacity = parse_capacity(value),
             _ => continue
         }
     }
 
     // print every error with the contents of the course_info
-    let id = id.ok_or_else(|| "Failed to get id")?;
-    let ects = ects.ok_or_else(|| "Failed to get ECTS")?;
-    let schedule = schedule.ok_or_else(|| "Failed to get schedule")?;
-    let language = language.ok_or_else(|| "Failed to get language")?;
-    let duration = match duration {
-        Some(d) => Ok(d),
-        None => {
-            // Edge case #1: Some professors are especially bad at following structure, therefore they
-            // put the duration of the course inside the "schedule" section, so will therefore try to
-            // find it in there:
-            let mut e_one: Option<parser::Duration> = None;
-            for (key, val) in &course_info {
-                match key.as_str() {
-                    "Schedule" | "Skemagruppe" => {
-                        e_one = parse_duration(&val).ok();
-                    }
-                    _ => continue,
+    let id = id.ok_or("Failed to get id")?;
+    let ects = ects.ok_or("Failed to get ECTS")?;
+    let schedule = schedule.ok_or("Failed to get schedule")?;
+    let language = language.ok_or("Failed to get language")?;
+    let duration = duration.map_or_else(|| {
+        // Edge case #1: Some professors are especially bad at following structure, therefore they
+        // put the duration of the course inside the "schedule" section, so will therefore try to
+        // find it in there:
+        let mut e_one: Option<parser::Duration> = None;
+        for (key, val) in course_info {
+            match key.as_str() {
+                "Schedule" | "Skemagruppe" => {
+                    e_one = parse_duration(val).ok();
                 }
+                _ => continue,
             }
-            e_one.ok_or("Failed to get duration")
         }
-    };
-let duration = duration?;
-    let degree = degree.ok_or_else(|| "Failed to get degree")?;
+        e_one.ok_or("Failed to get duration")
+    }, |d| Ok(d));
+    let duration = duration?;
+    let degree = degree.ok_or("Failed to get degree")?;
     
 
-    for (key, value) in &course_info {
+    for (key, value) in course_info {
         // Since blocks might need information on the duration, we parse block afterwards
         match key.as_str() {
             "Placement" | "Placering" => block = Some(parse_block(value, &duration)?),
