@@ -204,34 +204,56 @@ fn parse_capacity(capacity: &str) -> parser::Capacity {
 }
 
 fn parse_schedule(schedule: &str) -> Result<Vec<parser::Schedule>, Box<dyn std::error::Error>> {
-    // println!("Schedule info passed in: {schedule}");
+    println!("Schedule info passed in: {schedule}");
     let mut schedule_vec: Vec<parser::Schedule> = Vec::new();
 
     if schedule.contains('A') {
         schedule_vec.push(parser::Schedule::A);
     }
-
     if schedule.contains('B') {
         schedule_vec.push(parser::Schedule::B);
     }
-
     if schedule.contains('C') {
         schedule_vec.push(parser::Schedule::C);
     }
-
     if schedule.contains('D') {
         schedule_vec.push(parser::Schedule::D);
     }
 
     if schedule_vec.is_empty() {
-        Err("Unknown schedule".into())
+        // Handle additional checks here
+        println!("Schedule vector is empty!");
+        println!("Schedule: {}", schedule.to_lowercase());
+        if schedule.to_lowercase().contains("mon") {
+            schedule_vec.push(parser::Schedule::B);
+            schedule_vec.push(parser::Schedule::C);
+        }
+        if schedule.to_lowercase().contains("tue") {
+            schedule_vec.push(parser::Schedule::A);
+            schedule_vec.push(parser::Schedule::B);
+        }
+        if schedule.to_lowercase().contains("wed") {
+            schedule_vec.push(parser::Schedule::C);
+        }
+        if schedule.to_lowercase().contains("thur") {
+            schedule_vec.push(parser::Schedule::A);
+        }
+        if schedule.to_lowercase().contains("fri") {
+            schedule_vec.push(parser::Schedule::B);
+        }
+
+        if schedule_vec.is_empty() {
+            Err("Unknown schedule".into())
+        } else {
+            Ok(schedule_vec)
+        }
     } else {
         Ok(schedule_vec)
     }
 }
 
 fn parse_block(input: &str, duration: &parser::Duration) -> Result<Vec<parser::Block>, Box<dyn std::error::Error>> {
-    println!("Block info: {input}");
+    // println!("Block info: {input}");
     let mut blocks: Vec<parser::Block> = Vec::new();
 
     match duration {
