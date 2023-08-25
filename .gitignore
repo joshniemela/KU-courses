@@ -3,3 +3,4 @@ data/*
 .lsp
 .clj-kondo
 target
+log.txt
