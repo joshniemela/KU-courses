@@ -2,6 +2,7 @@ use eyre::Result;
 use tl::VDom;
 
 pub mod course_info;
+pub mod logistic_info;
 
 ///////////////////////////////////////////////////////////////////////////////
 // DATA STRUCTURE
@@ -24,6 +25,35 @@ pub struct CourseInformation {
     degree: Vec<Degree>,
     capacity: Capacity,
 }
+
+#[allow(dead_code)]
+#[derive(Debug)]
+pub struct LogisticInformation {
+    contracting_departments: Vec<Department>,
+    contracting_faculty: Faculty,
+    course_coordniators: Vec<Coordinator>
+}
+
+#[allow(dead_code)]
+#[derive(Debug)]
+enum Department {
+    PlantAndEnvironmentalSciences
+}
+
+#[allow(dead_code)]
+#[derive(Debug)]
+enum Faculty {
+    Science
+}
+
+#[allow(dead_code)]
+#[derive(Debug)]
+pub struct Coordinator {
+    name: String,
+    email: String,
+}
+
+
 
 #[derive(Debug)]
 enum Block {
@@ -88,6 +118,7 @@ pub fn parse_course(html: &str) -> Result<Course, Box<dyn std::error::Error>> {
 
     // if there is no content element, we assume it is a new course
     if content.is_some() {
+        let logistic_information = logistic_info::parse(&dom)?;
         let parsed_course_info = course_info::parse(&dom)?;
         println!("{parsed_course_info:?}");
         println!("##################################### \n");
