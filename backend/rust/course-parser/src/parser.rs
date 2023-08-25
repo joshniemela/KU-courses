@@ -52,6 +52,7 @@ enum Language {
 enum Duration {
     One = 1,
     Two = 2,
+    Custom,
 }
 
 #[derive(Debug, PartialEq, Eq, Ord, PartialOrd)]

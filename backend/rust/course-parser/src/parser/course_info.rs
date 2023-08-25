@@ -257,7 +257,7 @@ fn parse_block(input: &str, duration: &parser::Duration) -> Result<Vec<parser::B
     let mut blocks: Vec<parser::Block> = Vec::new();
 
     match duration {
-        parser::Duration::One => {
+        parser::Duration::One | parser::Duration::Custom => {
             for c in input.chars() {
                 match c {
                     '1' => blocks.push(parser::Block::One),
@@ -311,6 +311,7 @@ fn parse_duration(duration: &str) -> Result<parser::Duration, Box<dyn std::error
             }
         },
         _ if duration.contains("sem") => Ok(parser::Duration::Two),
+        _ if duration.contains("week") | duration.contains("uge") => Ok(parser::Duration::Custom),
         _ => Err("Unknown duration".into())
     }
 }
@@ -348,7 +349,25 @@ fn coerce_course_info(
     let ects = ects.ok_or_else(|| "Failed to get ECTS")?;
     let schedule = schedule.ok_or_else(|| "Failed to get schedule")?;
     let language = language.ok_or_else(|| "Failed to get language")?;
-    let duration = duration.ok_or_else(|| "Failed to get duration")?;
+    let duration = match duration {
+        Some(d) => Ok(d),
+        None => {
+            // Edge case #1: Some professors are especially bad at following structure, therefore they
+            // put the duration of the course inside the "schedule" section, so will therefore try to
+            // find it in there:
+            let mut e_one: Option<parser::Duration> = None;
+            for (key, val) in &course_info {
+                match key.as_str() {
+                    "Schedule" | "Skemagruppe" => {
+                        e_one = parse_duration(&val).ok();
+                    }
+                    _ => continue,
+                }
+            }
+            e_one.ok_or("Failed to get duration")
+        }
+    };
+let duration = duration?;
     let degree = degree.ok_or_else(|| "Failed to get degree")?;
     
 
