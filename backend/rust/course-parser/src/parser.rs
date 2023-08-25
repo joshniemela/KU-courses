@@ -37,7 +37,20 @@ pub struct LogisticInformation {
 #[allow(dead_code)]
 #[derive(Debug)]
 enum Department {
-    PlantAndEnvironmentalSciences
+    // Faculty of Science
+    PlantAndEnvironmentalScience,
+    Biology,
+    ComputerScience,
+    FoodAndResourceEconomics,
+    FoodScience,
+    GeosciencesAndNaturalResourceManagement,
+    NutritionExerciseAndSports,
+    MathematicalScience,
+    ScienceEducation,
+    PlantAndEnvironmentalSciences,
+    Chemistry,
+    TheNielsBohrInstitute,
+    NaturalHistoryMuseumOfDenmark
 }
 
 #[allow(dead_code)]
@@ -116,9 +129,12 @@ pub fn parse_course(html: &str) -> Result<Course, Box<dyn std::error::Error>> {
     let title = parse_title(&dom)?;
     println!("title: {title:?}");
 
+
     // if there is no content element, we assume it is a new course
     if content.is_some() {
         let logistic_information = logistic_info::parse(&dom)?;
+        println!("{logistic_information:?}");
+        println!("");
         let parsed_course_info = course_info::parse(&dom)?;
         println!("{parsed_course_info:?}");
         println!("##################################### \n");

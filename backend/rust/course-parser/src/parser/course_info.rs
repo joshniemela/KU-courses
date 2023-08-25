@@ -38,7 +38,7 @@ pub fn parse(dom: &VDom) -> Result<parser::CourseInformation, Box<dyn std::error
                     .ok_or("Failed to get node as tag")?;
                 // parse DL
                 let course_infos = parse_dl(node, parser)?;
-                println!("{course_infos:?}");
+                //println!("{course_infos:?}");
                 // parse the course information
                 let coerced_course_info = coerce_course_info(&course_infos, dom);
                 return coerced_course_info;
@@ -153,7 +153,7 @@ fn parse_ects(ects: &str, dom: &VDom) -> Result<f32, Box<dyn std::error::Error>>
 
 #[allow(dead_code)]
 fn parse_degree(degree: &str) -> Result<Vec<parser::Degree>, Box<dyn std::error::Error>> {
-    println!("parser::Degree information: {degree}");
+    // println!("parser::Degree information: {degree}");
     let mut result: Vec<parser::Degree> = Vec::new();
 
     match degree.to_lowercase().as_str() {
@@ -186,7 +186,7 @@ fn parse_capacity(capacity: &str) -> parser::Capacity {
 }
 
 fn parse_schedule(schedule: &str) -> Result<Vec<parser::Schedule>, Box<dyn std::error::Error>> {
-    println!("Schedule info passed in: {schedule}");
+    // println!("Schedule info passed in: {schedule}");
     let mut schedule_vec: Vec<parser::Schedule> = Vec::new();
 
     // Check for individual schedule items using match
@@ -275,7 +275,7 @@ fn parse_block(input: &str, duration: &parser::Duration) -> Result<Vec<parser::B
 }
 
 fn parse_duration(duration: &str) -> Result<parser::Duration, Box<dyn std::error::Error>> {
-    println!("Duration info: {duration}");
+    // println!("Duration info: {duration}");
     // either 1 blo(c)k, 2 blo(c)ks or 1 semester
     // grab the first 3 chars
     match duration {
