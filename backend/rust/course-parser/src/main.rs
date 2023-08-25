@@ -7,17 +7,6 @@ const DATA_DIR: &str = "../../../data";
 
 const TEST_DIR: &str ="./test_data";
 
-// static WHITE_LIST: [&str; 2] = [
-//     // Faculty of Science
-//     // "NBI", // Dept. of Biology
-//     // "NKE", // Dept. of Chemistry
-//     // "NIF", // Dept. of Food and Resource Economics
-//     // "NFO", // Dept. of Food Science
-//     // "LSL", // Dept. of Geoscience and Natural Resources
-//     "NMA", 
-//     "NDA", // Dept. of Computer Science
-//     ];
-
 #[derive(Parser)]
 struct CliArgs {
     dir: Option<String>,
@@ -26,11 +15,6 @@ struct CliArgs {
 fn main() {
     println!("Starting course parser...");
 
-    // let mut white_list: Vec<unicase::UniCase<&str>> = Vec::new();
-    // for x in WHITE_LIST.iter() {
-    //     white_list.push(UniCase::new(x));
-    // }
-    //
     // Collecting commandline args to enable switching between the different directories
     // Right now we just treat the first variable as the indication to what dir (i.e. DATA_DIR or
     // TEST_DIR).

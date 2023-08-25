@@ -111,11 +111,8 @@ fn parse_ects(ects: &str, dom: &VDom) -> Result<f32, Box<dyn std::error::Error>>
     // println!("Ects info: {ects}"); // Fixed formatting string
 
     // Extract numeric characters, '.' and ',' from the input string
-    let ects_info = ects
-        .chars()
-        .take_while(|c| c.is_numeric() || *c == '.' || *c == ',')
-        .collect::<String>();
-
+    let ects_info = ects.chars().filter(|c| c.is_numeric() || *c == '.' || *c == ',').collect::<String>();
+    
     // Replace ',' with '.' to ensure correct parsing
     let ects_info = ects_info.replace(',', ".");
 
@@ -125,35 +122,28 @@ fn parse_ects(ects: &str, dom: &VDom) -> Result<f32, Box<dyn std::error::Error>>
         // is instead saying something like "see description". Therefore we perform a full 
         // text search through the DOM as a last resort to see wether we can parse it.
         // We return -1.0 if we are unable to find it.
-        let binding = dom.outer_html();
+        let binding = dom.outer_html().to_string();
         let occurences: Vec<_> = binding.match_indices("ECTS").collect();
         println!("Despite being initially unable to parse float, found occurences of ECTS on indices:");
+        let mut ects_values: Vec<f32> = Vec::new();
         for x in &occurences {
             println!("Index: {}", x.0);
+            let window = binding.get(x.0-4..x.0).unwrap();
+            println!("Looking at window: {window}");
+            let instance: String = window.chars()
+                .filter(|x| x.is_numeric() || *x == ',' || *x == '.')
+                .collect::<String>();
+
+            println!("Instance: {instance}");
+            if let Ok(parsed_instance) = instance.replace(',', ".").parse::<f32>() {
+                ects_values.push(parsed_instance)
+            }
+
         }
+
 
         // Next, if we're able to find some occurences of ECTS, we look at the potential numbers
         // preceeding the index, and extract the floats.
-        let mut ects_values: Vec<f32> = Vec::new();
-        for x in &occurences {
-            let area = &binding[x.0-5..x.0+5];
-            println!("Window index from: {} to {}", x.0-5, x.0);
-            println!("Looking at window: {area}");
-            let ects_val = area
-                .chars()
-                .filter(|c| c.is_numeric() || *c == '.' || *c == ',')
-                .collect::<String>();
-
-            let parsed_ects_val = ects_val.replace(',', ".");
-
-            println!("Parsed ects value: {parsed_ects_val}");
-            parsed_ects_val.parse::<f32>().map_or_else(|_| {
-                println!("Unable to parse ects value in window, may just be because of a mention of ECTS without any number");
-                }, |res| {
-                    println!("Found ects value: {res} ECTS");
-                    ects_values.push(res);
-                });
-        }
         let sum = ects_values.iter().sum();
         sum
     });
@@ -166,27 +156,22 @@ fn parse_ects(ects: &str, dom: &VDom) -> Result<f32, Box<dyn std::error::Error>>
 
 #[allow(dead_code)]
 fn parse_degree(degree: &str) -> Result<Vec<parser::Degree>, Box<dyn std::error::Error>> {
-    // println!("parser::Degree information: {degree}");
-    const WINDOW_LENGTH: usize = 4;
+    println!("parser::Degree information: {degree}");
     let mut result: Vec<parser::Degree> = Vec::new();
-    // loop through a 4 character sliding window and deal with the fact that they might not be alphabetic
-    for i in 0..degree.len() - WINDOW_LENGTH - 1 {
-        let sliding_window = &degree.to_lowercase()[i..i + WINDOW_LENGTH];
-        match sliding_window {
-            "bach" => result.push(parser::Degree::Bachelor),
-            "mast" | "kand" => result.push(parser::Degree::Master),
-            "ph.d" => result.push(parser::Degree::Phd),
-            _ => continue,
-        }
+
+    match degree.to_lowercase().as_str() {
+        _ if degree.to_lowercase().contains("bach") => result.push(parser::Degree::Bachelor),
+        _ if degree.to_lowercase().contains("mast") || degree.to_lowercase().contains("kand") => result.push(parser::Degree::Master),
+        _ if degree.to_lowercase().contains("ph.d") => result.push(parser::Degree::Phd),
+        _ if degree.to_lowercase().contains("propædeutik") => result.push(parser::Degree::Propædeutik),
+        _ => (),
     }
 
-    // Sort and deduplicate
-    result.sort();
-    result.dedup();
     if result.is_empty() {
-        return Err("No degree found".into());
+        Err("Unable to parse degree information".into())
+    } else {
+        Ok(result)
     }
-    Ok(result)
 }
 
 fn parse_capacity(capacity: &str) -> parser::Capacity {
@@ -204,26 +189,20 @@ fn parse_capacity(capacity: &str) -> parser::Capacity {
 }
 
 fn parse_schedule(schedule: &str) -> Result<Vec<parser::Schedule>, Box<dyn std::error::Error>> {
-    // println!("Schedule info passed in: {schedule}");
+    println!("Schedule info passed in: {schedule}");
     let mut schedule_vec: Vec<parser::Schedule> = Vec::new();
 
-    if schedule.contains('A') {
-        schedule_vec.push(parser::Schedule::A);
-    }
-    if schedule.contains('B') {
-        schedule_vec.push(parser::Schedule::B);
-    }
-    if schedule.contains('C') {
-        schedule_vec.push(parser::Schedule::C);
-    }
-    if schedule.contains('D') {
-        schedule_vec.push(parser::Schedule::D);
+    // Check for individual schedule items using match
+    match schedule {
+        _ if schedule.contains('A') => schedule_vec.push(parser::Schedule::A),
+        _ if schedule.contains('B') => schedule_vec.push(parser::Schedule::B),
+        _ if schedule.contains('C') => schedule_vec.push(parser::Schedule::C),
+        _ if schedule.contains('D') => schedule_vec.push(parser::Schedule::D),
+        _ => (),
     }
 
     if schedule_vec.is_empty() {
-        // Handle additional checks here
-        println!("Schedule vector is empty!");
-        println!("Schedule: {}", schedule.to_lowercase());
+        // Handle additional checks using if let
         if schedule.to_lowercase().contains("mon") {
             schedule_vec.push(parser::Schedule::B);
             schedule_vec.push(parser::Schedule::C);

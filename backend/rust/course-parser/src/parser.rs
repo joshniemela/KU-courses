@@ -60,6 +60,7 @@ enum Degree {
     Phd,
     Bachelor,
     Master,
+    Propædeutik
 }
 
 #[derive(Debug)]
