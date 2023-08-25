@@ -204,7 +204,7 @@ fn parse_capacity(capacity: &str) -> parser::Capacity {
 }
 
 fn parse_schedule(schedule: &str) -> Result<Vec<parser::Schedule>, Box<dyn std::error::Error>> {
-    // println!("parser::Schedule info passed in: {schedule}");
+    // println!("Schedule info passed in: {schedule}");
     let mut schedule_vec: Vec<parser::Schedule> = Vec::new();
 
     if schedule.contains('A') {
@@ -230,18 +230,42 @@ fn parse_schedule(schedule: &str) -> Result<Vec<parser::Schedule>, Box<dyn std::
     }
 }
 
-fn parse_block(input: &str) -> Result<Vec<parser::Block>, Box<dyn std::error::Error>> {
-    // println!("{input}");
+fn parse_block(input: &str, duration: &parser::Duration) -> Result<Vec<parser::Block>, Box<dyn std::error::Error>> {
+    println!("Block info: {input}");
     let mut blocks: Vec<parser::Block> = Vec::new();
 
-    for c in input.chars() {
-        match c {
-            '1' => blocks.push(parser::Block::One),
-            '2' => blocks.push(parser::Block::Two),
-            '3' => blocks.push(parser::Block::Three),
-            '4' => blocks.push(parser::Block::Four),
-            '5' => blocks.push(parser::Block::Five),
-            _ => (),
+    match duration {
+        parser::Duration::One => {
+            for c in input.chars() {
+                match c {
+                    '1' => blocks.push(parser::Block::One),
+                    '2' => blocks.push(parser::Block::Two),
+                    '3' => blocks.push(parser::Block::Three),
+                    '4' => blocks.push(parser::Block::Four),
+                    '5' => blocks.push(parser::Block::Five),
+                    _ => (),
+                }
+            }
+        },
+        parser::Duration::Two => {
+            // If they specify a duration of two. we first try to extract the blocks as before,
+            // but if that fails, we try to search for "spring" etc.
+            for c in input.chars() {
+                match c {
+                    '1' => blocks.push(parser::Block::One),
+                    '2' => blocks.push(parser::Block::Two),
+                    '3' => blocks.push(parser::Block::Three),
+                    '4' => blocks.push(parser::Block::Four),
+                    '5' => blocks.push(parser::Block::Five),
+                    _ => (),
+                }
+            }
+            if blocks.is_empty() {
+                if input.contains("Spring") {
+                    blocks.push(parser::Block::One);
+                    blocks.push(parser::Block::Two);
+                }
+            }
         }
     }
 
@@ -277,20 +301,11 @@ fn coerce_course_info(
     let mut degree: Option<Vec<parser::Degree>> = None;
     let mut capacity: parser::Capacity = parser::Capacity(None);
 
-    for (key, value) in &course_info {
-        // first iterate through only to find the block, since  this will tell us if we
-        // are dealing with the faculty of science (they use blocks) or the other faculties
-        // Check the first 5 chars of the key to see if it is "Place"
-        let chopped_key = key.chars().take(5).collect::<String>();
-        if chopped_key == "Place" {
-            block = Some(parse_block(value)?);
-        }
-    }
 
-    for (key, value) in course_info {
+    for (key, value) in &course_info {
         match key.as_str() {
             "Language" | "Sprog" => language = Some(parse_language(&value)?),
-            "Course code" | "Kursuskode" => id = Some(value), // "Kursuskode" is the danish version of "Course code
+            "Course code" | "Kursuskode" => id = Some(value.clone()), // "Kursuskode" is the danish version of "Course code
             "Point" | "Credit" => ects = Some(parse_ects(&value, dom)?), // "Point" is the danish version of "Credit"
             "Level" | "Niveau" => degree = Some(parse_degree(&value)?),
             "Duration" | "Varighed" => duration = Some(parse_duration(&value)?),
@@ -302,12 +317,19 @@ fn coerce_course_info(
     // print every error with the contents of the course_info
     let id = id.ok_or("Failed to get id")?;
     let ects = ects.ok_or("Failed to get ects")?;
-    let block = block.ok_or("Failed to get block")?;
     let schedule = schedule.ok_or("Failed to get schedule")?;
     let language = language.ok_or("Failed to get language")?;
     let duration = duration.ok_or("Failed to get duration")?;
     let degree = degree.ok_or("Failed to get degree")?;
-    // println!("{id}: {degree:?}");
+
+    for (key, value) in &course_info {
+        // Since blocks might need information on the duration, we parse block afterwards
+        match key.as_str() {
+            "Placement" | "Placering" => block = Some(parse_block(value, &duration)?),
+            _ => continue,
+        }
+    }
+    let block = block.ok_or("Failed to get block")?;
 
     Ok(parser::CourseInformation {
         id,
