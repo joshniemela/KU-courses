@@ -204,7 +204,7 @@ fn parse_capacity(capacity: &str) -> parser::Capacity {
 }
 
 fn parse_schedule(schedule: &str) -> Result<Vec<parser::Schedule>, Box<dyn std::error::Error>> {
-    println!("Schedule info passed in: {schedule}");
+    // println!("Schedule info passed in: {schedule}");
     let mut schedule_vec: Vec<parser::Schedule> = Vec::new();
 
     if schedule.contains('A') {
@@ -299,13 +299,19 @@ fn parse_block(input: &str, duration: &parser::Duration) -> Result<Vec<parser::B
 }
 
 fn parse_duration(duration: &str) -> Result<parser::Duration, Box<dyn std::error::Error>> {
+    println!("Duration info: {duration}");
     // either 1 blo(c)k, 2 blo(c)ks or 1 semester
     // grab the first 3 chars
-    let chopped_duration = duration.chars().take(3).collect::<String>();
-    match chopped_duration.as_str() {
-        "1 b" => Ok(parser::Duration::One),
-        "2 b" | "1 s" => Ok(parser::Duration::Two),
-        _ => Err("Unknown duration".into()),
+    match duration {
+        x if duration.contains("blo") => {
+            match x {
+                _ if x.contains("1") => Ok(parser::Duration::One),
+                _ if x.contains("2") => Ok(parser::Duration::Two),
+                _ => Err("Unknown duration".into())
+            }
+        },
+        _ if duration.contains("sem") => Ok(parser::Duration::Two),
+        _ => Err("Unknown duration".into())
     }
 }
 
@@ -333,16 +339,18 @@ fn coerce_course_info(
             "Duration" | "Varighed" => duration = Some(parse_duration(&value)?),
             "Schedule" | "Skemagruppe" => schedule = Some(parse_schedule(&value)?),
             "Course capacity" | "Kursuskapacitet" => capacity = parse_capacity(&value),
-            _ => continue,
+            _ => continue
         }
     }
+
     // print every error with the contents of the course_info
-    let id = id.ok_or("Failed to get id")?;
-    let ects = ects.ok_or("Failed to get ects")?;
-    let schedule = schedule.ok_or("Failed to get schedule")?;
-    let language = language.ok_or("Failed to get language")?;
-    let duration = duration.ok_or("Failed to get duration")?;
-    let degree = degree.ok_or("Failed to get degree")?;
+    let id = id.ok_or_else(|| "Failed to get id")?;
+    let ects = ects.ok_or_else(|| "Failed to get ECTS")?;
+    let schedule = schedule.ok_or_else(|| "Failed to get schedule")?;
+    let language = language.ok_or_else(|| "Failed to get language")?;
+    let duration = duration.ok_or_else(|| "Failed to get duration")?;
+    let degree = degree.ok_or_else(|| "Failed to get degree")?;
+    
 
     for (key, value) in &course_info {
         // Since blocks might need information on the duration, we parse block afterwards
