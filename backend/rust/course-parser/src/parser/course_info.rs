@@ -38,9 +38,9 @@ pub fn parse(dom: &VDom) -> Result<parser::CourseInformation, Box<dyn std::error
                     .ok_or("Failed to get node as tag")?;
                 // parse DL
                 let course_infos = parse_dl(node, parser)?;
-                println!("{course_infos:?}");
+                //println!("{course_infos:?}");
                 // parse the course information
-                let coerced_course_info = coerce_course_info(course_infos, dom);
+                let coerced_course_info = coerce_course_info(&course_infos, dom);
                 return coerced_course_info;
             }
             None => continue,
@@ -111,11 +111,8 @@ fn parse_ects(ects: &str, dom: &VDom) -> Result<f32, Box<dyn std::error::Error>>
     // println!("Ects info: {ects}"); // Fixed formatting string
 
     // Extract numeric characters, '.' and ',' from the input string
-    let ects_info = ects
-        .chars()
-        .take_while(|c| c.is_numeric() || *c == '.' || *c == ',')
-        .collect::<String>();
-
+    let ects_info = ects.chars().filter(|c| c.is_numeric() || *c == '.' || *c == ',').collect::<String>();
+    
     // Replace ',' with '.' to ensure correct parsing
     let ects_info = ects_info.replace(',', ".");
 
@@ -124,36 +121,26 @@ fn parse_ects(ects: &str, dom: &VDom) -> Result<f32, Box<dyn std::error::Error>>
         // If we are unable to parse the ects values, it likely means that the field,
         // is instead saying something like "see description". Therefore we perform a full 
         // text search through the DOM as a last resort to see wether we can parse it.
-        // We return -1.0 if we are unable to find it.
+        
         let binding = dom.outer_html();
         let occurences: Vec<_> = binding.match_indices("ECTS").collect();
-        println!("Despite being initially unable to parse float, found occurences of ECTS on indices:");
-        for x in &occurences {
-            println!("Index: {}", x.0);
-        }
-
-        // Next, if we're able to find some occurences of ECTS, we look at the potential numbers
-        // preceeding the index, and extract the floats.
+        
+        // Extract the ECTS values from the occurences
         let mut ects_values: Vec<f32> = Vec::new();
         for x in &occurences {
-            let area = &binding[x.0-5..x.0+5];
-            println!("Window index from: {} to {}", x.0-5, x.0);
-            println!("Looking at window: {area}");
-            let ects_val = area
-                .chars()
-                .filter(|c| c.is_numeric() || *c == '.' || *c == ',')
-                .collect::<String>();
+            if let Some(window) = binding.get(x.0-4..x.0) {
+                let instance: String = window.chars()
+                    .filter(|x| x.is_numeric() || *x == ',' || *x == '.')
+                    .collect::<String>();
 
-            let parsed_ects_val = ects_val.replace(',', ".");
+                if let Ok(parsed_instance) = instance.replace(',', ".").parse::<f32>() {
+                    ects_values.push(parsed_instance);
+                }
+            }
 
-            println!("Parsed ects value: {parsed_ects_val}");
-            parsed_ects_val.parse::<f32>().map_or_else(|_| {
-                println!("Unable to parse ects value in window, may just be because of a mention of ECTS without any number");
-                }, |res| {
-                    println!("Found ects value: {res} ECTS");
-                    ects_values.push(res);
-                });
         }
+
+        // After collecting the ects values, we sum them together for the final value
         let sum = ects_values.iter().sum();
         sum
     });
@@ -167,26 +154,21 @@ fn parse_ects(ects: &str, dom: &VDom) -> Result<f32, Box<dyn std::error::Error>>
 #[allow(dead_code)]
 fn parse_degree(degree: &str) -> Result<Vec<parser::Degree>, Box<dyn std::error::Error>> {
     // println!("parser::Degree information: {degree}");
-    const WINDOW_LENGTH: usize = 4;
     let mut result: Vec<parser::Degree> = Vec::new();
-    // loop through a 4 character sliding window and deal with the fact that they might not be alphabetic
-    for i in 0..degree.len() - WINDOW_LENGTH - 1 {
-        let sliding_window = &degree.to_lowercase()[i..i + WINDOW_LENGTH];
-        match sliding_window {
-            "bach" => result.push(parser::Degree::Bachelor),
-            "mast" | "kand" => result.push(parser::Degree::Master),
-            "ph.d" => result.push(parser::Degree::Phd),
-            _ => continue,
-        }
+
+    match degree.to_lowercase().as_str() {
+        _ if degree.to_lowercase().contains("bach") => result.push(parser::Degree::Bachelor),
+        _ if degree.to_lowercase().contains("mast") || degree.to_lowercase().contains("kand") => result.push(parser::Degree::Master),
+        _ if degree.to_lowercase().contains("ph.d") => result.push(parser::Degree::Phd),
+        _ if degree.to_lowercase().contains("propædeutik") => result.push(parser::Degree::Propædeutik),
+        _ => (),
     }
 
-    // Sort and deduplicate
-    result.sort();
-    result.dedup();
     if result.is_empty() {
-        return Err("No degree found".into());
+        Err("Unable to parse degree information".into())
+    } else {
+        Ok(result)
     }
-    Ok(result)
 }
 
 fn parse_capacity(capacity: &str) -> parser::Capacity {
@@ -204,44 +186,84 @@ fn parse_capacity(capacity: &str) -> parser::Capacity {
 }
 
 fn parse_schedule(schedule: &str) -> Result<Vec<parser::Schedule>, Box<dyn std::error::Error>> {
-    // println!("parser::Schedule info passed in: {schedule}");
+    // println!("Schedule info passed in: {schedule}");
     let mut schedule_vec: Vec<parser::Schedule> = Vec::new();
 
-    if schedule.contains('A') {
-        schedule_vec.push(parser::Schedule::A);
-    }
-
-    if schedule.contains('B') {
-        schedule_vec.push(parser::Schedule::B);
-    }
-
-    if schedule.contains('C') {
-        schedule_vec.push(parser::Schedule::C);
-    }
-
-    if schedule.contains('D') {
-        schedule_vec.push(parser::Schedule::D);
+    // Check for individual schedule items using match
+    match schedule {
+        _ if schedule.contains('A') => schedule_vec.push(parser::Schedule::A),
+        _ if schedule.contains('B') => schedule_vec.push(parser::Schedule::B),
+        _ if schedule.contains('C') => schedule_vec.push(parser::Schedule::C),
+        _ if schedule.contains('D') => schedule_vec.push(parser::Schedule::D),
+        _ => (),
     }
 
     if schedule_vec.is_empty() {
-        Err("Unknown schedule".into())
+        // Handle additional checks using if let
+        if schedule.to_lowercase().contains("mon") {
+            schedule_vec.push(parser::Schedule::B);
+            schedule_vec.push(parser::Schedule::C);
+        }
+        if schedule.to_lowercase().contains("tue") {
+            schedule_vec.push(parser::Schedule::A);
+            schedule_vec.push(parser::Schedule::B);
+        }
+        if schedule.to_lowercase().contains("wed") {
+            schedule_vec.push(parser::Schedule::C);
+        }
+        if schedule.to_lowercase().contains("thur") {
+            schedule_vec.push(parser::Schedule::A);
+        }
+        if schedule.to_lowercase().contains("fri") {
+            schedule_vec.push(parser::Schedule::B);
+        }
+
+        if schedule_vec.is_empty() {
+            Err("Unknown schedule".into())
+        } else {
+            Ok(schedule_vec)
+        }
     } else {
         Ok(schedule_vec)
     }
 }
 
-fn parse_block(input: &str) -> Result<Vec<parser::Block>, Box<dyn std::error::Error>> {
-    // println!("{input}");
+fn parse_block(input: &str, duration: &parser::Duration) -> Result<Vec<parser::Block>, Box<dyn std::error::Error>> {
+    // println!("Block info: {input}");
     let mut blocks: Vec<parser::Block> = Vec::new();
 
-    for c in input.chars() {
-        match c {
-            '1' => blocks.push(parser::Block::One),
-            '2' => blocks.push(parser::Block::Two),
-            '3' => blocks.push(parser::Block::Three),
-            '4' => blocks.push(parser::Block::Four),
-            '5' => blocks.push(parser::Block::Five),
-            _ => (),
+    match duration {
+        parser::Duration::One | parser::Duration::Custom => {
+            for c in input.chars() {
+                match c {
+                    '1' => blocks.push(parser::Block::One),
+                    '2' => blocks.push(parser::Block::Two),
+                    '3' => blocks.push(parser::Block::Three),
+                    '4' => blocks.push(parser::Block::Four),
+                    '5' => blocks.push(parser::Block::Five),
+                    _ => (),
+                }
+            }
+        },
+        parser::Duration::Two => {
+            // If they specify a duration of two. we first try to extract the blocks as before,
+            // but if that fails, we try to search for "spring" etc.
+            for c in input.chars() {
+                match c {
+                    '1' => blocks.push(parser::Block::One),
+                    '2' => blocks.push(parser::Block::Two),
+                    '3' => blocks.push(parser::Block::Three),
+                    '4' => blocks.push(parser::Block::Four),
+                    '5' => blocks.push(parser::Block::Five),
+                    _ => (),
+                }
+            }
+            if blocks.is_empty() {
+                if input.contains("Spring") {
+                    blocks.push(parser::Block::One);
+                    blocks.push(parser::Block::Two);
+                }
+            }
         }
     }
 
@@ -253,18 +275,25 @@ fn parse_block(input: &str) -> Result<Vec<parser::Block>, Box<dyn std::error::Er
 }
 
 fn parse_duration(duration: &str) -> Result<parser::Duration, Box<dyn std::error::Error>> {
+    // println!("Duration info: {duration}");
     // either 1 blo(c)k, 2 blo(c)ks or 1 semester
     // grab the first 3 chars
-    let chopped_duration = duration.chars().take(3).collect::<String>();
-    match chopped_duration.as_str() {
-        "1 b" => Ok(parser::Duration::One),
-        "2 b" | "1 s" => Ok(parser::Duration::Two),
-        _ => Err("Unknown duration".into()),
+    match duration {
+        x if duration.contains("blo") => {
+            match x {
+                _ if x.contains('1') => Ok(parser::Duration::One),
+                _ if x.contains('2') => Ok(parser::Duration::Two),
+                _ => Err("Unknown duration".into())
+            }
+        },
+        _ if duration.contains("sem") => Ok(parser::Duration::Two),
+        _ if duration.contains("week") | duration.contains("uge") => Ok(parser::Duration::Custom),
+        _ => Err("Unknown duration".into())
     }
 }
 
 fn coerce_course_info(
-    course_info: Vec<(String, String)>,
+    course_info: &[(String, String)],
     dom: &VDom
 ) -> Result<parser::CourseInformation, Box<dyn std::error::Error>> {
     // dbg!(&course_info);
@@ -277,37 +306,52 @@ fn coerce_course_info(
     let mut degree: Option<Vec<parser::Degree>> = None;
     let mut capacity: parser::Capacity = parser::Capacity(None);
 
-    for (key, value) in &course_info {
-        // first iterate through only to find the block, since  this will tell us if we
-        // are dealing with the faculty of science (they use blocks) or the other faculties
-        // Check the first 5 chars of the key to see if it is "Place"
-        let chopped_key = key.chars().take(5).collect::<String>();
-        if chopped_key == "Place" {
-            block = Some(parse_block(value)?);
-        }
-    }
 
     for (key, value) in course_info {
         match key.as_str() {
-            "Language" | "Sprog" => language = Some(parse_language(&value)?),
-            "Course code" | "Kursuskode" => id = Some(value), // "Kursuskode" is the danish version of "Course code
-            "Point" | "Credit" => ects = Some(parse_ects(&value, dom)?), // "Point" is the danish version of "Credit"
-            "Level" | "Niveau" => degree = Some(parse_degree(&value)?),
-            "Duration" | "Varighed" => duration = Some(parse_duration(&value)?),
-            "Schedule" | "Skemagruppe" => schedule = Some(parse_schedule(&value)?),
-            "Course capacity" | "Kursuskapacitet" => capacity = parse_capacity(&value),
+            "Language" | "Sprog" => language = Some(parse_language(value)?),
+            "Course code" | "Kursuskode" => id = Some(value.clone()), // "Kursuskode" is the danish version of "Course code
+            "Point" | "Credit" => ects = Some(parse_ects(value, dom)?), // "Point" is the danish version of "Credit"
+            "Level" | "Niveau" => degree = Some(parse_degree(value)?),
+            "Duration" | "Varighed" => duration = Some(parse_duration(value)?),
+            "Schedule" | "Skemagruppe" => schedule = Some(parse_schedule(value)?),
+            "Course capacity" | "Kursuskapacitet" => capacity = parse_capacity(value),
+            _ => continue
+        }
+    }
+
+    // print every error with the contents of the course_info
+    let id = id.ok_or("Failed to get id")?;
+    let ects = ects.ok_or("Failed to get ECTS")?;
+    let schedule = schedule.ok_or("Failed to get schedule")?;
+    let language = language.ok_or("Failed to get language")?;
+    let duration = duration.map_or_else(|| {
+        // Edge case #1: Some professors are especially bad at following structure, therefore they
+        // put the duration of the course inside the "schedule" section, so will therefore try to
+        // find it in there:
+        let mut e_one: Option<parser::Duration> = None;
+        for (key, val) in course_info {
+            match key.as_str() {
+                "Schedule" | "Skemagruppe" => {
+                    e_one = parse_duration(val).ok();
+                }
+                _ => continue,
+            }
+        }
+        e_one.ok_or("Failed to get duration")
+    }, |d| Ok(d));
+    let duration = duration?;
+    let degree = degree.ok_or("Failed to get degree")?;
+    
+
+    for (key, value) in course_info {
+        // Since blocks might need information on the duration, we parse block afterwards
+        match key.as_str() {
+            "Placement" | "Placering" => block = Some(parse_block(value, &duration)?),
             _ => continue,
         }
     }
-    // print every error with the contents of the course_info
-    let id = id.ok_or("Failed to get id")?;
-    let ects = ects.ok_or("Failed to get ects")?;
     let block = block.ok_or("Failed to get block")?;
-    let schedule = schedule.ok_or("Failed to get schedule")?;
-    let language = language.ok_or("Failed to get language")?;
-    let duration = duration.ok_or("Failed to get duration")?;
-    let degree = degree.ok_or("Failed to get degree")?;
-    // println!("{id}: {degree:?}");
 
     Ok(parser::CourseInformation {
         id,
