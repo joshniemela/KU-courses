@@ -315,6 +315,7 @@ fn parse_duration(duration: &str) -> Result<parser::Duration, Box<dyn std::error
 // faculty of theology: 30                             | TISK, TAFA, TTER, TTEA
 // From above it is clear that the faculty of science always can be matched on with the following regex: (N|L).*
 // If the faculty is not from SCIENCE we want to return an error
+// NORS is a special case, because its a humanities course (norwegian)
 fn parse_code(code: &str) -> Result<String, Box<dyn std::error::Error>> {
     match code {
         "NORS" => Err("Wrong faculty (expected)".into()),
