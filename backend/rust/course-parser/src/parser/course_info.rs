@@ -2,7 +2,6 @@
 use crate::parser;
 use tl::VDom;
 
-
 /// Function that parsed the couse info section
 ///
 /// # Parameters
@@ -111,25 +110,29 @@ fn parse_ects(ects: &str, dom: &VDom) -> Result<f32, Box<dyn std::error::Error>>
     // println!("Ects info: {ects}"); // Fixed formatting string
 
     // Extract numeric characters, '.' and ',' from the input string
-    let ects_info = ects.chars().filter(|c| c.is_numeric() || *c == '.' || *c == ',').collect::<String>();
-    
+    let ects_info = ects
+        .chars()
+        .filter(|c| c.is_numeric() || *c == '.' || *c == ',')
+        .collect::<String>();
+
     // Replace ',' with '.' to ensure correct parsing
     let ects_info = ects_info.replace(',', ".");
 
     // Parse the string to a f32
-    let ects_value = ects_info.parse::<f32>().unwrap_or_else( |_| {
+    let ects_value = ects_info.parse::<f32>().unwrap_or_else(|_| {
         // If we are unable to parse the ects values, it likely means that the field,
-        // is instead saying something like "see description". Therefore we perform a full 
+        // is instead saying something like "see description". Therefore we perform a full
         // text search through the DOM as a last resort to see wether we can parse it.
-        
+
         let binding = dom.outer_html();
         let occurences: Vec<_> = binding.match_indices("ECTS").collect();
-        
+
         // Extract the ECTS values from the occurences
         let mut ects_values: Vec<f32> = Vec::new();
         for x in &occurences {
-            if let Some(window) = binding.get(x.0-4..x.0) {
-                let instance: String = window.chars()
+            if let Some(window) = binding.get(x.0 - 4..x.0) {
+                let instance: String = window
+                    .chars()
                     .filter(|x| x.is_numeric() || *x == ',' || *x == '.')
                     .collect::<String>();
 
@@ -137,7 +140,6 @@ fn parse_ects(ects: &str, dom: &VDom) -> Result<f32, Box<dyn std::error::Error>>
                     ects_values.push(parsed_instance);
                 }
             }
-
         }
 
         // After collecting the ects values, we sum them together for the final value
@@ -158,9 +160,13 @@ fn parse_degree(degree: &str) -> Result<Vec<parser::Degree>, Box<dyn std::error:
 
     match degree.to_lowercase().as_str() {
         _ if degree.to_lowercase().contains("bach") => result.push(parser::Degree::Bachelor),
-        _ if degree.to_lowercase().contains("mast") || degree.to_lowercase().contains("kand") => result.push(parser::Degree::Master),
+        _ if degree.to_lowercase().contains("mast") || degree.to_lowercase().contains("kand") => {
+            result.push(parser::Degree::Master)
+        }
         _ if degree.to_lowercase().contains("ph.d") => result.push(parser::Degree::Phd),
-        _ if degree.to_lowercase().contains("propædeutik") => result.push(parser::Degree::Propædeutik),
+        _ if degree.to_lowercase().contains("propædeutik") => {
+            result.push(parser::Degree::Propædeutik)
+        }
         _ => (),
     }
 
@@ -228,7 +234,10 @@ fn parse_schedule(schedule: &str) -> Result<Vec<parser::Schedule>, Box<dyn std::
     }
 }
 
-fn parse_block(input: &str, duration: &parser::Duration) -> Result<Vec<parser::Block>, Box<dyn std::error::Error>> {
+fn parse_block(
+    input: &str,
+    duration: &parser::Duration,
+) -> Result<Vec<parser::Block>, Box<dyn std::error::Error>> {
     // println!("Block info: {input}");
     let mut blocks: Vec<parser::Block> = Vec::new();
 
@@ -244,7 +253,7 @@ fn parse_block(input: &str, duration: &parser::Duration) -> Result<Vec<parser::B
                     _ => (),
                 }
             }
-        },
+        }
         parser::Duration::Two => {
             // If they specify a duration of two. we first try to extract the blocks as before,
             // but if that fails, we try to search for "spring" etc.
@@ -279,22 +288,44 @@ fn parse_duration(duration: &str) -> Result<parser::Duration, Box<dyn std::error
     // either 1 blo(c)k, 2 blo(c)ks or 1 semester
     // grab the first 3 chars
     match duration {
-        x if duration.contains("blo") => {
-            match x {
-                _ if x.contains('1') => Ok(parser::Duration::One),
-                _ if x.contains('2') => Ok(parser::Duration::Two),
-                _ => Err("Unknown duration".into())
-            }
+        x if duration.contains("blo") => match x {
+            _ if x.contains('1') => Ok(parser::Duration::One),
+            _ if x.contains('2') => Ok(parser::Duration::Two),
+            _ => Err("Unknown duration".into()),
         },
         _ if duration.contains("sem") => Ok(parser::Duration::Two),
         _ if duration.contains("week") | duration.contains("uge") => Ok(parser::Duration::Custom),
-        _ => Err("Unknown duration".into())
+        _ => Err("Unknown duration".into()),
+    }
+}
+
+// Luca's research (2023-08-28)
+// Name                    | Count                     | Unique IDS
+// faculty of humanities: 173                          | HIOK, HTOB, HØEB, HØEK, HTYK, HÆGB, HEGR, HPOK, HSPK, HFMB, HFMK, HJAB, HKAK, HNAB, HNAK, HMØK, HRVB, HKUK, HLVK, HMVK, HENÅ, HASB, HHIB, HJAÆ, HÆGK, HTEK, HENB, HFAK, HCCK, HSAX, HKIÆ, HDCB, HIAB, HFIK, HFIB, HFRK, HKOB, HAIK, HENK, HANK, HIAÆ, HMØB, HHIK, HKIB, HMGK, HMKK, HOLD
+// det sundhedsvidenskabelige fakultet: 402            | STVA, SFAK, SMBA, SFAB, SPMM, SMOB, SFOA, ITSK, SVEK, SMTB, STEF, SMEB, SVEB, SMOA, SFEB, SITK, SCIA, SODB, SASB, SITB, SGBK, SNRM, SSUK, SPUM, SSUA, SASA, SODK, SBIB, SMEA, SFOK, SSPE, SFOB, SITA, SGBB
+// faculty of social sciences: 203                     | APSK, AØKB, ASOA, AGDK, AANK, ASRK, ASOK, ASTK, AØKA, ASDK, APSB, AØKK, AANB, AANA, ASOB
+// det samfundsvidenskabelige fakultet: 181            | AØKB, ASOB, ASTB, POFK, APSK, AANB, ASOK, POFB, AANK, APSB, AØKK, ASTK, AANA, AØKA, ASOA
+// det teologiske fakultet: 39                         | TISK, TTEA, TTBA
+// faculty of law: 55                                  | JJUA, JJUS, JJUB
+// faculty of health and medical sciences: 313         | SFKK, SFOK, SGBB, SFAB, SFKB, SGBK, SGLK, SASA, SITK, SKBK, SLKK, SMIM, SMOK, SMTB, SHDM, SVEK, SDMM, SMPS, SMEA, SMRM, SMTK, SMOB, SBIA, SITB, SHUA, SPMM, SNEU, SCAM, SBIB, SMKK, SASK, SIIK, SLVK, SSUA, SBIK, SFAK, SMOA, SMPM, SBRI, ITSE, SPEC
+// det natur- og biovidenskabelige fakultet: 463       | NIGB, NBIB, NGEA, LFKB, NMAA, LMAB, LNAK, NFOB, NIFB, NNDK, LHUB, LLEB, NIGK, NDAB, NKEB, NBIK, NDIA, NMAB, NVIR, LNAB, LBIB, NDAA, NDAK, NMAK, NIDA, LOJB, NNDM, LKEB, NIGM, NPLB, NKEA, NNEB, LSLS, NNEM, NFYK, LPLB, NIDK, NIDB, NBIA, NNDB, NFYB, NFYA, NIFK, NNEK, NNMB, NGEB
+// det juridiske fakultet: 102                         | JKOM, JJUA, JCSK, JJUS, JJUB, JKRD
+// det humanistiske fakultet: 788                      | HFRB, HKGK, HRTK, HLIB, HEEB, HBAÆ, HPÆB, HMKK, HRUÆ, HSAX, TEMP, HSPK, HMVB, HLIK, HMSK, HITÅ, HJAB, HOLK, HFMB, HÆGK, HPLÆ, HØEB, HAUB, HLAÅ, HARÅ, HFIK, HKOB, HFIÅ, HKIK, HTÆK, HAIK, HDVÅ, HFIB, HSPÅ, HFPÅ, HTOR, HMØK, HKGÅ, HHIÅ, HHIK, HKUÅ, HØEK, HLAK, HIEK, HEGR, HMØB, HIMK, HKGÆ, HTYÅ, HKUK, HGAK, HLVK, HINK, HITÆ, HKGB, HPÆK, HKIB, HITB, HFRK, HLVB, HDAÅ, HEEK, HTOB, HDNÅ, HSSB, HDAK, HTEB, HFMK, HKIÆ, HIEB, HSSK, HÆGB, NORS, HLAB, HRVK, HTEK, HKMK, HITK, HFAB, HFAK, HNAB, HMVK, HIVB, HIAK, HMØÆ, HKMB, HRVÅ, HSPB, HLAÆ, HRTB, HINB, HKKK, HOLB, HRVB, HFRÅ, HHIB, HKAB, HTYK, HIAB, HJAÆ, HASK, HENG, HKVK, HJAK, HGAB, HAUK, HIAÆ, HDAB, HKAK, HKOK, HKUB, HVKK, HIVK, HTYB, HKOÆ, HGAÆ
+// faculty of science: 575                             | NKEK, NDAA, NFKA, NFYB, LOJK, NIFK, NBIB, NFOB, LPLK, NNEB, NKEB, NNMB, NNDK, NPLK, NPIP, NFYK, NBIA, LLEK, LTEK, NIGK, NNEK, NKEA, NDAB, LNAK, NMAB, NIFB, NGEK, NIGB, NMAA, NFYA, NMAK, NNMK, LFKK, NDAK, NFOK, NBIK, LBIK, NPLB
+// faculty of theology: 30                             | TISK, TAFA, TTER, TTEA
+// From above it is clear that the faculty of science always can be matched on with the following regex: (N|L).*
+// If the faculty is not from SCIENCE we want to return an error
+fn parse_code(code: &str) -> Result<String, Box<dyn std::error::Error>> {
+    match code {
+        "NORS" => Err("Wrong faculty (expected)".into()),
+        code if code.starts_with("N") || code.starts_with("L") => Ok(code.to_string()),
+        _ => Err("Wrong faculty (expected)".into()),
     }
 }
 
 fn coerce_course_info(
     course_info: &[(String, String)],
-    dom: &VDom
+    dom: &VDom,
 ) -> Result<parser::CourseInformation, Box<dyn std::error::Error>> {
     // dbg!(&course_info);
     let mut id: Option<String> = None;
@@ -306,17 +337,16 @@ fn coerce_course_info(
     let mut degree: Option<Vec<parser::Degree>> = None;
     let mut capacity: parser::Capacity = parser::Capacity(None);
 
-
     for (key, value) in course_info {
         match key.as_str() {
+            "Course code" | "Kursuskode" => id = Some(parse_code(value)?), // "Kursuskode" is the danish version of "Course code
             "Language" | "Sprog" => language = Some(parse_language(value)?),
-            "Course code" | "Kursuskode" => id = Some(value.clone()), // "Kursuskode" is the danish version of "Course code
             "Point" | "Credit" => ects = Some(parse_ects(value, dom)?), // "Point" is the danish version of "Credit"
             "Level" | "Niveau" => degree = Some(parse_degree(value)?),
             "Duration" | "Varighed" => duration = Some(parse_duration(value)?),
             "Schedule" | "Skemagruppe" => schedule = Some(parse_schedule(value)?),
             "Course capacity" | "Kursuskapacitet" => capacity = parse_capacity(value),
-            _ => continue
+            _ => continue,
         }
     }
 
@@ -325,24 +355,26 @@ fn coerce_course_info(
     let ects = ects.ok_or("Failed to get ECTS")?;
     let schedule = schedule.ok_or("Failed to get schedule")?;
     let language = language.ok_or("Failed to get language")?;
-    let duration = duration.map_or_else(|| {
-        // Edge case #1: Some professors are especially bad at following structure, therefore they
-        // put the duration of the course inside the "schedule" section, so will therefore try to
-        // find it in there:
-        let mut e_one: Option<parser::Duration> = None;
-        for (key, val) in course_info {
-            match key.as_str() {
-                "Schedule" | "Skemagruppe" => {
-                    e_one = parse_duration(val).ok();
+    let duration = duration.map_or_else(
+        || {
+            // Edge case #1: Some professors are especially bad at following structure, therefore they
+            // put the duration of the course inside the "schedule" section, so will therefore try to
+            // find it in there:
+            let mut e_one: Option<parser::Duration> = None;
+            for (key, val) in course_info {
+                match key.as_str() {
+                    "Schedule" | "Skemagruppe" => {
+                        e_one = parse_duration(val).ok();
+                    }
+                    _ => continue,
                 }
-                _ => continue,
             }
-        }
-        e_one.ok_or("Failed to get duration")
-    }, |d| Ok(d));
+            e_one.ok_or("Failed to get duration")
+        },
+        |d| Ok(d),
+    );
     let duration = duration?;
     let degree = degree.ok_or("Failed to get degree")?;
-    
 
     for (key, value) in course_info {
         // Since blocks might need information on the duration, we parse block afterwards
