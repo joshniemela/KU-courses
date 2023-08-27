@@ -15,6 +15,7 @@
             [db-manager.db :refer [nuke-db! populate-courses!]]
             [db-manager.cli :refer [parse-cli]]
             [course-scraper.watcher :refer [sitemap-watcher scrape-course]]
+            [statistics.core :refer [stats-watcher]]
             [next.jdbc :as jdbc]
             [next.jdbc.types :refer [as-other]]
             [ring.middleware.cors :refer [wrap-cors]]
@@ -151,6 +152,7 @@
     ; this runs if -s is passed
     ; concurrently run sitemap-watcher scrape-course
     (future (sitemap-watcher scrape-course))
+    (future (stats-watcher))
 
 ; this runs if -f is passed
     (if (:force args)

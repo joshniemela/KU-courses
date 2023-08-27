@@ -32,15 +32,15 @@
   "Tries to scrape the given url and returns nil if it fails,
   if the error code is 500 it returns nil, otherwise it throws an exception"
   [url]
-  (println "Trying: " (subs url (inc (.lastIndexOf url "/")) (count url)))
+  (println "[statistics] Trying: " (subs url (inc (.lastIndexOf url "/")) (count url)))
   (try (.get (Jsoup/connect url))
        (catch Exception e
          (let [status (.getStatusCode e)]
            (if (= 500 status)
              nil
              (do
-               (println "Error fetching: " url)
-               (println "Status code: " status)
+               (println "[statistics] Error fetching: " url)
+               (println "[statistics] Status code: " status)
                (throw e)))))))
 
 (defn get-statistics-html
@@ -59,7 +59,7 @@
             (do (Thread/sleep 200)
                 (recur (rest combinations)))
             (do
-              (println "Found exam for: " course-id)
+              (println "[statistics] Found exam for: " course-id)
               (assoc combination :html html))))))))
 
 (defn existing-json? [course-info]
@@ -154,7 +154,9 @@
   (doseq [html html-seq]
     (parse-html html)))
 
-(defn -main
-  [& args]
+(defn stats-watcher
+  []
   (io/make-parents (str out-dir "anything here"))
-  (spit-all-to-json))
+  (spit-all-to-json)
+  (Thread/sleep (* 1000 60 60 24))
+  (recur))

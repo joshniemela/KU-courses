@@ -1,37 +1,4 @@
 (ns statistics.utils)
-;  "exam": [
-;    {
-;      "grade": "12",
-;      "count": 13
-;    },
-;    {
-;      "grade": "10",
-;      "count": 24
-;    },
-;    {
-;      "grade": "7",
-;      "count": 30
-;    },
-;    {
-;      "grade": "4",
-;      "count": 22
-;    },
-;    {
-;      "grade": "02",
-;      "count": 13
-;    },
-;    {
-;      "grade": "00",
-;      "count": 11
-;    },
-;    {
-;      "grade": "-3",
-;      "count": 9
-;    },
-;    {
-;      "grade": "Failed",
-;      "count": 17
-;    }
 
 ; convert {"grade": "12", "count": 13} to {"12" 13}
 (defn transform-obj [obj]
