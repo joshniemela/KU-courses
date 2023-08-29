@@ -11,17 +11,28 @@
 (def json-dir (str data-dir "json/"))
 (def out-dir (str data-dir "statistics/"))
 
-; Read every json in data-dir
-(defn read-json [file]
+(defn read-json
+  "Read a json file and return the data as a map"
+  [file]
   (json/read-str (slurp (str json-dir file)) :key-fn keyword))
 
+; HOW TO GENERATE THE COURSE STATISTICS PAGE URL:
+; start with base https://karakterstatistik.stads.ku.dk/Histogram/
+; add the course-id which also exists in each course map
+; the course ID has a "U" at the end, this has to be changed to an "E" for exams
+; add semester which is "Winter" or "Summer"
+; add year which is the year of the exam
+; EXAMPLE: Advanced Algorithms and Data Structures (AADS)
+; NDAA09023U - SCIENCE
+; =>
+; https://karakterstatistik.stads.ku.dk/Histogram/NDAA09023E/Winter-2022
 (defn generate-url-combinations [course-id]
   (let [base-url "https://karakterstatistik.stads.ku.dk/Histogram/"
-        ; if the last letter is a U, replace it with an E
+        ; The courses end with a U, but the exams end with an E
         exam-name (if (= \U (last course-id))
                     (str/replace course-id "U" "E")
                     course-id)]
-    ; generate all combinations of year from now to 2020 and semester (summer, winter)
+    ; Generate all combinations of year from now to 2020 and semester (summer, winter)
     (for [year (range (.getYear (java.time.LocalDate/now)) 2020 -1)
           semester ["Summer" "Winter"]]
       {:url (str base-url exam-name "/" semester "-" year)
@@ -71,7 +82,6 @@
           (= (:re-exam data) nil)))
       true)))
 ; find all jsons
-; TODO: filter out the ones that already exist
 ; TODO: refactor this since we arent using the start block anymore
 (def course-infos-init (for [file (file-seq (io/file json-dir))
                              :when (.endsWith (.getName file) ".json")]
@@ -81,28 +91,14 @@
                            {:course-id course-id
                             :start-block start-block})))
 
+; The exams  don't ever change, so we only need to fetch them once
+; TODO: this should not be filtering out courses that haven't had their re-exam yet
 (def course-infos (filter existing-json? course-infos-init))
 
 (def html-seq (for [course course-infos]
                 (get-statistics-html course)))
 
-; HOW TO GENERATE THE COURSE STATISTICS PAGE URL:
-; start with base https://karakterstatistik.stads.ku.dk/Histogram/
-; add the course-id which also exists in each course map
-; the course ID has a "U" at the end, this has to be changed to an "E" for exams
-; add semester which is "Winter" or "Summer"
-; add year which is the year of the exam
-; EXAMPLE: Advanced Algorithms and Data Structures (AADS)
-; NDAA09023U - SCIENCE
-; =>
-; https://karakterstatistik.stads.ku.dk/Histogram/NDAA09023E/Winter-2022
-
-; scrape the table with the grades for reeksamen and the ordinary exam
-; only important information is the total numebr of people who took were signed up, total attending, passed and then the table with exam grades where only the numbers are important since hte order and percentage are known
-
-; Make one function that takes a map containing hte course code and the block name and returns the statistics map
-
-; Checks for colspan tag in html
+; Checks for colspan tag in html, which indicates that the table contains the exam data
 (defn contains-colspan? [elem]
   (let [attributes (.attributes elem)]
     (= "2" (.get attributes "colspan"))))
@@ -112,7 +108,7 @@
                                 Jsoup/parse
                                 (.getElementsByTag "td"))))
 
-; check if the exam table exists
+; Check if the exam table exists
 (defn empty-exam? [table]
   (not (< (count (.getElementsByTag table "td")) 3)))
 
@@ -123,6 +119,8 @@
     "bestået" "Passed"
     grade))
 
+; The exams are stored in html tables, where each row has three columns (grade, count, percentage)
+; We only grab the count and grade
 (defn grade-count-reducer [grades-list three-elems]
   (conj grades-list {:grade (translate-grade (.text (first three-elems)))
                      :count (Integer/parseInt (.text (second three-elems)))}))
@@ -145,11 +143,11 @@
 
 (defn to-json [tables course-id year]
   (spit (str out-dir course-id ".json") (json/write-str (assoc tables :course_id course-id :year year))))
-; Parses all the html to json (ergo why the underscore is there)
+
 (defn parse-html [html]
   (when (some? html)
     (to-json (build-stats-json (fetch-html (:html html))) (:course-id html) (:year html))))
-; Goes over all html in html-seq and spits them out through parse_html TODO: make this only do one json at a time
+
 (defn spit-all-to-json []
   (doseq [html html-seq]
     (parse-html html)))

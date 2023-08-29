@@ -1,23 +1,24 @@
 (ns statistics.utils)
 
-; convert {"grade": "12", "count": 13} to {"12" 13}
-(defn transform-obj [obj]
+(defn transform-obj
+  "Convert {\" grade \": \" 12 \", \" count \": 13...} to {\" 12 \" 13...}"
+  [obj]
   (into {} (map (fn [x] {(:grade x) (:count x)}) obj)))
 
 (def passing-grades ["Passed" "12" "10" "7" "4" "02"])
 (def failing-grades ["00" "-3" "Failed" "Absent"])
-
 (def grade-steps ["12" "10" "7" "4" "02" "00" "-3"])
 
-(defn grade-repeats [exam-table]
-    ; find all the grade-steps that also exist in the exam-table
-    ; and repeat them the number of times they appear in the exam-table
+(defn grade-repeats
+  "Repeat the grade-steps the number of times they appear in the exam-table,
+  for instance if 7 appears 3 times, we repeat 7 three times, this is a hack to calculate statistics"
+  [exam-table]
   (let [transformed (transform-obj exam-table)
         grades (select-keys transformed grade-steps)]
     (apply concat (map (fn [x] (repeat (transformed x) (Integer/parseInt x))) (keys grades)))))
 
 ; if the sum of all the 7 grades is 0 then we can assume the course is a pass/fail course
-; and not a graded course
+; and not a graded course, some pass/fail courses have the 7 grades in them as all zeros
 (defn is-pass-fail? [exam-table]
   ; select the grades from the exam table that are in the 7 step scale
   (let [grades (select-keys (transform-obj exam-table) grade-steps)]
@@ -51,7 +52,9 @@
 
 (defn stats-pass-fail [exam-table]
   {:pass-rate-w-absent (pass-rate exam-table)
-   ; remove the {:grade "Absent" :count x} from the exam-table which is a list of maps
+
+   ; this calculates the pass-rate without the absent students
+   ; (it will be higher than the pass-rate with absent students)
    :pass-rate (pass-rate (filter (fn [x] (not= (:grade x) "Absent")) exam-table))
    :total (total exam-table)
    :pass (pass-total exam-table)

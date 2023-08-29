@@ -24,8 +24,9 @@
      :lastmod (first (:content lastmod))
      :timestamp (* 1000 timestamp)}))
 
-(defn grab-mod-date [course-id]
-  ; grab the modification date of the file with the course-id as name
+(defn grab-mod-date
+  "Grabs the modification date of the file with the course-id as name or 0 if it doesn't exist"
+  [course-id]
   (let [file (io/file pages-dir (str course-id ".html"))]
     (if (.exists file)
       (.lastModified file)
@@ -37,13 +38,14 @@
   (let [newly-scraped (atom [])
         sitemap-url "https://kurser.ku.dk/sitemap.xml"
         sitemap-zipper (zip/xml-zip (xml/parse sitemap-url))
-        ; skip the first element, which is the page index, then grab everything
         courses (-> sitemap-zipper
                     zip/down
+                    ; skip the first element, which is the page index, then grab everything
                     zip/right
+
                     zip/rights)]
-  ; for every course, grab mod date and check if it's newer than the file
-  ; if it is, grab the info from the course and pass it to the callback
+    ; for every course, grab mod date and check if it's newer than the file
+    ; if it is, grab the info from the course and pass it to the callback
     (println "[course scraper]: Scraping courses")
     (doseq [course courses]
       (let [course-info (grab-info-from-course course)
@@ -52,13 +54,15 @@
             course-lastmod (:timestamp course-info)]
         (when (> course-lastmod course-mod-date)
           (callback course-info newly-scraped))))
-  ; go to sleep for 30 minutes
+    ; go to sleep for 30 minutes and then do it again
     (println "[course scraper]: Finished scraping, going to sleep")
     (println "[course scraper]: Modified" (count @newly-scraped) "courses")
     (reset! newly-scraped [])
     (Thread/sleep (* 1000 60 60))
     (recur callback)))
 
+; Magical snippet of code that allows us to use SNI with http-kit
+; https://kumarshantanu.medium.com/using-server-name-indication-sni-with-http-kit-client-f7d92954e165
 (defn sni-configure
   [^SSLEngine ssl-engine ^URI uri]
   (let [^SSLParameters ssl-params (.getSSLParameters ssl-engine)]
@@ -66,11 +70,11 @@
     (.setSSLParameters ssl-engine ssl-params)))
 
 (def client (http/make-client {:ssl-configurer sni-configure}))
-
 (def options {:client client :timeout (* 1000 60 5)})
 
-(defn scrape-course [course newly-scraped]
-  ; slurp loc
+(defn scrape-course
+  "Scrapes the course page and writes it to disk, the 300ms sleep is to avoid DOSing KU"
+  [course newly-scraped]
   (let [loc (:loc course)]
     (println "[course scraper]: Scraping" loc)
     (http/get loc options
@@ -83,7 +87,10 @@
                     (swap! newly-scraped conj course))))))
   (Thread/sleep 300))
 
-(defn generate-url-combinations [course-id]
+(defn generate-url-combinations
+  "KU has not given us any useful API and since the exams don't always correspond to the course's block
+  we have to generate all combinations of Summer/Winter and the years from now to 2020"
+  [course-id]
   (let [base-url "https://karakterstatistik.stads.ku.dk/Histogram/"]
     ; generate all combinations of year from now to 2020 and semester (summer, winter)
     (for [year (range (.getYear (java.time.LocalDate/now)) 2020 -1)
