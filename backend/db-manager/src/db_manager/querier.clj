@@ -18,27 +18,6 @@
     ; if category is course.raw_description, do not use %, but always use %> either way
     (str "( " category " %> " (stringify query) (when-not (= category "course.raw_description") (str " OR " category " % " (stringify query))) ")")))
 
-; input example
-;{
-;  "block": [],
-;  "study_level": [],
-;  "schedule_group": [
-;    "C"
-;  ],
-;  "examination_type": [],
-;  "searches": [
-;    {
-;      "category": "Title",
-;      "query": "linear algebra",
-;      "fuzzy": true
-;    },
-;    {
-;      "category": "Coordinator",
-;      "query": "troels",
-;      "fuzzy": true
-;    }
-;  ]
-;}
 ; TODO: this should not be a function we need, but it is required since the parser and frontend are not in sync
 (defn convert-exam [exam-type]
   (stringify (case (str/lower-case exam-type)
@@ -75,7 +54,30 @@
                                         (str/join " AND " searches)))))))
 
 ; Takes the input JSON and generates a SQL query
-(defn course-overview-template [where-clause]
+;
+; input example
+;{
+;  "block": [],
+;  "study_level": [],
+;  "schedule_group": [
+;    "C"
+;  ],
+;  "examination_type": [],
+;  "searches": [
+;    {
+;      "category": "Title",
+;      "query": "linear algebra",
+;      "fuzzy": true
+;    },
+;    {
+;      "category": "Coordinator",
+;      "query": "troels",
+;      "fuzzy": true
+;    }
+;  ]
+;}
+(defn course-overview-template
+  [where-clause]
   (str "SELECT
 	course.title,
     course.course_id,
