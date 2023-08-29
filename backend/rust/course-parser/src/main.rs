@@ -1,91 +1,95 @@
-use storage_manager::{self, LocalStorageConfig, LocalStorage, Storage};
-use clap::Parser;
+use std::env::args;
+use std::{time};
+use std::error::Error;
+use storage_manager::{self, LocalStorage, LocalStorageConfig, Storage};
+
+use crate::parser::Course;
+
 pub mod parser;
 
-const DATA_DIR: &str = "../../../data";
+const DEFAULT_DATA_DIR: &str = "../../../data";
 
-const TEST_DIR: &str ="./test_data";
+const TEST_DIR: &str = "./test_data";
 
-#[derive(Parser)]
-struct CliArgs {
-    dir: Option<String>,
-}
+type ParsingResults = (i32, i32);
 
-fn main() {
+fn main() -> Result<(), Box<dyn Error>> {
+    let timer = time::Instant::now();
+
     println!("Starting course parser...");
 
-    // Collecting commandline args to enable switching between the different directories
-    // Right now we just treat the first variable as the indication to what dir (i.e. DATA_DIR or
-    // TEST_DIR).
-    // I.e. if you wish to use the TEST_DIR (defined above), you pass TEST_DIR as the first cli
-    // argument. if nothing gets passed in we use the DATA_DIR (to maintain default functionality).
-    let args = CliArgs::parse();
+    // Pass in the directory to parse as the first argument, if none is specified, use the default
+    // Passing in TEST_DIR as the first argument will use the test data.
+    let args: Vec<String> = args().collect();
 
-    // Configuration variables
-    let root = args.dir.map_or_else(|| String::from(DATA_DIR), |dir| {
-        match dir.as_str() {
-            "TEST_DIR" => String::from(TEST_DIR),
-            _ => String::from(DATA_DIR)
-        }
-    });
-        
-    let conf = LocalStorageConfig{ root };
-    let search_depth = 0;
+    let directory = args.get(1).map(|directory| directory.as_str())
+        .unwrap_or(DEFAULT_DATA_DIR);
 
-    // We create the storage, and if succesful we start parsing
-    LocalStorage::new(conf).map_or_else(|error| {
-        eprintln!("Failed while creating storage, got err: {error}");
-        println!("exiting ...");
-    }, |storage| {
-        // time how long it takes to run this
-        let start = std::time::Instant::now();
-        match storage.list("pages", &search_depth) {
+    let root = match directory {
+        "TEST_DIR" => TEST_DIR,
+        s => s
+    };
 
-            // If we get back any filenames we can continue.
-            Ok(filenames) => {
-                let mut fails = 0;
-                let mut passes = 0;
+    // Get files to parse
+    let conf = LocalStorageConfig { root: root.to_string() };
 
-                // count the number of errors in a dictionary
-                let mut errors: std::collections::HashMap<String, u32> =
-                    std::collections::HashMap::new();
+    let storage = LocalStorage::new(conf).map_err(|_| {
+        format!("Could not create storage with root: {}", root)
+    }
+    )?;
 
-                for filename in filenames {
-                    // For each filename, we try to read it, if we succeed we then try to parse it.
-                    storage.read(filename.as_str()).map_or_else(|_| {
-                        println!("Couldn't read file associated with {filename}");
-                    }, |f| {
-                        let result = parser::parse_course(&f);
-                        match result {
-                            Ok(_) => passes += 1,
-                            Err(err) => {
-                                fails += 1;
-                                let err_string = format!("{err}");
-                                let count = errors.entry(err_string).or_insert(0);
-                                *count += 1;
-                                // Print out information on the file we failed to parse
-                                println!("Failed on course: {filename}");
-                                println!("Error: {err}");
-                            }
-                        }
-                    });
-                }
-                
-                // Summary information
-                println!(
-                    "{} passes, {} fails\nparsed: {:.0}%",
-                    passes,
-                    fails,
-                    f64::from(passes) / f64::from(passes + fails)
-                );
-                for (err, count) in &errors {
-                    // print raw (without the newlines)
-                    println!("{}: {}\n", err.replace('\n', "\\n"), count);
-                }
+    let filenames = storage.list("pages", &0).map_err(|e|
+        format!("Could not list files in storage: {}", e)
+    )?;
+
+    println!("Found {} files to parse", filenames.len());
+
+    // Parse files
+    let (passes, fails) = parse_files(&storage, filenames);
+
+    // Print out the results
+    println!(
+        "{} Passes, {} Fails\nSuccessfully Parsed: {:.2}%",
+        passes,
+        fails,
+        (f64::from(passes) / f64::from(passes + fails)) * 100.0
+    );
+
+    println!("Time elapsed: {:.2?}", timer.elapsed());
+
+    Ok(())
+}
+
+fn parse_files(storage: &impl Storage, filenames: Vec<String>) -> ParsingResults {
+    let mut fails = 0;
+    let mut passes = 0;
+
+    let file_count = filenames.len();
+
+    for filename in filenames {
+        let course = try_parse_file(filename.as_str(), storage);
+
+        // Since this is calculated before passes/fails are incremented, we add 1 to the total
+        let courses_parsed = fails + passes + 1;
+
+        match course {
+            Ok(_) => {
+                passes += 1;
+                println!("[{}/{}] Successfully Parsed file: {}", courses_parsed, file_count, filename)
             }
-            Err(err) => eprintln!("Error: {err}"),
+            Err(e) => {
+                fails += 1;
+                println!("[{}/{}] Error parsing file: {}... Reason: {}", courses_parsed, file_count, filename, e);
+            }
         }
-        println!("Time elapsed: {:.2?}", start.elapsed());
-    });
-    
+    }
+    (passes, fails)
+}
+
+fn try_parse_file(filename: &str, storage: &impl Storage) -> Result<Course, Box<dyn Error>> {
+    let contents = storage.read(filename).map_err(|e|
+        format!("Could not read file: {}", e)
+    )?;
+
+    return parser::parse_course(&contents);
 }
