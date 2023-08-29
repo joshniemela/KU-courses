@@ -1,7 +1,5 @@
-use std::env::args;
-use std::{time};
-use std::error::Error;
 use storage_manager::{self, LocalStorage, LocalStorageConfig, Storage};
+use std::{time, env::args, error::Error};
 
 use crate::parser::Course;
 
