@@ -33,13 +33,13 @@ fn main() -> Result<(), Box<dyn Error>> {
     // Get files to parse
     let conf = LocalStorageConfig { root: root.to_string() };
 
-    let storage = LocalStorage::new(conf).map_err(|_| {
-        format!("Could not create storage with root: {}", root)
+    let storage = LocalStorage::new(conf).map_err(|e| {
+        format!("Could not create storage with root. Root Path: {}, Reason: {}", root, e)
     }
     )?;
 
     let filenames = storage.list("pages", &0).map_err(|e|
-        format!("Could not list files in storage: {}", e)
+        format!("Could not list files in storage. Root Path: {}, Reason: {}", root, e)
     )?;
 
     println!("Found {} files to parse", filenames.len());
