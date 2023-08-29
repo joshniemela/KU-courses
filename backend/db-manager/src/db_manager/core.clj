@@ -13,7 +13,6 @@
             [org.httpkit.server :refer [run-server]]
             [db-manager.routes :refer [ping-route api-routes]]
             [db-manager.db :refer [nuke-db! populate-courses!]]
-            [db-manager.cli :refer [parse-cli]]
             [course-scraper.watcher :refer [sitemap-watcher scrape-course]]
             [statistics.core :refer [stats-watcher]]
             [next.jdbc :as jdbc]
@@ -148,17 +147,13 @@
 
 (def main-config {:port 3000})
 (defn -main [& args]
-  (let [args (parse-cli args)]
-    ; this runs if -s is passed
-    ; concurrently run sitemap-watcher scrape-course
-    (future (sitemap-watcher scrape-course))
-    (future (stats-watcher))
+  ; concurrently run sitemap-watcher scrape-course and stats-watcher so that they don't block the server
+  (future (sitemap-watcher scrape-course))
+  (future (stats-watcher))
 
-; this runs if -f is passed
-    (if (:force args)
-      (do (println "Nuking database and repopulating with courses from" json-dir)
-          (nuke-db! db)
-          (populate-courses! db coerced-courses))
-      (println "Starting database with existing data..."))
-    (println "Starting server on port " (:port main-config))
-    (run-server (app) main-config)))
+  (println "Nuking database and repopulating with courses from" json-dir)
+  (nuke-db! db)
+  (populate-courses! db coerced-courses)
+  (println "Starting database with existing data...")
+  (println "Starting server on port " (:port main-config))
+  (run-server (app) main-config))
