@@ -48,6 +48,7 @@ fn main() -> Result<(), Box<dyn Error>> {
     let (passes, fails) = parse_files(&storage, filenames);
 
     // Print out the results
+    println!("\n############## Results ##############");
     println!(
         "{} Passes, {} Fails\nSuccessfully Parsed: {:.2}%",
         passes,
