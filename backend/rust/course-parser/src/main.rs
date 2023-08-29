@@ -30,7 +30,7 @@ fn main() -> Result<(), Box<dyn Error>> {
         s => s
     };
 
-    // Get files to parse
+
     let conf = LocalStorageConfig { root: root.to_string() };
 
     let storage = LocalStorage::new(conf).map_err(|e| {
@@ -38,16 +38,15 @@ fn main() -> Result<(), Box<dyn Error>> {
     }
     )?;
 
-    let filenames = storage.list("pages", &0).map_err(|e|
+    let files_to_parse = storage.list("pages", &0).map_err(|e|
         format!("Could not list files in storage. Root Path: {}, Reason: {}", root, e)
     )?;
 
-    println!("Found {} files to parse", filenames.len());
+    println!("Found {} files to parse", files_to_parse.len());
 
-    // Parse files
-    let (passes, fails) = parse_files(&storage, filenames);
 
-    // Print out the results
+    let (passes, fails) = parse_files(&storage, files_to_parse);
+
     println!("\n############## Results ##############");
     println!(
         "{} Passes, {} Fails\nSuccessfully Parsed: {:.2}%",
@@ -61,13 +60,13 @@ fn main() -> Result<(), Box<dyn Error>> {
     Ok(())
 }
 
-fn parse_files(storage: &impl Storage, filenames: Vec<String>) -> ParsingResults {
+fn parse_files(storage: &impl Storage, file_paths: Vec<String>) -> ParsingResults {
     let mut fails = 0;
     let mut passes = 0;
 
-    let file_count = filenames.len();
+    let file_count = file_paths.len();
 
-    for filename in filenames {
+    for filename in file_paths {
         let course = try_parse_file(filename.as_str(), storage);
 
         // Since this is calculated before passes/fails are incremented, we add 1 to the total
