@@ -29,17 +29,7 @@
             :body "pong"})}])
 
 (defn api-routes [db]
-  ; make a route that takes json body with values "x" and "y", and returns the sum
-  ; not used
-  [;["/post" {:post {:parameters {:body {:x int?
-  ;                                      :y int?}}
-  ;                  :responses {200 {:body {:sum int?}}}
-
-  ;                  :handler (fn [{{{:keys [x y]} :body} :parameters}]
-  ;                             {:status 200
-  ;                              :body {:sum (+ x y)}})}}]
-   ; find email of coordinator in query, not used
-   ["/find-email" {:get {:parameters {:query {:name string?}}
+  [["/find-email" {:get {:parameters {:query {:name string?}}
                          :responses {200 {:body {:email string?
                                                  :full_name string?
                                                  :search_similarity float?}}}

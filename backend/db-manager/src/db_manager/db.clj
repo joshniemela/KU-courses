@@ -57,7 +57,8 @@
                                                             [:course_id :schedule_type :minutes])
                                               schedule-groups))))
 
-; add null minutes to exams if not present
+; add null minutes to exams if not present,
+; otherwise the insert-multi! will fail (key must be present for insert)
 (defn add-null-minutes [exam]
   (if (:minutes exam)
     exam
@@ -94,10 +95,6 @@
 
 ; queries section begins here
 
-; SELECT full_name, similarity(full_name, '<name here>') AS search_similarity
-; FROM employee
-; ORDER BY search_similarity DESC
-; LIMIT 1;"
 (defn find-email-by-name [db name]
   (jdbc/execute-one! db ["SELECT email, full_name, similarity(full_name, ?) AS search_similarity
                           FROM employee
@@ -137,8 +134,8 @@
 (defn get-courses [db predicates]
   (let [courses (jdbc/execute! db [(generate-overview-query predicates)])]
     ; sort the list of maps alphabetically according to course/title
+    ; TODO: allow other sorting options (similarity, credits, etc...)
     (sort-by #(:course/title %) (map fix-overview-query courses))))
 
-; find-course-ids-query should be used here
 (defn get-course-ids [db]
   (jdbc/execute! db [find-course-ids-query]))
