@@ -31,7 +31,7 @@ pub struct CourseInformation {
 pub struct LogisticInformation {
     contracting_departments: Vec<Department>,
     contracting_faculty: Faculty,
-    course_coordniators: Vec<Coordinator>
+    course_coordinators: Vec<Coordinator>
 }
 
 #[allow(dead_code)]

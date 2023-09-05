@@ -15,7 +15,7 @@ pub fn parse(dom: &VDom) -> Result<parser::LogisticInformation, Box<dyn std::err
     Ok(parser::LogisticInformation {
         contracting_departments: vec!(parser::Department::ComputerScience),
         contracting_faculty: parser::Faculty::Science,
-        course_coordniators: vec!(parser::Coordinator {
+        course_coordinators: vec!(parser::Coordinator {
             name: "Kristian Pedersen".to_string(),
             email: "bs@org.dk".to_string()
         })
