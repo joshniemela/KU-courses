@@ -571,6 +571,10 @@ def type_of_assessmentfixer(c):
         exam_time = e.split(",")
         if exam_time[0] in examtrans.keys():
             exam_time[0] = examtrans[exam_time[0]]
+
+        if not exam_time[0] in examtrans.keys() and not exam_time[0] in examtrans.values():
+            exam_time[0] = "other"
+
         if len(exam_time) > 1:
             exam_time[1] = convert_to_minutes(
                 fixstring(exam_time[1]).strip()
