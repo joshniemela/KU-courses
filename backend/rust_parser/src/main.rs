@@ -53,4 +53,14 @@ mod tests {
         let dir = std::fs::read_dir(TEST_HTMLS_DIR).unwrap();
         assert!(dir.count() > 0);
     }
+
+    #[test]
+    fn test_LSLS10061U() {
+        let html = std::fs::read_to_string(format!("{}/LSLS10061U.html", TEST_HTMLS_DIR)).unwrap();
+        let course = parser::parse_course(&html);
+        let expected = Course {
+            title: "International Naturforvaltning".to_string(),
+        };
+        assert_eq!(course.unwrap(), expected);
+    }
 }

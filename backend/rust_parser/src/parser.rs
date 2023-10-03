@@ -1,9 +1,9 @@
 use std::error::Error;
 use tl::VDom;
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq)]
 pub struct Course {
-    title: String,
+    pub title: String,
 }
 
 pub fn parse_course(html: &str) -> Result<Course, Box<dyn Error>> {
