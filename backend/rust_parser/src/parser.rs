@@ -8,7 +8,7 @@ pub struct Course {
 
 pub fn parse_course(html: &str) -> Result<Course, Box<dyn Error>> {
     let dom = tl::parse(html, tl::ParserOptions::default())?;
-    let content = dom.get_element_by_id("content");
+    let _content = dom.get_element_by_id("content");
     let title = parse_title(&dom)?;
     Ok(Course { title })
 }

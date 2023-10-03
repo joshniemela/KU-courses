@@ -1,7 +1,6 @@
-use std::{env::args, error::Error, time};
+use std::time;
 
 use crate::parser::Course;
-
 pub mod parser;
 
 const DEFAULT_DATA_DIR: &str = "../../data";
@@ -37,7 +36,7 @@ fn main() {
     let timer = time::Instant::now();
 
     // print all files in the html directory
-    let dir = std::fs::read_dir(HTMLS_DIR).unwrap();
+    let _dir = std::fs::read_dir(HTMLS_DIR).unwrap();
     println!("fails and total: {:?}", count_fails(HTMLS_DIR));
 
     println!("Time elapsed: {:?}", timer.elapsed());
