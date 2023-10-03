@@ -50,7 +50,7 @@ mod tests {
     // check that there are files in PAGES_DIR
     #[test]
     fn test_pages_dir() {
-        let dir = std::fs::read_dir(PAGES_DIR).unwrap();
+        let dir = std::fs::read_dir(TEST_HTMLS_DIR).unwrap();
         assert!(dir.count() > 0);
     }
 }
