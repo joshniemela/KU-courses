@@ -67,6 +67,7 @@ pub enum Schedule {
     B,
     C,
     D,
+    Other(String),
 }
 
 #[derive(Debug, PartialEq)]
@@ -80,6 +81,7 @@ pub enum Duration {
     One = 1,
     Two = 2,
     Custom,
+    DependsOnEcts,
 }
 
 #[derive(Debug, PartialEq, Eq, Ord, PartialOrd)]

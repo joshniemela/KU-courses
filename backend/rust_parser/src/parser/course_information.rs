@@ -75,7 +75,7 @@ fn coerce_course_info(
     // print every error with the contents of the course_info
     let id = id.context("Failed to get id")?;
     let ects = ects.context("Failed to get ECTS")?;
-    let schedule = schedule.context("Failed to get schedule")?;
+    let schedule = schedule.context("Failed to find any schedules")?;
     let language = language.context("Failed to get language")?;
     let duration = duration.map_or_else(
         || {
@@ -148,6 +148,9 @@ fn parse_duration(duration: &str) -> Result<parser::Duration> {
     // either 1 blo(c)k, 2 blo(c)ks or 1 semester
     // grab the first 3 chars
     match duration {
+        _ if duration.contains("Afhænger") || duration.contains("depends") => {
+            Ok(parser::Duration::DependsOnEcts)
+        }
         x if duration.contains("blo") => match x {
             _ if x.contains('1') => Ok(parser::Duration::One),
             _ if x.contains('2') => Ok(parser::Duration::Two),
@@ -163,7 +166,7 @@ fn parse_block(input: &str, duration: &parser::Duration) -> Result<Vec<parser::B
     let mut blocks: Vec<parser::Block> = Vec::new();
 
     match duration {
-        parser::Duration::One | parser::Duration::Custom => {
+        parser::Duration::One | parser::Duration::Custom | parser::Duration::DependsOnEcts => {
             for c in input.chars() {
                 match c {
                     '1' => blocks.push(parser::Block::One),
@@ -240,8 +243,17 @@ fn parse_schedule(schedule: &str) -> Result<Vec<parser::Schedule>> {
             schedule_vec.push(parser::Schedule::B);
         }
 
+        if schedule.contains("Praktik")
+            || schedule.contains("No scheme")
+            || schedule.contains("Uden for skema")
+            || schedule.contains("Outside timetable")
+            || schedule.contains("Kurset foregår uden for skema")
+        {
+            schedule_vec.push(parser::Schedule::Other(schedule.to_string()));
+        }
+
         if schedule_vec.is_empty() {
-            bail!("Unknown schedule");
+            bail!(format!("Unknown schedule: {}", schedule));
         } else {
             Ok(schedule_vec)
         }
