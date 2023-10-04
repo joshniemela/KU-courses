@@ -53,11 +53,12 @@ impl CourseInformation {
 
 #[derive(Debug, PartialEq)]
 pub enum Block {
-    One = 1,
-    Two = 2,
-    Three = 3,
-    Four = 4,
-    Five = 5,
+    One,
+    Two,
+    Three,
+    Four,
+    Summer,
+    Other(String),
 }
 
 #[derive(Debug, PartialEq)]

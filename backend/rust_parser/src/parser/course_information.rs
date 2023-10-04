@@ -162,8 +162,12 @@ fn parse_block(input: &str, duration: &parser::Duration) -> Result<Vec<parser::B
                     '2' => blocks.push(parser::Block::Two),
                     '3' => blocks.push(parser::Block::Three),
                     '4' => blocks.push(parser::Block::Four),
-                    '5' => blocks.push(parser::Block::Five),
                     _ => (),
+                }
+            }
+            if blocks.is_empty() {
+                if input.contains("Summer") || input.contains("Sommer") {
+                    blocks.push(parser::Block::Summer);
                 }
             }
         }
@@ -176,12 +180,11 @@ fn parse_block(input: &str, duration: &parser::Duration) -> Result<Vec<parser::B
                     '2' => blocks.push(parser::Block::Two),
                     '3' => blocks.push(parser::Block::Three),
                     '4' => blocks.push(parser::Block::Four),
-                    '5' => blocks.push(parser::Block::Five),
                     _ => (),
                 }
             }
             if blocks.is_empty() {
-                if input.contains("Spring") {
+                if input.contains("Spring") || input.contains("Forår") {
                     blocks.push(parser::Block::One);
                     blocks.push(parser::Block::Two);
                 }
