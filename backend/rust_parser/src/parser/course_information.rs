@@ -51,6 +51,14 @@ fn coerce_course_info(
     let mut degree: Option<Vec<parser::Degree>> = None;
     let mut capacity: parser::Capacity = parser::Capacity(None);
 
+    // check the entire course_info first, if we do not have these 5 lines, we will encounter a race condition
+    // where we try to parse courses that arent from SCIENCE and therefore get nonsensical results
+    let course_code = course_info
+        .iter()
+        .find(|(key, _value)| key == "Course code" || key == "Kursuskode")
+        .context("Failed to find course code (SHOULD BE IMPOSSIBLE)")?;
+    parse_code(&course_code.1)?;
+
     for (key, value) in course_info {
         match key.as_str() {
             "Course code" | "Kursuskode" => id = Some(parse_code(value)?), // "Kursuskode" is the danish version of "Course code
