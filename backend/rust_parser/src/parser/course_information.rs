@@ -187,6 +187,9 @@ fn parse_block(input: &str, duration: &parser::Duration) -> Result<Vec<parser::B
                 if input.contains("Spring") || input.contains("Forår") {
                     blocks.push(parser::Block::One);
                     blocks.push(parser::Block::Two);
+                } else if input.contains("Autumn") || input.contains("Efterår") {
+                    blocks.push(parser::Block::Three);
+                    blocks.push(parser::Block::Four);
                 }
             }
         }
