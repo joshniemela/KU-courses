@@ -7,4 +7,5 @@ edition = "2021"
 
 [dependencies]
 anyhow = "1.0.75"
+pretty_assertions = "1.4.0"
 tl = "0.7.7"

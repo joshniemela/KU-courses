@@ -1,6 +1,9 @@
-use std::time;
-
 use crate::parser::Course;
+
+#[cfg(test)]
+use pretty_assertions::{assert_eq, assert_ne};
+
+use std::time;
 pub mod parser;
 
 const DEFAULT_DATA_DIR: &str = "../../data";
@@ -57,9 +60,19 @@ mod tests {
     fn test_LSLS10061U() {
         let html = std::fs::read_to_string(format!("{}/LSLS10061U.html", TEST_HTMLS_DIR)).unwrap();
         let course = parser::parse_course(&html);
-        let expected = Course {
+        let expected_course = Course {
             title: "International Naturforvaltning".to_string(),
+            info: parser::CourseInformation::new(
+                "LSLS10061U".to_string(),
+                7.5,
+                vec![parser::Block::Two],
+                vec![parser::Schedule::B],
+                vec![parser::Language::Danish],
+                parser::Duration::One,
+                vec![parser::Degree::Bachelor],
+                parser::Capacity(Some(70)),
+            ),
         };
-        assert_eq!(course.unwrap(), expected);
+        pretty_assertions::assert_eq!(expected_course, course.unwrap());
     }
 }

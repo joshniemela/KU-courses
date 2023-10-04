@@ -27,9 +27,32 @@ pub struct CourseInformation {
     degree: Vec<Degree>,
     capacity: Capacity,
 }
+impl CourseInformation {
+    pub fn new(
+        id: String,
+        ects: f32,
+        block: Vec<Block>,
+        schedule: Vec<Schedule>,
+        language: Vec<Language>,
+        duration: Duration,
+        degree: Vec<Degree>,
+        capacity: Capacity,
+    ) -> Self {
+        Self {
+            id,
+            ects,
+            block,
+            schedule,
+            language,
+            duration,
+            degree,
+            capacity,
+        }
+    }
+}
 
 #[derive(Debug, PartialEq)]
-enum Block {
+pub enum Block {
     One = 1,
     Two = 2,
     Three = 3,
@@ -38,7 +61,7 @@ enum Block {
 }
 
 #[derive(Debug, PartialEq)]
-enum Schedule {
+pub enum Schedule {
     A,
     B,
     C,
@@ -46,20 +69,20 @@ enum Schedule {
 }
 
 #[derive(Debug, PartialEq)]
-enum Language {
+pub enum Language {
     Danish,
     English,
 }
 
 #[derive(Debug, Eq, PartialEq)]
-enum Duration {
+pub enum Duration {
     One = 1,
     Two = 2,
     Custom,
 }
 
 #[derive(Debug, PartialEq, Eq, Ord, PartialOrd)]
-enum Degree {
+pub enum Degree {
     Phd,
     Bachelor,
     Master,
@@ -67,7 +90,7 @@ enum Degree {
 }
 
 #[derive(Debug, PartialEq)]
-struct Capacity(pub Option<u32>);
+pub struct Capacity(pub Option<u32>);
 
 pub fn parse_course(html: &str) -> Result<Course> {
     let dom = tl::parse(html, tl::ParserOptions::default())?;
