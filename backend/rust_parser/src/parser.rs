@@ -1,25 +1,95 @@
-use anyhow::{anyhow, ensure, Result};
+use anyhow::{anyhow, bail, ensure, Context, Result};
 use tl::VDom;
+
+use crate::parser::course_information::parse_course_info;
+pub mod course_information;
 
 #[derive(Debug, PartialEq)]
 pub struct Course {
     pub title: String,
+    pub info: CourseInformation,
 }
+
+#[derive(Debug)]
+enum CourseLanguage {
+    English,
+    Danish,
+}
+
+#[derive(Debug, PartialEq)]
+pub struct CourseInformation {
+    id: String,
+    ects: f32,
+    block: Vec<Block>,
+    schedule: Vec<Schedule>,
+    language: Vec<Language>,
+    duration: Duration,
+    degree: Vec<Degree>,
+    capacity: Capacity,
+}
+
+#[derive(Debug, PartialEq)]
+enum Block {
+    One = 1,
+    Two = 2,
+    Three = 3,
+    Four = 4,
+    Five = 5,
+}
+
+#[derive(Debug, PartialEq)]
+enum Schedule {
+    A,
+    B,
+    C,
+    D,
+}
+
+#[derive(Debug, PartialEq)]
+enum Language {
+    Danish,
+    English,
+}
+
+#[derive(Debug, Eq, PartialEq)]
+enum Duration {
+    One = 1,
+    Two = 2,
+    Custom,
+}
+
+#[derive(Debug, PartialEq, Eq, Ord, PartialOrd)]
+enum Degree {
+    Phd,
+    Bachelor,
+    Master,
+    Propædeutik,
+}
+
+#[derive(Debug, PartialEq)]
+struct Capacity(pub Option<u32>);
 
 pub fn parse_course(html: &str) -> Result<Course> {
     let dom = tl::parse(html, tl::ParserOptions::default())?;
-    let _content = dom.get_element_by_id("content");
+    let content = dom.get_element_by_id("content");
     let title = parse_title(&dom)?;
-    Ok(Course { title })
+
+    ensure!(
+        content.is_some(),
+        "Unable to find content element, this should not happen"
+    );
+    let info = parse_course_info(&dom)?;
+
+    Ok(Course { title, info })
 }
 fn parse_title(dom: &VDom) -> Result<String> {
     let title = dom
         .get_elements_by_class_name("courseTitle")
         .next()
-        .ok_or_else(|| anyhow!("Unable to find course title"))
+        .context("Unable to find course title")
         .and_then(|elem| {
             elem.get(dom.parser())
-                .ok_or_else(|| anyhow!("Unable to grab parser for the dom, this should not happen"))
+                .context("Unable to grab parser for the dom, this should not happen")
                 .map(|tag| tag.inner_text(dom.parser()))
         });
 
@@ -38,3 +108,4 @@ fn parse_title(dom: &VDom) -> Result<String> {
 
     Ok(res[1..].join(" "))
 }
+// not implemented yet, just return an empty course info
