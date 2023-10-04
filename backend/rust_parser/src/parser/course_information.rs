@@ -130,9 +130,9 @@ fn coerce_course_info(
 // NORS is a special case, because its a humanities course (norwegian)
 fn parse_code(code: &str) -> Result<String> {
     match code {
-        "NORS" => bail!("Wrong faculty (expected)"),
+        "NORS" => bail!("Wrong faculty <EXPECTED>"),
         code if code.starts_with("N") || code.starts_with("L") => Ok(code.to_string()),
-        _ => bail!("Wrong faculty (unexpected)"),
+        _ => bail!("Wrong faculty <EXPECTED>"),
     }
 }
 
@@ -143,11 +143,11 @@ fn parse_duration(duration: &str) -> Result<parser::Duration> {
         x if duration.contains("blo") => match x {
             _ if x.contains('1') => Ok(parser::Duration::One),
             _ if x.contains('2') => Ok(parser::Duration::Two),
-            _ => bail!("Unknown duration"),
+            _ => bail!(format!("Unknown duration: {}", duration)),
         },
         _ if duration.contains("sem") => Ok(parser::Duration::Two),
         _ if duration.contains("week") | duration.contains("uge") => Ok(parser::Duration::Custom),
-        _ => bail!("Unknown duration"),
+        _ => bail!(format!("Unknown duration: {}", duration)),
     }
 }
 

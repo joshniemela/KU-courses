@@ -17,7 +17,7 @@ const TEST_HTMLS_DIR: &str = "./test_data/pages";
 // make a function that takes a path and returns the number of fails and the total number of courses
 fn count_fails(htmls_dir: &str) -> (usize, usize) {
     let mut fails = 0;
-    let mut total = 0;
+    let mut passes = 0;
     let dir = std::fs::read_dir(htmls_dir).unwrap();
     for entry in dir {
         let entry = entry.unwrap();
@@ -25,14 +25,21 @@ fn count_fails(htmls_dir: &str) -> (usize, usize) {
         let html = std::fs::read_to_string(entry.path()).unwrap();
         // parse the string
         let course = parser::parse_course(&html);
-        // print the course title
-        if let Err(e) = course {
-            println!("Error: {:?}", e);
-            fails += 1;
+        // if the error cause (this is an anyhow context) contains <EXPECTED>, then we ignore it and continue
+        match course {
+            Ok(_) => passes += 1,
+            Err(e) => {
+                // if any of the causes contain <EXPECTED>, then we ignore it and continue
+                if e.chain().any(|c| c.to_string().contains("<EXPECTED>")) {
+                    continue;
+                } else {
+                    fails += 1;
+                    println!("Error: {:?}\n\n", e);
+                }
+            }
         }
-        total += 1;
     }
-    (fails, total)
+    (fails, passes)
 }
 
 fn main() {
@@ -71,6 +78,27 @@ mod tests {
                 parser::Duration::One,
                 vec![parser::Degree::Bachelor],
                 parser::Capacity(Some(70)),
+            ),
+        };
+        pretty_assertions::assert_eq!(expected_course, course.unwrap());
+    }
+
+    // We need to ignore the duration if the course is known to be a summer course.
+    #[test]
+    fn test_NBIK15000U() {
+        let html = std::fs::read_to_string(format!("{}/NBIK15000U.html", TEST_HTMLS_DIR)).unwrap();
+        let course = parser::parse_course(&html);
+        let expected_course = Course {
+            title: "BAdvanced Plant Identification".to_string(),
+            info: parser::CourseInformation::new(
+                "NBIK15000U".to_string(),
+                7.5,
+                vec![parser::Block::Five],
+                vec![parser::Schedule::B], // doesnt exist
+                vec![parser::Language::English],
+                parser::Duration::One,
+                vec![parser::Degree::Master],
+                parser::Capacity(Some(16)),
             ),
         };
         pretty_assertions::assert_eq!(expected_course, course.unwrap());

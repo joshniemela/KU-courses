@@ -101,7 +101,7 @@ pub fn parse_course(html: &str) -> Result<Course> {
         content.is_some(),
         "Unable to find content element, this should not happen"
     );
-    let info = parse_course_info(&dom)?;
+    let info = parse_course_info(&dom).context(format!("Unable to parse course: {}", title))?;
 
     Ok(Course { title, info })
 }
