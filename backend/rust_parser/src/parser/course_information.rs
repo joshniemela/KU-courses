@@ -157,7 +157,11 @@ fn parse_duration(duration: &str) -> Result<parser::Duration> {
             _ => bail!(format!("Unknown duration: {}", duration)),
         },
         _ if duration.contains("sem") => Ok(parser::Duration::Two),
-        _ if duration.contains("week") | duration.contains("uge") => Ok(parser::Duration::Custom),
+        _ if duration.contains("week") | duration.contains("uge")
+            || duration.to_lowercase().contains("august") =>
+        {
+            Ok(parser::Duration::Custom(duration.to_string()))
+        }
         _ => bail!(format!("Unknown duration: {}", duration)),
     }
 }
@@ -166,7 +170,7 @@ fn parse_block(input: &str, duration: &parser::Duration) -> Result<Vec<parser::B
     let mut blocks: Vec<parser::Block> = Vec::new();
 
     match duration {
-        parser::Duration::One | parser::Duration::Custom | parser::Duration::DependsOnEcts => {
+        parser::Duration::One | parser::Duration::Custom(_) | parser::Duration::DependsOnEcts => {
             for c in input.chars() {
                 match c {
                     '1' => blocks.push(parser::Block::One),
@@ -247,6 +251,7 @@ fn parse_schedule(schedule: &str) -> Result<Vec<parser::Schedule>> {
             || schedule.contains("No scheme")
             || schedule.contains("Uden for skema")
             || schedule.contains("Outside timetable")
+            || schedule.contains("Outside schedule")
             || schedule.contains("Kurset foregår uden for skema")
         {
             schedule_vec.push(parser::Schedule::Other(schedule.to_string()));

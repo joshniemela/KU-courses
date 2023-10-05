@@ -78,10 +78,10 @@ pub enum Language {
 
 #[derive(Debug, Eq, PartialEq)]
 pub enum Duration {
-    One = 1,
-    Two = 2,
-    Custom,
+    One,
+    Two,
     DependsOnEcts,
+    Custom(String),
 }
 
 #[derive(Debug, PartialEq, Eq, Ord, PartialOrd)]
