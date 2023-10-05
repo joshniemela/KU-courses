@@ -51,6 +51,8 @@ enum Department {
 enum Faculty {
     Science,
 }
+
+#[derive(Debug, PartialEq)]
 pub struct Coordinator {
     name: String,
     email: String,

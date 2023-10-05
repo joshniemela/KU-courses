@@ -8,4 +8,5 @@ edition = "2021"
 [dependencies]
 anyhow = "1.0.75"
 pretty_assertions = "1.4.0"
+regex = "1.9.6"
 tl = "0.7.7"
