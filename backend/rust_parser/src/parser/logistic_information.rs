@@ -57,15 +57,8 @@ pub fn parse_logistic_info(dom: &VDom) -> Result<LogisticInformation> {
                     // the email should be removed from the name, it is enclosed in parenthesis
                     let mut split = li.split('(');
                     let name = split.next().unwrap().trim().to_string();
-                    let obfuscated_email = split
-                        .next()
-                        .unwrap()
-                        .trim()
-                        .to_string()
-                        .split(')')
-                        .next()
-                        .unwrap()
-                        .to_string();
+                    let obfuscated_email =
+                        split.next().unwrap().split(')').next().unwrap().to_string();
                     let email = deobfuscate_email(&obfuscated_email)?;
                     coordinators.push(parser::Coordinator { name, email });
                 }
