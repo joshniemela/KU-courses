@@ -224,6 +224,12 @@ fn parse_schedule(schedule: &str) -> Result<Vec<parser::Schedule>> {
         _ if schedule.contains('B') => schedule_vec.push(parser::Schedule::B),
         _ if schedule.contains('C') => schedule_vec.push(parser::Schedule::C),
         _ if schedule.contains('D') => schedule_vec.push(parser::Schedule::D),
+        _ if schedule.contains("Udenfor skema")
+            || schedule.contains("Project in Practise")
+            || schedule.contains("Meetings with supervisor") =>
+        {
+            schedule_vec.push(parser::Schedule::OutsideOfSchedule)
+        }
         _ => (),
     }
 

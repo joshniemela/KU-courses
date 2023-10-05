@@ -67,6 +67,7 @@ pub enum Schedule {
     B,
     C,
     D,
+    OutsideOfSchedule,
     Other(String),
 }
 
