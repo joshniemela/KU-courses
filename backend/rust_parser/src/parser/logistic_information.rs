@@ -83,16 +83,9 @@ pub fn parse_logistic_info(dom: &VDom) -> Result<LogisticInformation> {
             &_ => {}
         }
     }
-    //println!("{:#?}", coordinators);
-    //println!("{:#?}", faculty);
 
-    // Parse contracting department
-
-    // Parse faculty
-
-    // Parse coordinators
     Ok(parser::LogisticInformation {
-        departments: vec![parser::Department::ComputerScience],
+        departments,
         faculty: faculty.unwrap(),
         coordinators,
     })
