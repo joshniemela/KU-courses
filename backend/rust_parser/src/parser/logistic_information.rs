@@ -51,7 +51,6 @@ pub fn parse_logistic_info(dom: &VDom) -> Result<LogisticInformation> {
     let mut faculty: Option<parser::Faculty> = None;
 
     for (h5, lis) in info {
-        //println!("h5: {}", h5);
         match h5.as_str() {
             "Kursusansvarlige" | "Course coordinators" => {
                 for li in lis {
@@ -75,7 +74,6 @@ pub fn parse_logistic_info(dom: &VDom) -> Result<LogisticInformation> {
             }
             "Udbydende institut" | "Contracting department" => {
                 for li in lis {
-                    // use from_str
                     departments.push(parser::Department::from_str(&li)?);
                 }
             }
