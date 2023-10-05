@@ -31,32 +31,28 @@ pub fn extract_h5_li_pairs(dom: &VDom) -> Result<Vec<(String, Vec<String>)>> {
     let panel_bodies =
         raw_panel_bodies.map(|panel_body| panel_body.get(parser).unwrap().as_tag().unwrap());
 
+    let mut pairs: Vec<(String, Vec<String>)> = vec![];
     for (i, panel_body) in panel_bodies.enumerate() {
-        //println!("Panel body {i}: {panel_body:?}");
-        // does it contain a h5?
         let h5s = panel_body.query_selector(parser, "h5").unwrap();
-        // return yes if more than one h5 is found
+        // if it contains h5s, we have found the right body
         if h5s.clone().count() > 0 {
-            // print the h5s
-            println!("Found h5s:");
             for h5 in h5s {
-                println!("{h5:?}");
+                let h5_text = h5.get(parser).unwrap().inner_text(parser).to_string();
 
-                let h5_text = h5.get(parser).unwrap().inner_text(parser);
                 let inner_handle = h5.get_inner(); // This is the handle to the h5 tag
-                let next_sibling = NodeHandle::new(inner_handle + 2).get(parser).unwrap();
 
-                println!("h5 text: {h5_text:?}");
-                //println!("Next sibling: {next_sibling:?}");
+                // by magic we know that offsetting by 2 gives us the ul tag
+                let ul_handle = NodeHandle::new(inner_handle + 2).get(parser).unwrap();
+
                 // get the chldren inside of next_sibling
-                for child in next_sibling.as_tag().unwrap().children().top().iter() {
-                    let child_text = child.get(parser).unwrap().inner_text(parser);
-                    println!("Child text: {child_text:?}");
+                let mut children = vec![];
+                for child in ul_handle.as_tag().unwrap().children().top().iter() {
+                    let child_text = child.get(parser).unwrap().inner_text(parser).to_string();
+                    children.push(child_text);
                 }
+                pairs.push((h5_text, children));
             }
         }
     }
-    println!("\n\n");
-
-    Ok(vec![])
+    Ok(pairs)
 }
