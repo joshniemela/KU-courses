@@ -40,14 +40,60 @@ enum Department {
     FoodScience,
     GeosciencesAndNaturalResourceManagement,
     NutritionExerciseAndSports,
-    MathematicalScience,
+    Mathematics,
     ScienceEducation,
     PlantAndEnvironmentalSciences,
     Chemistry,
-    TheNielsBohrInstitute,
+    NielsBohrInstitute,
     NaturalHistoryMuseumOfDenmark,
 }
+impl Department {
+    fn from_str(s: &str) -> Result<Self> {
+        match s {
+            "Department of Computer Science" | "Datalogisk Institut" => {
+                Ok(Department::ComputerScience)
+            }
+            "Institut for Idræt og Ernæring" | "Department of Nutrition, Exercise and Sports" => {
+                Ok(Department::NutritionExerciseAndSports)
+            }
+            "Statens Naturhistoriske Museum" | "The Natural History Museum of Denmark" => {
+                Ok(Department::NaturalHistoryMuseumOfDenmark)
+            }
+            "Institut for Plante- og Miljøvidenskab"
+            | "Department of Plant and Environmental Sciences" => {
+                Ok(Department::PlantAndEnvironmentalScience)
+            }
+            "Institut for Matematiske Fag" | "Department of Mathematical Sciences" => {
+                Ok(Department::Mathematics)
+            }
+            "Niels Bohr Institutet" | "The Niels Bohr Institute" => {
+                Ok(Department::NielsBohrInstitute)
+            }
+            "Institut for Geovidenskab og Naturforvaltning"
+            | "Department of Geoscience and Natural Resource\nManagement" => {
+                Ok(Department::GeosciencesAndNaturalResourceManagement)
+            }
+            "Institut for Naturfagenes Didaktik" | "Department of Science Education" => {
+                Ok(Department::ScienceEducation)
+            }
+            "Institut for Fødevare- og Ressourceøkonomi"
+            | "Department of Food and Resource Economics" => {
+                Ok(Department::FoodAndResourceEconomics)
+            }
+            "Institut for Fødevarevidenskab" | "Department of Food Science" => {
+                Ok(Department::FoodScience)
+            }
+            "Kemisk Institut" | "Department of Chemistry" => Ok(Department::Chemistry),
+            "Biologisk Institut" | "Department of Biology" => Ok(Department::Biology),
+            "Institut for Nordiske Studier og Sprogvidenskab" => {
+                bail!("Nordic studies not supported <EXPECTED>")
+            }
+            _ => bail!("Unknown department: {}", s),
+        }
+    }
+}
 
+#[derive(Debug, PartialEq)]
 enum Faculty {
     Science,
 }

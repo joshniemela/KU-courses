@@ -51,6 +51,7 @@ pub fn parse_logistic_info(dom: &VDom) -> Result<LogisticInformation> {
     let mut faculty: Option<parser::Faculty> = None;
 
     for (h5, lis) in info {
+        //println!("h5: {}", h5);
         match h5.as_str() {
             "Kursusansvarlige" | "Course coordinators" => {
                 for li in lis {
@@ -63,10 +64,27 @@ pub fn parse_logistic_info(dom: &VDom) -> Result<LogisticInformation> {
                     coordinators.push(parser::Coordinator { name, email });
                 }
             }
+            "Udbydende fakultet" | "Contracting faculty" => {
+                let faculty_str = lis.first().unwrap();
+                match faculty_str.as_str() {
+                    "Det Natur- og Biovidenskabelige Fakultet" | "Faculty of Science" => {
+                        faculty = Some(parser::Faculty::Science)
+                    }
+                    _ => bail!("Unknown faculty: {} <EXPECTED>", faculty_str),
+                }
+            }
+            "Udbydende institut" | "Contracting department" => {
+                for li in lis {
+                    // use from_str
+                    departments.push(parser::Department::from_str(&li)?);
+                }
+            }
+
             &_ => {}
         }
     }
-    println!("{:#?}", coordinators);
+    //println!("{:#?}", coordinators);
+    //println!("{:#?}", faculty);
 
     // Parse contracting department
 
@@ -75,11 +93,8 @@ pub fn parse_logistic_info(dom: &VDom) -> Result<LogisticInformation> {
     // Parse coordinators
     Ok(parser::LogisticInformation {
         departments: vec![parser::Department::ComputerScience],
-        faculty: parser::Faculty::Science,
-        coordinators: vec![parser::Coordinator {
-            name: "Kristian Pedersen".to_string(),
-            email: "bs@org.dk".to_string(),
-        }],
+        faculty: faculty.unwrap(),
+        coordinators,
     })
 }
 
