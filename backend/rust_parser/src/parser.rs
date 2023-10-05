@@ -4,6 +4,9 @@ use tl::VDom;
 use crate::parser::course_information::parse_course_info;
 pub mod course_information;
 
+use crate::parser::logistic_information::parse_logistic_info;
+pub mod logistic_information;
+
 #[derive(Debug, PartialEq)]
 pub struct Course {
     pub title: String,
@@ -11,7 +14,7 @@ pub struct Course {
 }
 
 #[derive(Debug)]
-enum CourseLanguage {
+pub enum CourseLanguage {
     English,
     Danish,
 }
@@ -27,6 +30,38 @@ pub struct CourseInformation {
     degree: Vec<Degree>,
     capacity: Capacity,
 }
+
+enum Department {
+    // Faculty of Science
+    PlantAndEnvironmentalScience,
+    Biology,
+    ComputerScience,
+    FoodAndResourceEconomics,
+    FoodScience,
+    GeosciencesAndNaturalResourceManagement,
+    NutritionExerciseAndSports,
+    MathematicalScience,
+    ScienceEducation,
+    PlantAndEnvironmentalSciences,
+    Chemistry,
+    TheNielsBohrInstitute,
+    NaturalHistoryMuseumOfDenmark,
+}
+
+enum Faculty {
+    Science,
+}
+pub struct Coordinator {
+    name: String,
+    email: String,
+}
+
+pub struct LogisticInformation {
+    departments: Vec<Department>,
+    faculty: Faculty,
+    coordinators: Vec<Coordinator>,
+}
+
 impl CourseInformation {
     pub fn new(
         id: String,
