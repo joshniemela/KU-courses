@@ -25,8 +25,6 @@ pub fn parse_workloads(dom: &VDom) -> Result<Vec<Workload>> {
     // take two at a time from lis
     // first is the workload type
     // second is the workload value
-    //
-    // make
     let mut pair: Vec<String> = Vec::new();
     while lis.peek().is_some() {
         if pair.len() == 2 {
