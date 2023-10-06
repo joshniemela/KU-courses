@@ -187,11 +187,7 @@ pub enum Exam {
     Written(Option<u32>),
     Assignment(Option<u32>),
     ContinuousAssessment,
-    Other(String),
-}
-
-pub struct ExamInformation {
-    exams: Vec<Exam>,
+    Other,
 }
 
 pub fn parse_course(html: &str) -> Result<Course> {
