@@ -182,6 +182,7 @@ pub enum Degree {
 #[derive(Debug, PartialEq)]
 pub struct Capacity(pub Option<u32>);
 
+#[derive(Debug, PartialEq)]
 pub enum Exam {
     Oral(Option<u32>),
     Written(Option<u32>),

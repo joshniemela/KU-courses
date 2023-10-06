@@ -38,10 +38,17 @@ pub fn parse_course_exams(dom: &VDom) -> Result<Vec<Exam>> {
                     .unwrap()
                     .boundaries(parser)
                     .unwrap();
-                for j in (exam_boundary.0 + 1..exam_boundary.1) {
+                for j in exam_boundary.0..exam_boundary.1 {
                     let text = NodeHandle::new(j).get(parser).unwrap().inner_text(parser);
                     exams.push(parse_text_to_exam(&text)?);
                 }
+                ensure!(
+                    exams.len() > 0,
+                    format!(
+                        "No exams found in exam table: {}",
+                        dd.get(parser).unwrap().inner_text(parser)
+                    )
+                );
             }
             _ => continue,
         }
@@ -71,12 +78,28 @@ fn parse_text_to_exam(text: &str) -> Result<Exam> {
         Some((number * factor as f32) as u32)
     };
 
-    match split[0] {
-        "Skriftlig aflevering" | "Written assignment" => Ok(Exam::Assignment(exam_minutes)),
-        "Skriftlig prøve" | "Written examination" => Ok(Exam::Written(exam_minutes)),
-        "Oral examination" | "Mundtlig prøve" => Ok(Exam::Oral(exam_minutes)),
-        "Portfolio" | "Other" | "Andet" => Ok(Exam::Other),
-        "Continuous assessment" | "Løbende bedømmelse" => Ok(Exam::ContinuousAssessment),
+    let exam_name = split[0].to_lowercase().to_string();
+    match exam_name {
+        _ if exam_name.contains("aflevering") || exam_name.contains("assignment") => {
+            Ok(Exam::Assignment(exam_minutes))
+        }
+        _ if exam_name.contains("skriftlig prøve") || exam_name.contains("written examination") => {
+            Ok(Exam::Written(exam_minutes))
+        }
+        _ if exam_name.contains("mundtlig prøve") || exam_name.contains("oral examination") => {
+            Ok(Exam::Oral(exam_minutes))
+        }
+        _ if exam_name.contains("portfolio")
+            || exam_name.contains("other")
+            || exam_name.contains("andet") =>
+        {
+            Ok(Exam::Other)
+        }
+        _ if exam_name.contains("løbende bedømmelse")
+            || exam_name.contains("continuous assessment") =>
+        {
+            Ok(Exam::ContinuousAssessment)
+        }
         _ => bail!("Not implemented for exam type: {}", split[0]),
     }
 }
