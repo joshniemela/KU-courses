@@ -68,14 +68,20 @@ fn parse_text_to_exam(text: &str) -> Result<Exam> {
             .take_while(|c| c.is_numeric() || *c == '.')
             .collect::<String>()
             .parse::<f32>()
-            // convert error to nothing
-            .unwrap_or(0.0);
+            // convert error to Nothing type as number is an option type
+            .ok();
+
         let factor = match split[1] {
-            _ if split[1].contains("hour") || split[1].contains("time") => 60,
-            _ if split[1].contains("day") || split[1].contains("dag") => 60 * 24,
-            _ => 1, // We assume minutes if nothing else is specified
+            _ if split[1].contains("min") => Some(1),
+            _ if split[1].contains("hour") || split[1].contains("time") => Some(60),
+            _ if split[1].contains("day") || split[1].contains("dag") => Some(60 * 24),
+            _ => None,
         };
-        Some((number * factor as f32) as u32)
+        match (number, factor) {
+            (None, _) => None,
+            (_, None) => None,
+            (Some(number), Some(factor)) => Some((number * factor as f32) as u32),
+        }
     };
 
     let exam_name = split[0].to_lowercase().to_string();

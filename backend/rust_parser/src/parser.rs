@@ -210,6 +210,7 @@ pub fn parse_course(html: &str) -> Result<Course> {
         "Unable to parse exam information for course: {}",
         title
     ))?;
+    println!("{:#?}", exam_info);
 
     Ok(Course { title, info })
 }
