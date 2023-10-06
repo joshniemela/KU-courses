@@ -216,30 +216,11 @@ enum WorkloadType {
     Guidance,
     ClassInstruction,
     PracticalTraining,
-    Seminar,
 }
 impl WorkloadType {
     fn from_str(s: &str) -> Result<Self> {
         match s {
-            "Forelæsninger" | "Lectures" => Ok(WorkloadType::Lectures),
-            "Forberedelse (anslået)" | "Preparation" => Ok(WorkloadType::Preparation),
-            "Theory exercises" | "Teoretiske øvelser" => Ok(WorkloadType::TheoryExercises),
-            "Project work" | "Projektarbejde" => Ok(WorkloadType::ProjectWork),
-            "Øvelser" | "Exercises" => Ok(WorkloadType::Exercises),
-            "Eksamen" | "Exam" => Ok(WorkloadType::Exam),
-            "Eksamensforberedelse" | "Exam Preparation" => Ok(WorkloadType::ExamPreparation),
-            "Holdundervisning" | "Class Instruction" => Ok(WorkloadType::ClassInstruction),
-            "Practical exercises" | "Praktiske øvelser" => Ok(WorkloadType::PracticalExercises),
-            "E-Learning" | "E-læring" => Ok(WorkloadType::ELearning),
-            "Feltarbejde" | "Field Work" => Ok(WorkloadType::FieldWork),
-            "Studiegrupper" | "Study Groups" => Ok(WorkloadType::StudyGroup),
-            "Seminar" => Ok(WorkloadType::Seminar),
-            "Ekskursioner" | "Excursions" => Ok(WorkloadType::Excursions),
-            "Laboratorie" | "Laboratory" => Ok(WorkloadType::Laboratory),
-            "Praktik" | "Practical Training" => Ok(WorkloadType::PracticalTraining),
-
-            "Guidance" | "Vejledning" => Ok(WorkloadType::Guidance),
-            _ => bail!("Unknown workload type: {}", s),
+            _ => Ok(WorkloadType::ELearning),
         }
     }
 }
@@ -247,7 +228,7 @@ impl WorkloadType {
 #[derive(Debug, PartialEq)]
 pub struct Workload {
     workload_type: WorkloadType,
-    hours: f32,
+    hours: u32,
 }
 
 pub fn parse_course(html: &str) -> Result<Course> {
