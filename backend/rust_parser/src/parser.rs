@@ -4,6 +4,9 @@ use tl::VDom;
 use crate::parser::course_information::parse_course_info;
 pub mod course_information;
 
+use crate::parser::exam_information::parse_course_exams;
+pub mod exam_information;
+
 use crate::parser::logistic_information::parse_logistic_info;
 pub mod logistic_information;
 
@@ -179,6 +182,18 @@ pub enum Degree {
 #[derive(Debug, PartialEq)]
 pub struct Capacity(pub Option<u32>);
 
+pub enum Exam {
+    Oral(Option<u32>),
+    Written(Option<u32>),
+    Assignment(Option<u32>),
+    ContinuousAssessment,
+    Other(String),
+}
+
+pub struct ExamInformation {
+    exams: Vec<Exam>,
+}
+
 pub fn parse_course(html: &str) -> Result<Course> {
     let dom = tl::parse(html, tl::ParserOptions::default())?;
     let content = dom.get_element_by_id("content");
@@ -191,6 +206,11 @@ pub fn parse_course(html: &str) -> Result<Course> {
     let info = parse_course_info(&dom).context(format!("Unable to parse course: {}", title))?;
     let logistic_info = parse_logistic_info(&dom).context(format!(
         "Unable to parse logistic information for course: {}",
+        title
+    ))?;
+
+    let exam_info = parse_course_exams(&dom).context(format!(
+        "Unable to parse exam information for course: {}",
         title
     ))?;
 
