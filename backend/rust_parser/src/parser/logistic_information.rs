@@ -52,7 +52,7 @@ pub fn parse_logistic_info(dom: &VDom) -> Result<LogisticInformation> {
 
     for (h5, lis) in info {
         match h5.as_str() {
-            "Kursusansvarlige" | "Course coordinators" => {
+            "Kursusansvarlige" | "Course Coordinators" => {
                 for li in lis {
                     // the email should be removed from the name, it is enclosed in parenthesis
                     let mut split = li.split('(');

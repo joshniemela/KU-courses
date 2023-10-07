@@ -1,4 +1,5 @@
 use anyhow::{anyhow, bail, ensure, Context, Result};
+use serde::Serialize;
 use tl::VDom;
 
 use crate::parser::course_information::parse_course_info;
@@ -16,11 +17,12 @@ pub mod workload_information;
 use crate::parser::content_serialiser::grab_htmls;
 pub mod content_serialiser;
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Serialize)]
 pub struct Course {
     pub title: String,
     pub info: CourseInformation,
     pub logistics: LogisticInformation,
+    pub workloads: Vec<Workload>,
     pub exams: Vec<Exam>,
     pub description: Description,
 }
@@ -31,9 +33,9 @@ pub enum CourseLanguage {
     Danish,
 }
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Serialize)]
 pub struct CourseInformation {
-    id: String,
+    pub id: String,
     ects: f32,
     block: Vec<Block>,
     schedule: Vec<Schedule>,
@@ -43,7 +45,7 @@ pub struct CourseInformation {
     capacity: Capacity,
 }
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Serialize)]
 enum Department {
     // Faculty of Science
     PlantAndEnvironmentalScience,
@@ -106,18 +108,18 @@ impl Department {
     }
 }
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Serialize)]
 enum Faculty {
     Science,
 }
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Serialize)]
 pub struct Coordinator {
     name: String,
     email: String,
 }
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Serialize)]
 pub struct LogisticInformation {
     departments: Vec<Department>,
     faculty: Faculty,
@@ -148,7 +150,7 @@ impl CourseInformation {
     }
 }
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Serialize)]
 pub enum Block {
     One,
     Two,
@@ -158,7 +160,7 @@ pub enum Block {
     Other(String),
 }
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Serialize)]
 pub enum Schedule {
     A,
     B,
@@ -168,13 +170,13 @@ pub enum Schedule {
     Other(String),
 }
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Serialize)]
 pub enum Language {
     Danish,
     English,
 }
 
-#[derive(Debug, Eq, PartialEq)]
+#[derive(Debug, Eq, PartialEq, Serialize)]
 pub enum Duration {
     One,
     Two,
@@ -182,7 +184,7 @@ pub enum Duration {
     Custom(String),
 }
 
-#[derive(Debug, PartialEq, Eq, Ord, PartialOrd)]
+#[derive(Debug, PartialEq, Eq, Ord, PartialOrd, Serialize)]
 pub enum Degree {
     Phd,
     Bachelor,
@@ -190,10 +192,10 @@ pub enum Degree {
     Propædeutik,
 }
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Serialize)]
 pub struct Capacity(pub Option<u32>);
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Serialize)]
 pub enum Exam {
     Oral(Option<u32>),
     Written(Option<u32>),
@@ -202,7 +204,7 @@ pub enum Exam {
     Other,
 }
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Serialize)]
 enum WorkloadType {
     Exam,
     ELearning,
@@ -248,13 +250,13 @@ impl WorkloadType {
     }
 }
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Serialize)]
 pub struct Workload {
     workload_type: WorkloadType,
     hours: f32,
 }
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Serialize)]
 pub struct Description {
     pub content: String,
     pub learning_outcome: String,
@@ -296,6 +298,7 @@ pub fn parse_course(html: &str) -> Result<Course> {
         info,
         logistics: logistic_info,
         exams: exam_info,
+        workloads: workload_info,
         description: html_info,
     })
 }

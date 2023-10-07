@@ -1,4 +1,5 @@
 use crate::parser::Course;
+use serde::{Deserialize, Serialize};
 
 #[cfg(test)]
 use pretty_assertions::{assert_eq, assert_ne};
@@ -14,6 +15,8 @@ const TEST_DIR: &str = "./test_data";
 
 const TEST_HTMLS_DIR: &str = "./test_data/pages";
 
+const JSON_DIR: &str = "../../data/new_json";
+
 // make a function that takes a path and returns the number of fails and the total number of courses
 fn count_fails(htmls_dir: &str) -> (usize, usize) {
     let mut fails = 0;
@@ -27,7 +30,14 @@ fn count_fails(htmls_dir: &str) -> (usize, usize) {
         let course = parser::parse_course(&html);
         // if the error cause (this is an anyhow context) contains <EXPECTED>, then we ignore it and continue
         match course {
-            Ok(_) => passes += 1,
+            Ok(c) => {
+                // emit json to file
+                let json = serde_json::to_string(&c).unwrap();
+                let path = format!("{}/{}.json", JSON_DIR, c.info.id);
+                std::fs::write(path, json).unwrap();
+                passes += 1;
+            }
+
             Err(e) => {
                 // if any of the causes contain <EXPECTED>, then we ignore it and continue
                 if e.chain().any(|c| c.to_string().contains("<EXPECTED>")) {

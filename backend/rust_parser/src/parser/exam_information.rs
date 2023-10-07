@@ -53,6 +53,9 @@ pub fn parse_course_exams(dom: &VDom) -> Result<Vec<Exam>> {
             _ => continue,
         }
     }
+    if exams.len() > 1 && exams[0] == exams[1] {
+        exams.remove(0);
+    }
     Ok(exams)
 }
 
