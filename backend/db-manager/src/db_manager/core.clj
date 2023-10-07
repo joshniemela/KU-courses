@@ -147,7 +147,9 @@
 
 (def main-config {:port 3000})
 (defn -main [& args]
-  ; concurrently run sitemap-watcher scrape-course and stats-watcher so that they don't block the server
+  ;
+
+; concurrently run sitemap-watcher scrape-course and stats-watcher so that they don't block the server
   (future (sitemap-watcher scrape-course))
   (future (stats-watcher))
 

@@ -1,5 +1,6 @@
 use crate::parser::Course;
 use serde::{Deserialize, Serialize};
+use std::env;
 
 #[cfg(test)]
 use pretty_assertions::{assert_eq, assert_ne};
@@ -18,7 +19,7 @@ const TEST_HTMLS_DIR: &str = "./test_data/pages";
 const JSON_DIR: &str = "../../data/new_json";
 
 // make a function that takes a path and returns the number of fails and the total number of courses
-fn count_fails(htmls_dir: &str) -> (usize, usize) {
+fn count_fails(htmls_dir: &str, json_dir: &str) -> (usize, usize) {
     let mut fails = 0;
     let mut passes = 0;
     let dir = std::fs::read_dir(htmls_dir).unwrap();
@@ -33,7 +34,7 @@ fn count_fails(htmls_dir: &str) -> (usize, usize) {
             Ok(c) => {
                 // emit json to file
                 let json = serde_json::to_string(&c).unwrap();
-                let path = format!("{}/{}.json", JSON_DIR, c.info.id);
+                let path = format!("{}/{}.json", json_dir, c.info.id);
                 std::fs::write(path, json).unwrap();
                 passes += 1;
             }
@@ -51,13 +52,16 @@ fn count_fails(htmls_dir: &str) -> (usize, usize) {
     }
     (fails, passes)
 }
-
+// take an in and out path as arguments
 fn main() {
+    let args: Vec<String> = env::args().collect();
     let timer = time::Instant::now();
+    let html_dir = &args[1];
+    let json_dir = &args[2];
 
     // print all files in the html directory
-    let _dir = std::fs::read_dir(HTMLS_DIR).unwrap();
-    println!("fails and total: {:?}", count_fails(HTMLS_DIR));
+    let _dir = std::fs::read_dir(html_dir).unwrap();
+    println!("fails and total: {:?}", count_fails(html_dir, json_dir));
 
     println!("Time elapsed: {:?}", timer.elapsed());
 }

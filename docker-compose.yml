@@ -44,6 +44,8 @@ services:
     depends_on:
       - server
 
+
+
   server:
     build: ./backend/db-manager
     restart: always
@@ -58,6 +60,12 @@ services:
     depends_on:
       db:
         condition: service_started
+      rust_builder:
+        condition: service_completed_successfully
 
+
+  rust_builder:
+    build: ./backend/rust_parser
+    image: rust_parser
 networks:
   dis-network:

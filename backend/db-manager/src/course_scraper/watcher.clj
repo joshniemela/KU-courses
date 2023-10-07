@@ -2,13 +2,15 @@
   (:require [clojure.zip :as zip]
             [clojure.xml :as xml]
             [clojure.java.io :as io]
-            [org.httpkit.client :as http])
+            [org.httpkit.client :as http]
+            [clojure.java.shell :as shell])
   (:import (javax.net.ssl SSLEngine SSLParameters SNIHostName)
            (java.net URI))
 
   (:gen-class))
 
 (def pages-dir "../../data/pages")
+(def new-json-dir "../../data/new_json")
 
 (defn grab-info-from-course [course]
   (let [content (:content course)
@@ -57,6 +59,13 @@
     ; go to sleep for 30 minutes and then do it again
     (println "[course scraper]: Finished scraping, going to sleep")
     (println "[course scraper]: Modified" (count @newly-scraped) "courses")
+
+  ; run the rust_parser with the data-dir as input and new-json-dir as output using sh
+    (println "[course scraper] Running rust parser...")
+
+    (def result (shell/sh "rust_parser" pages-dir new-json-dir))
+    ; print stderr and stdout
+    (println "[course scraper] stderr: " (:err result))
     (reset! newly-scraped [])
     (Thread/sleep (* 1000 60 60))
     (recur callback)))

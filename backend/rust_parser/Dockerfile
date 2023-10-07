@@ -1,4 +1,4 @@
-FROM rust:slim AS builder
+FROM rust:slim
 
 ENV TARGET x86_64-unknown-linux-musl
 
@@ -9,3 +9,8 @@ COPY . /app
 WORKDIR /app
 
 RUN cargo build --release --locked --target "$TARGET"
+
+
+
+# run the target
+RUN chmod +x /app/target/x86_64-unknown-linux-musl/release/rust_parser
