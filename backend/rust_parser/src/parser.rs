@@ -22,6 +22,7 @@ pub struct Course {
     pub info: CourseInformation,
     pub logistics: LogisticInformation,
     pub exams: Vec<Exam>,
+    pub description: Description,
 }
 
 #[derive(Debug)]
@@ -253,6 +254,7 @@ pub struct Workload {
     hours: f32,
 }
 
+#[derive(Debug, PartialEq)]
 pub struct Description {
     pub content: String,
     pub learning_outcome: String,
@@ -294,6 +296,7 @@ pub fn parse_course(html: &str) -> Result<Course> {
         info,
         logistics: logistic_info,
         exams: exam_info,
+        description: html_info,
     })
 }
 fn parse_title(dom: &VDom) -> Result<String> {
@@ -322,4 +325,3 @@ fn parse_title(dom: &VDom) -> Result<String> {
 
     Ok(res[1..].join(" "))
 }
-// not implemented yet, just return an empty course info
