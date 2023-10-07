@@ -13,6 +13,9 @@ pub mod logistic_information;
 use crate::parser::workload_information::parse_workloads;
 pub mod workload_information;
 
+use crate::parser::content_serialiser::grab_htmls;
+pub mod content_serialiser;
+
 #[derive(Debug, PartialEq)]
 pub struct Course {
     pub title: String,
@@ -250,6 +253,12 @@ pub struct Workload {
     hours: f32,
 }
 
+pub struct Description {
+    pub content: String,
+    pub learning_outcome: String,
+    pub recommended_qualifications: Option<String>,
+}
+
 pub fn parse_course(html: &str) -> Result<Course> {
     let dom = tl::parse(html, tl::ParserOptions::default())?;
     let content = dom.get_element_by_id("content");
@@ -272,6 +281,11 @@ pub fn parse_course(html: &str) -> Result<Course> {
 
     let workload_info = parse_workloads(&dom).context(format!(
         "Unable to parse workload information for course: {}",
+        title
+    ))?;
+
+    let html_info = grab_htmls(&dom).context(format!(
+        "Unable to grab html information for course: {}",
         title
     ))?;
 
