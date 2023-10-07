@@ -56,16 +56,8 @@ services:
     networks:
       - dis-network
     depends_on:
-      scraper:
-        condition: service_completed_successfully
       db:
         condition: service_started
-
-  scraper:
-    build: ./backend/courses
-    restart: on-failure
-    volumes:
-      - ./data:/data
 
 networks:
   dis-network:
