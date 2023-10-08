@@ -60,14 +60,15 @@
     (println "[course scraper]: Finished scraping, going to sleep")
     (println "[course scraper]: Modified" (count @newly-scraped) "courses")
 
-  ; run the rust_parser with the data-dir as input and new-json-dir as output using sh
-    (println "[course scraper] Running rust parser...")
-
-    (let [result (shell/sh "rust_parser" pages-dir new-json-dir)]
-      (println "[course scraper] parser stderr: " (:err result)))
+    (if-not (zero? (count @newly-scraped))
+      (let [result (future (shell/sh "rust_parser" pages-dir new-json-dir))]
+        (println "[course parser] Running rust parser...")
+        (println "[course parser] Parser stderr: " (:err @result))
+        (println "[course parser] Finished parsing courses"))
+      (println "[course parser] No new courses, not running parser"))
 
     (reset! newly-scraped [])
-    (Thread/sleep (* 1000 60 60))
+    (Thread/sleep (* 1000 60 60)) ;; 1 hour, unit is ms
     (recur callback)))
 
 ; Magical snippet of code that allows us to use SNI with http-kit
