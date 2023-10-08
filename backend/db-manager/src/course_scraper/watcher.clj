@@ -63,9 +63,9 @@
   ; run the rust_parser with the data-dir as input and new-json-dir as output using sh
     (println "[course scraper] Running rust parser...")
 
-    (def result (shell/sh "rust_parser" pages-dir new-json-dir))
-    ; print stderr and stdout
-    (println "[course scraper] stderr: " (:err result))
+    (let [result (shell/sh "rust_parser" pages-dir new-json-dir)]
+      (println "[course scraper] parser stderr: " (:err result)))
+
     (reset! newly-scraped [])
     (Thread/sleep (* 1000 60 60))
     (recur callback)))
