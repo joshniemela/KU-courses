@@ -1,141 +1,37 @@
 (ns db-manager.db
-  (:refer-clojure :exclude [filter for group-by into partition-by set update])
-  (:require [next.jdbc :as jdbc]
-            [next.jdbc.sql :as jdbc.sql]
-            [honey.sql :as sql]
-            [clojure.java.io :as io]
-            [honey.sql.helpers :refer :all :as h]
-            [clojure.set :as set]
-            [clojure.data.json :as json]
-            [db-manager.querier :refer [generate-course-by-id-query
-                                        generate-overview-query
-                                        find-course-ids-query]]))
+  (:require [datascript.core :as d]))
 
-(defn nuke-db! [db]
-  (jdbc/with-transaction [tx db]
-    (jdbc/execute! tx [(slurp (io/resource "extensions.sql"))])
-    (jdbc/execute! tx [(slurp (io/resource "nuke.sql"))])
-    (jdbc/execute! tx [(slurp (io/resource "types.sql"))])
-    (jdbc/execute! tx [(slurp (io/resource "schema.sql"))])))
+(def one {:db/cardinality :db.cardinality/one})
+(def many {:db/cardinality :db.cardinality/many})
 
-(defn insert-course! [ds course-map]
-  (let [course-schema [:course_id :title :course_language
-                       :description :start_block :duration
-                       :credits :study_level :url
-                       :raw_description :pass_rate :avg_grade :median_grade]]
+(def one-ref {:db/valueType :db.type/ref
+              :db/cardinality :db.cardinality/one})
+(def many-ref {:db/valueType :db.type/ref
+               :db/cardinality :db.cardinality/many})
+(defn unique [m]
+  (assoc m :db/unique :db.unique/identity))
 
-    (jdbc.sql/insert! ds :course (select-keys course-map course-schema))))
+(def schema {:course/code (unique one)
+             :course/content one
+             :course/learning_outcomes one
+             :course/recommended_qualifications one
+             :course/title one
+             :course/credits one
+             :course/capacity one
+             :course/languages one
+             :course/faculty one
+             :course/degrees many
+             :course/departments many
+             :course/schedules many
+             :course/coordinators many-ref
+             :course/exams many-ref
+             :course/workloads many-ref
 
-(defn emp-fields [emp]
-  (select-keys emp [:email :full_name]))
+             :emplooyee/name one
+             :emplooyee/email (unique one)
 
-(defn insert-employees! [ds emps-map]
-  (jdbc/execute! ds (-> (insert-into :employee)
-                        (values (map emp-fields (:coordinators emps-map)))
-                        (on-conflict :email)
-                        do-nothing
-                        (sql/format))))
+             :exam/type one
+             :exam/minutes one
 
-(defn insert-coordinates! [ds course-emp-map]
-  ; associate course_id with each coordinator
-
-  (let [cid (:course_id course-emp-map)]
-
-    ; select only the email from the coordinators and associate with course_id
-    (jdbc.sql/insert-multi! ds :coordinates (map #(select-keys (assoc % :course_id cid) [:email
-                                                                                         :course_id])
-                                                 (:coordinators course-emp-map)))))
-(defn insert-workloads! [ds course-emp-map]
-  (let [workloads (:workloads course-emp-map)]
-    (jdbc.sql/insert-multi! ds :workload (map #(select-keys (assoc % :course_id (:course_id course-emp-map))
-                                                            [:course_id :workload_type :hours])
-                                              workloads))))
-
-(defn insert-schedule-groups! [ds course-emp-map]
-  (let [schedule-groups (:schedules course-emp-map)]
-    (jdbc.sql/insert-multi! ds :schedule (map #(select-keys (assoc % :course_id (:course_id course-emp-map))
-                                                            [:course_id :schedule_type :minutes])
-                                              schedule-groups))))
-
-; add null minutes to exams if not present,
-; otherwise the insert-multi! will fail (key must be present for insert)
-(defn add-null-minutes [exam]
-  (if (:minutes exam)
-    exam
-    (assoc exam :minutes nil)))
-(defn insert-exams! [ds course-emp-map]
-  (let [exams (map add-null-minutes (:exams course-emp-map))]
-    (jdbc.sql/insert-multi! ds :exam (map #(select-keys (assoc % :course_id (:course_id course-emp-map))
-                                                        [:course_id :exam_type :minutes])
-                                          exams))))
-
-(defn insert-departments! [ds course-emp-map]
-  (let [departments (:departments course-emp-map)]
-    (jdbc.sql/insert-multi! ds :department (map #(select-keys (assoc % :course_id (:course_id course-emp-map))
-                                                              [:course_id :department_type])
-                                                departments))))
-
-(defn insert-course-emp! [db course-emp-map]
-  (jdbc/with-transaction [tx db]
-    (insert-course! tx course-emp-map)
-    (insert-employees! tx course-emp-map)
-    (insert-coordinates! tx course-emp-map)
-    (insert-workloads! tx course-emp-map)
-    (insert-schedule-groups! tx course-emp-map)
-    (insert-exams! tx course-emp-map)
-    (insert-departments! tx course-emp-map)))
-
-(defn populate-courses! [db courses]
-  (println (str "Populating database with " (count courses) " courses"))
-  ; TODO, fix print race condition
-  (doall (pmap #(do (insert-course-emp! db %)
-                    (println (str "Inserted course " (:course_id %))))
-               courses))
-  (println "Done populating database"))
-
-; queries section begins here
-
-(defn find-email-by-name [db name]
-  (jdbc/execute-one! db ["SELECT email, full_name, similarity(full_name, ?) AS search_similarity
-                          FROM employee
-                          ORDER BY search_similarity DESC
-                          LIMIT 1;" name]))
-
-(defn find-course-by-name [db name]
-  (jdbc/execute-one! db ["SELECT course_id, title, similarity(title, ?) AS search_similarity
-                          FROM course
-                          ORDER BY search_similarity DESC
-                          LIMIT 1;" name]))
-
-(defn fix-json [course]
-  ; exams, schedules, workloads, and coordinators are text that needs to be parsed to json
-  (assoc course
-         :exams (json/read-str (:exams course))
-         :schedules (json/read-str (:schedules course))
-         :workloads (json/read-str (:workloads course))
-         :employees (json/read-str (:employees course))
-         :departments (json/read-str (:departments course))
-         :course/description (json/read-str (:course/description course))))
-
-(defn get-course-by-id [db course-id]
-  (fix-json (jdbc/execute-one! db [(generate-course-by-id-query course-id)])))
-
-(defn fix-overview-query [course]
-  ; exams, schedules, workloads, and coordinators are text that needs to be parsed to json
-  (let [raw-desc (:course/raw_description course)
-        max-len 200]
-    (dissoc (assoc course
-                   :exams (json/read-str (:exams course))
-                   :schedules (json/read-str (:schedules course))
-                   :summary (subs raw-desc 0 (min (count raw-desc) max-len)))
-
-            :course/raw_description)))
-
-(defn get-courses [db predicates]
-  (let [courses (jdbc/execute! db [(generate-overview-query predicates)])]
-    ; sort the list of maps alphabetically according to course/title
-    ; TODO: allow other sorting options (similarity, credits, etc...)
-    (sort-by #(:course/title %) (map fix-overview-query courses))))
-
-(defn get-course-ids [db]
-  (jdbc/execute! db [find-course-ids-query]))
+             :workload/type one
+             :workload/hours one})
