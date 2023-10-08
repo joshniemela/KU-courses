@@ -12,9 +12,9 @@ CREATE TABLE IF NOT EXISTS course (
 	credits numeric(3, 1),
 	study_level study_enum,
 
-  pass_rate numeric(4, 2),
-  avg_grade numeric(4, 2),
-  median_grade numeric(3, 1)
+  	pass_rate numeric(4, 2),
+  	avg_grade numeric(4, 2),
+  	median_grade numeric(3, 1)
 );
 
 CREATE INDEX IF NOT EXISTS desc_idx ON course USING GIN (raw_description gin_trgm_ops);
