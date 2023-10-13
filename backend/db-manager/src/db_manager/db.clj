@@ -83,6 +83,10 @@
   (let [f (fn [[k v]] (when v [k v]))]
     (postwalk (fn [x] (if (map? x) (into {} (map f x)) x)) m)))
 
+(defn remove-db-ids
+  [coll]
+  (postwalk (fn [x] (if (map? x) (dissoc x :db/id) x)) coll))
+
 (defn course-to-transaction  [course-map]
   (let [id (get-in course-map ["info" "id"])
         title (get course-map "title")
@@ -145,7 +149,7 @@
                                   :course/language [*]
                                   :course/statistics [*]}]
                        [:course/id course-id])]
-    course))
+    (remove-db-ids course)))
 
 (defn get-courses [db]
   nil)
