@@ -122,13 +122,6 @@
   (println "Populating database...")
   (d/transact! conn transactions-w-stats)
   (println "Done!")
-  (println (d/q '[:find ?course-name ?hours
-                  :in $ ?workload-type
-                  :where
-                  [?course :course/workload ?workload]
-                  [?workload :workload/type ?workload-type]
-                  [?workload :workload/hours ?hours]
-                  [?course :course/title ?course-name]] @conn "Lectures"))
 
   (println "Starting server on port " (:port main-config))
   (run-server (app) main-config))
