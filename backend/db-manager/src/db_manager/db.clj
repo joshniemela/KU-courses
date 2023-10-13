@@ -104,23 +104,23 @@
         ;content ""
         ;learning-outcome ""
         ;recommended-qualifications ""]
-    (remove-nils {:course/id id
-                  :course/title title
-                  :course/ects ects
-                  :course/blocks (mapv #(hash-map :block/type %) blocks)
-                  :course/schedule (mapv #(hash-map :schedule/type %) schedules)
-                  :course/language (mapv #(hash-map :language/name %) languages)
-                  :course/duration duration
-                  :course/degree (mapv #(hash-map :degree/name %) degrees)
-                  :course/capacity capacity
-                  :course/department (mapv #(hash-map :department/name %) departments)
-                  :course/faculty (hash-map :faculty/name faculty)
-                  :course/coordinator coordinators
-                  :course/workload workloads
-                  :course/exam exams
-                  :course/content content
-                  :course/learning-outcome learning-outcome
-                  :course/recommended-qualifications (if (nil? recommended-qualifications) "" recommended-qualifications)})))
+    {:course/id id
+     :course/title title
+     :course/ects ects
+     :course/block (mapv #(hash-map :block/type %) blocks)
+     :course/schedule (mapv #(hash-map :schedule/type %) schedules)
+     :course/language (mapv #(hash-map :language/name %) languages)
+     :course/duration duration
+     :course/degree (mapv #(hash-map :degree/name %) degrees)
+     :course/capacity capacity
+     :course/department (mapv #(hash-map :department/name %) departments)
+     :course/faculty (hash-map :faculty/name faculty)
+     :course/coordinator coordinators
+     :course/workload workloads
+     :course/exam exams
+     :course/content content
+     :course/learning-outcome learning-outcome
+     :course/recommended-qualifications (if (nil? recommended-qualifications) "" recommended-qualifications)}))
 
 (defn courses-to-transactions [courses]
   (map course-to-transaction courses))
@@ -132,49 +132,20 @@
                         @conn)]
     ; this is a vector of vectors, we want a vector of strings
     (mapv first course-ids)))
-(defn get-course-by-id [conn id]
+(defn get-course-by-id [conn course-id]
   ; find all the detailed information about a course by its id
-  (let [course (d/q '[:find ?title ?ects ?blocks ?schedules ?languages ?duration ?degrees ?capacity ?departments ?faculty ?coordinators ?workloads ?exams ?content ?learning-outcome ?recommended-qualifications
-                      :in $ ?id
-                      :where
-                      [?e :course/id ?id]
-                      [?e :course/title ?title]
-                      [?e :course/ects ?ects]
-                      [?e :course/blocks ?blocks]
-                      [?e :course/schedule ?schedules]
-                      [?e :course/language ?languages]
-                      [?e :course/duration ?duration]
-                      [?e :course/degree ?degrees]
-                      [?e :course/capacity ?capacity]
-                      [?e :course/department ?departments]
-                      [?e :course/faculty ?faculty]
-                      [?e :course/coordinator ?coordinators]
-                      [?e :course/workload ?workloads]
-                      [?e :course/exam ?exams]
-                      [?e :course/content ?content]
-                      [?e :course/learning-outcome ?learning-outcome]
-                      [?e :course/recommended-qualifications ?recommended-qualifications]]
-                    @conn id)]
-    (if (empty? course)
-      nil
-      (let [[title ects blocks schedules languages duration degrees capacity departments faculty coordinators workloads exams content learning-outcome recommended-qualifications] (first course)]
-        {:id id
-         :title title
-         :ects ects
-         :blocks blocks
-         :schedule schedules
-         :language languages
-         :duration duration
-         :degree degrees
-         :capacity capacity
-         :department departments
-         :faculty faculty
-         :coordinator coordinators
-         :workload workloads
-         :exam exams
-         :content content
-         :learning-outcome learning-outcome
-         :recommended-qualifications recommended-qualifications}))))
+  (let [course (d/pull @conn '[* {:course/schedule [*]
+                                  :course/exam [*]
+                                  :course/degree [*]
+                                  :course/block [*]
+                                  :course/faculty [*]
+                                  :course/department [*]
+                                  :course/coordinator [*]
+                                  :course/workload [*]
+                                  :course/language [*]
+                                  :course/statistics [*]}]
+                       [:course/id course-id])]
+    course))
 
 (defn get-courses [db]
   nil)

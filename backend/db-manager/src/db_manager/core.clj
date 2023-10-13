@@ -12,7 +12,7 @@
             [reitit.swagger :as swagger]
             [org.httpkit.server :refer [run-server]]
             [db-manager.routes :refer [ping-route api-routes]]
-            [db-manager.db :refer [course-to-transaction schema]]
+            [db-manager.db :refer [course-to-transaction schema remove-nils]]
             [course-scraper.watcher :refer [sitemap-watcher scrape-course]]
             [statistics.core :refer [stats-watcher]]
             [ring.middleware.cors :refer [wrap-cors]]
@@ -105,10 +105,12 @@
 (def courses (map read-json-file (drop 1 (file-seq (clojure.java.io/file json-dir)))))
 
 (def transactions-w-stats (map (fn [course]
-                                 (let [stats (try-finding-stats (:course_id course))]
-                                   (course-to-transaction (if stats
-                                                            (merge course (transform-stats stats))
-                                                            course))))
+                                 (let [course-id (get-in course ["info" "id"])
+                                       stats (try-finding-stats course-id)
+                                       transacted-course (course-to-transaction course)]
+                                   (remove-nils (if stats
+                                                  (assoc transacted-course :course/statistics (transform-stats stats))
+                                                  transacted-course))))
                                courses))
 
 (def main-config {:port 3000})
