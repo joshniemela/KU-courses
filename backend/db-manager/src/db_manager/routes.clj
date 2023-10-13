@@ -29,7 +29,7 @@
 
 (defn api-routes [db]
   [["/get-course-ids" {:get {:parameters {}
-                             :responses {200 {:body [map?]}}
+                             :responses {200 {:body [string?]}}
                              :handler (fn [_]
                                         {:status 200
                                          :body (get-course-ids db)})}}]
@@ -41,8 +41,7 @@
                          :description "Returns a course with the given id"
                          :handler (fn [{{{:keys [id]} :query} :parameters}]
                                     {:status 200
-                                     :body (assoc (get-course-by-id db id)
-                                                  :stats (try-finding-stats id))})}}]
+                                     :body (get-course-by-id db id)})}}]
 
    ; Better echo route, not used
    ["/echo" {:post {:parameters {:body map?}

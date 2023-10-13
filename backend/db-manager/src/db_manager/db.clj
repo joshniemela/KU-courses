@@ -37,7 +37,7 @@
    :course/recommended-qualifications {}
    :course/statistics (component one-ref)
 
-   :schedule-group/type unique
+   :schedule/type unique
    :block/type unique
    :faculty/name unique
    :department/name unique
@@ -125,9 +125,56 @@
 (defn courses-to-transactions [courses]
   (map course-to-transaction courses))
 
-(defn get-course-ids [db]
-  nil)
-(defn get-course-by-id [db id]
-  nil)
+(defn get-course-ids [conn]
+  (let [course-ids (d/q '[:find ?id
+                          :where
+                          [?e :course/id ?id]]
+                        @conn)]
+    ; this is a vector of vectors, we want a vector of strings
+    (mapv first course-ids)))
+(defn get-course-by-id [conn id]
+  ; find all the detailed information about a course by its id
+  (let [course (d/q '[:find ?title ?ects ?blocks ?schedules ?languages ?duration ?degrees ?capacity ?departments ?faculty ?coordinators ?workloads ?exams ?content ?learning-outcome ?recommended-qualifications
+                      :in $ ?id
+                      :where
+                      [?e :course/id ?id]
+                      [?e :course/title ?title]
+                      [?e :course/ects ?ects]
+                      [?e :course/blocks ?blocks]
+                      [?e :course/schedule ?schedules]
+                      [?e :course/language ?languages]
+                      [?e :course/duration ?duration]
+                      [?e :course/degree ?degrees]
+                      [?e :course/capacity ?capacity]
+                      [?e :course/department ?departments]
+                      [?e :course/faculty ?faculty]
+                      [?e :course/coordinator ?coordinators]
+                      [?e :course/workload ?workloads]
+                      [?e :course/exam ?exams]
+                      [?e :course/content ?content]
+                      [?e :course/learning-outcome ?learning-outcome]
+                      [?e :course/recommended-qualifications ?recommended-qualifications]]
+                    @conn id)]
+    (if (empty? course)
+      nil
+      (let [[title ects blocks schedules languages duration degrees capacity departments faculty coordinators workloads exams content learning-outcome recommended-qualifications] (first course)]
+        {:id id
+         :title title
+         :ects ects
+         :blocks blocks
+         :schedule schedules
+         :language languages
+         :duration duration
+         :degree degrees
+         :capacity capacity
+         :department departments
+         :faculty faculty
+         :coordinator coordinators
+         :workload workloads
+         :exam exams
+         :content content
+         :learning-outcome learning-outcome
+         :recommended-qualifications recommended-qualifications}))))
+
 (defn get-courses [db]
   nil)
