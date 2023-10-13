@@ -1,7 +1,6 @@
 (ns db-manager.routes
   (:require [clojure.spec.alpha :as s]
-            [db-manager.db :refer [find-email-by-name
-                                   get-course-ids
+            [db-manager.db :refer [get-course-ids
                                    get-course-by-id
                                    get-courses]]
             [clojure.data.json :as json]
@@ -29,15 +28,7 @@
             :body "pong"})}])
 
 (defn api-routes [db]
-  [["/find-email" {:get {:parameters {:query {:name string?}}
-                         :responses {200 {:body {:email string?
-                                                 :full_name string?
-                                                 :search_similarity float?}}}
-                         :handler (fn [{{{:keys [name]} :query} :parameters}]
-                                    {:status 200
-                                     :body (find-email-by-name db name)})}}]
-
-   ["/get-course-ids" {:get {:parameters {}
+  [["/get-course-ids" {:get {:parameters {}
                              :responses {200 {:body [map?]}}
                              :handler (fn [_]
                                         {:status 200
