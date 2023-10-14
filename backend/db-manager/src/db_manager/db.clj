@@ -136,8 +136,9 @@
                         @conn)]
     ; this is a vector of vectors, we want a vector of strings
     (mapv first course-ids)))
-(defn get-course-by-id [conn course-id]
-  ; find all the detailed information about a course by its id
+(defn get-course-by-id
+  "Find all the detailed information about a course by its id"
+  [conn course-id]
   (let [course (d/pull @conn '[* {:course/schedule [*]
                                   :course/exam [*]
                                   :course/degree [*]
@@ -151,5 +152,47 @@
                        [:course/id course-id])]
     (remove-db-ids course)))
 
-(defn get-courses [db]
-  nil)
+(defn get-courses [conn predicate-map]
+  (let [blocks (get predicate-map "blocks")
+        schedules (get predicate-map "schedules")
+        exams (get predicate-map "exams")
+        degrees (get predicate-map "degrees")]
+    (d/q (concat '[:find ?course-id :in $
+                   :where
+                   [?e :course/block ?block]
+                   [?e :course/id ?course-id]
+                   [?e :course/schedule ?schedule]
+                   [?e :course/exam ?exam]
+                   [?e :course/degree ?degree]]
+                 (if (empty? blocks)
+                   []
+                   (list (cons 'or (mapv (fn [block] (vector '?block ':block/type block)) blocks))))
+
+                 (if (empty? schedules)
+                   []
+                   (list (cons 'or (mapv (fn [schedule] (vector '?schedule ':schedule/type schedule)) schedules))))
+
+                 (if (empty? exams)
+                   []
+                   (list (cons 'or (mapv (fn [exam] (vector '?exam ':exam/type exam)) exams))))
+
+                 (if (empty? degrees)
+                   []
+                   (list (cons 'or (mapv (fn [degree] (vector '?degree ':degree/name degree)) degrees)))))
+         @conn)))
+
+; denest a vector of vectors
+(defn denest [v]
+  (mapv first v))
+
+(defn get-overviews-from-ids [conn ids]
+  (d/pull-many @conn '[:course/id
+                       :course/title
+                       :course/ects
+                       {:course/schedule [*]
+                        :course/block [*]
+                        :course/exam [*]
+                        :course/degree [*]
+                        :course/statistics [*]}]
+               (mapv #(vector :course/id %) ids)))
+
