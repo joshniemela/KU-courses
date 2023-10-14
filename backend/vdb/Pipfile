@@ -18,6 +18,8 @@ mypy = "*"
 types-beautifulsoup4 = "*"
 types-requests = "*"
 chromadb = "*"
+sentence-transformers = "*"
+scikit-learn = "*"
 
 [dev-packages]
 
