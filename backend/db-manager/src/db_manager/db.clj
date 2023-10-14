@@ -204,5 +204,4 @@
 
 (defn get-courses [conn predicate-map]
   (let [course-ids (query-course-ids conn predicate-map)]
-    (println predicate-map)
-    (get-overviews-from-ids conn course-ids)))
+    (map remove-db-ids (get-overviews-from-ids conn course-ids))))
