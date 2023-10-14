@@ -24,7 +24,7 @@ export type Exam = {
 };
 
 export type Course = {
-  course_id: string;
+  course: string;
   title: string;
   start_block: number;
   study_level: string;
@@ -41,7 +41,7 @@ export type Course = {
 };
 
 export const empty_course: Course = {
-  course_id: "",
+  course: "",
   title: "",
   start_block: 0,
   study_level: "",
@@ -68,7 +68,7 @@ export function total_hours(course: Course): number {
 
 // Same as course but removed the employees and workloads and desc is just a string
 export type Overview = {
-  course_id: string;
+  course: string;
   title: string;
   start_block: number;
   study_level: string;
@@ -79,10 +79,17 @@ export type Overview = {
   schedules: Schedule[];
   exams: Exam[];
   summary: string;
+  statistics: Statistics;
+};
+
+export type Statistics = {
+  mean: number;
+  median: number;
+  "pass-rate": number;
 };
 
 export const empty_overview: Overview = {
-  course_id: "",
+  course: "",
   title: "",
   start_block: 0,
   study_level: "",
@@ -93,4 +100,9 @@ export const empty_overview: Overview = {
   schedules: [],
   exams: [],
   summary: "",
+  statistics: {
+    mean: 0,
+    median: 0,
+    "pass-rate": 0,
+  },
 };

@@ -41,7 +41,7 @@
    :block/type unique
    :faculty/name unique
    :department/name unique
-   :degree/name unique
+   :degree/type unique
    :language/name unique
    :employee/email unique
    :employee/name {}
@@ -115,7 +115,7 @@
      :course/schedule (mapv #(hash-map :schedule/type %) schedules)
      :course/language (mapv #(hash-map :language/name %) languages)
      :course/duration duration
-     :course/degree (mapv #(hash-map :degree/name %) degrees)
+     :course/degree (mapv #(hash-map :degree/type %) degrees)
      :course/capacity capacity
      :course/department (mapv #(hash-map :department/name %) departments)
      :course/faculty (hash-map :faculty/name faculty)
@@ -184,7 +184,7 @@
 
                          (if (empty? degrees)
                            []
-                           (list (cons 'or (mapv (fn [degree] (vector '?degree ':degree/name degree)) degrees))))
+                           (list (cons 'or (mapv (fn [degree] (vector '?degree ':degree/type degree)) degrees))))
 
                          (if (empty? departments)
                            []

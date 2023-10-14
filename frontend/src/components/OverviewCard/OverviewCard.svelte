@@ -29,8 +29,39 @@
         }
     }
 
-    function convertExamToString(inputString: string) {
-        return inputString.replace(/(\w)_(\w)/g, "$1 $2");
+    // this takes a vector of maps ex: [{:type "A"}, {:type "B"}] and returns a vector of strings ex: ["A", "B"]
+    function denest_type_maps(map_vector: any) {
+        let type_vector: string[] = [];
+        for (let i = 0; i < map_vector.length; i++) {
+            type_vector.push(map_vector[i].type);
+        }
+        return type_vector;
+    }
+
+    function coerce_blocks_to_int(blocks: any) {
+        // blocks are written in One Two Three Four
+        // this function converts them to "1" "2" "3" "4"
+        let block_vector: string[] = [];
+        for (let i = 0; i < blocks.length; i++) {
+            switch (blocks[i]) {
+                case "One":
+                    block_vector.push("1");
+                    break;
+                case "Two":
+                    block_vector.push("2");
+                    break;
+                case "Three":
+                    block_vector.push("3");
+                    break;
+                case "Four":
+                    block_vector.push("4");
+                    break;
+                default:
+                    block_vector.push(blocks[i]);
+                    break;
+            }
+        }
+        return block_vector;
     }
 </script>
 
@@ -45,49 +76,41 @@
                     {course.title}
                 </h1>
                 <h2>
-                    {course.course_id} - SCIENCE
+                    {course.id} - SCIENCE
                 </h2>
             </div>
             <table class="text-sm">
                 <tr>
                     <td class="border-e border-b border-black px-1">
-                        {course.study_level}</td
-                    >
+                        {denest_type_maps(course.degree).join(", ")}
+                    </td>
                     <td class="border-b border-black px-1">
-                        {course.credits} ECTS</td
-                    >
+                        ECTS: {course.ects}
+                    </td>
                 </tr>
                 <tr>
                     <td class="border-e border-black px-1">
-                        Block {Number(course.start_block)}
-                        {#if Number(course.duration) > 1}
-                            - {Number(course.start_block) +
-                                Number(course.duration) -
-                                1}
-                        {/if}
-                    </td>
-                    <td class="px-1">
-                        Group{#if course.schedules.length > 1}s{/if}:
-                        {#each course.schedules as sch}
-                            {#if sch != course.schedules[course.schedules.length - 1]}
-                                {sch.schedule_type}, &nbsp
-                            {:else}
-                                {sch.schedule_type}
-                            {/if}
-                        {/each}
-                    </td>
+                        Block(s): {coerce_blocks_to_int(
+                            denest_type_maps(course.block)
+                        )
+                            .sort()
+                            .join(", ")}
+                    </td><td class="px-1"> Group(s) </td>
                 </tr>
             </table>
         </div>
-        <p class="">{course.summary}</p>
+
+        <p class="">{course.title} this should be a summary of the course</p>
     </div>
     <div class="w-full bg-kuGray text-white flex flex-row">
         <div class="w-full items-center justify-center flex flex-col">
-            {#each course.exams as exam}
+            {#each course.exam as exam}
                 <p class="">
-                    {convertExamToString(exam.exam_type)}
-                    {#if exam.minutes}
-                        ({formatExamDuration(exam.minutes)})
+                    {exam.type == "ContinuousAssessment"
+                        ? "Continuous Assesment"
+                        : exam.type}
+                    {#if exam.duration}
+                        ({formatExamDuration(exam.duration)})
                     {/if}
                 </p>
             {/each}
@@ -96,22 +119,25 @@
         <table class="text-xs">
             <tr>
                 <td class="border-e border-b border-white px-1"> Pass</td>
+
                 <td class="border-b border-white px-1">
-                    {course.pass_rate == null
+                    {course["pass-rate"] == null
                         ? "N/A"
-                        : `${Math.round(course.pass_rate * 10000) / 100}%`}
+                        : `${Math.round(course["pass-rate"] * 10000) / 100}%`}
                 </td></tr
             >
             <tr>
                 <td class="border-e border-white px-1"> Median</td>
                 <td class="border-white px-1">
-                    {course.median_grade == null ? "N/A" : course.median_grade}
+                    {course.statistics.median == null
+                        ? "N/A"
+                        : course.statistics.median}
                 </td>
             </tr>
             <tr>
                 <td class="border-e border-t border-white px-1"> Average </td>
                 <td class="border-t border-white px-1">
-                    {course.avg_grade == null ? "N/A" : course.avg_grade}
+                    {course.mean == null ? "N/A" : course.mean}
                 </td>
             </tr>
         </table>

@@ -117,7 +117,7 @@
 (defn -main [& args]
 ; concurrently run sitemap-watcher scrape-course and stats-watcher so that they don't block the server
   (future (sitemap-watcher scrape-course))
-  (future (stats-watcher))
+  ;(future (stats-watcher))
 
   (println "Populating database...")
   (d/transact! conn transactions-w-stats)

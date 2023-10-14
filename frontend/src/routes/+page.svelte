@@ -139,7 +139,7 @@ onMount(() => {
         <div class="grid grid-cols-2 gap-4 pb-2 md:grid-cols-4 md:pb-0">
             <CheckboxMenu
                 header_name="Block"
-                options={["1", "2", "3", "4", "5"]}
+                options={["1", "2", "3", "4", "Summer"]}
                 bind:selected={$queryStore.block}
             />
 
@@ -203,7 +203,7 @@ onMount(() => {
                 class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 m-4"
             >
 
-                {#each visibleCourses as card (card.course_id)}
+                {#each visibleCourses as card (card.id)}
                     <OverviewCard course={card} />
                 {/each}
             </div>
