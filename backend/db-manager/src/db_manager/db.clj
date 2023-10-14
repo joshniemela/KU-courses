@@ -157,11 +157,11 @@
   (mapv first v))
 
 (defn query-course-ids [conn predicate-map]
-  (let [blocks (get predicate-map "blocks")
-        schedules (get predicate-map "schedules")
-        exams (get predicate-map "exams")
-        degrees (get predicate-map "degrees")
-        departments (get predicate-map "departments")]
+  (let [blocks (get predicate-map :blocks)
+        schedules (get predicate-map :schedules)
+        exams (get predicate-map :exams)
+        degrees (get predicate-map :degrees)
+        departments (get predicate-map :departments)]
     (denest (d/q (concat '[:find ?course-id :in $
                            :where
                            [?e :course/block ?block]
@@ -201,3 +201,8 @@
                         :course/degree [*]
                         :course/statistics [*]}]
                (mapv #(vector :course/id %) ids)))
+
+(defn get-courses [conn predicate-map]
+  (let [course-ids (query-course-ids conn predicate-map)]
+    (println predicate-map)
+    (get-overviews-from-ids conn course-ids)))
