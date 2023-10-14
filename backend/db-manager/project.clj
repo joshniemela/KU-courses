@@ -4,9 +4,6 @@
   :license {:name ""
             :url ""}
   :dependencies [[org.clojure/clojure "1.11.1"]
-                 [com.github.seancorfield/next.jdbc "1.3.834"]
-                 [org.postgresql/postgresql "42.2.10"]
-                 [com.github.seancorfield/honeysql "2.3.928"]
                  [org.clojure/data.json "2.4.0"]
                  [org.jsoup/jsoup "1.16.1"]
                  [http-kit "2.3.0"]
