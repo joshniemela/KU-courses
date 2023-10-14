@@ -38,9 +38,6 @@
   [t coll]
   (clojure.walk/postwalk (fn [x] (if (map? x) (update-keys x t) x)) coll))
 
-(defn remove-db-ids
-  [coll]
-  (clojure.walk/postwalk (fn [x] (if (map? x) (dissoc x :db/id) x)) coll))
 (defn remove-namespace-keywords-in-response-middleware [handler & _]
   (fn [req]
     (let [resp (handler req)]
