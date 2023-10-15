@@ -130,5 +130,9 @@ async def search(query: str):
     ids = [r[0] for r in results]
     return ids
 
+@app.get("/health")
+async def health():
+    return "healthy"
+
 if __name__ == "__main__":
     uvicorn.run(app, host="0.0.0.0", port=4000)

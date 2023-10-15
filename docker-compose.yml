@@ -25,9 +25,26 @@ services:
     networks:
       - dis-network
     depends_on:
+      vector_store:
+        condition: service_healthy
       rust_builder:
         condition: service_completed_successfully
 
+
+  vector_store:
+    build: ./backend/vector_store
+    restart: on-failure
+    volumes:
+      - ./data:/data
+    ports:
+      - "4000:4000"
+
+    healthcheck:
+      test: curl --fail http://localhost:4000/health || exit 1
+      start_period: 30s
+      interval: 30s
+      timeout: 10s
+      retries: 5
 
   rust_builder:
     build: ./backend/rust_parser
