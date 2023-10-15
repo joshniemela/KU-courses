@@ -261,6 +261,7 @@ pub struct Description {
     pub content: String,
     pub learning_outcome: String,
     pub recommended_qualifications: Option<String>,
+    pub summary: String,
 }
 
 pub fn parse_course(html: &str) -> Result<Course> {
