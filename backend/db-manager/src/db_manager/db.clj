@@ -107,6 +107,9 @@
         learning-outcome (get-in course-map ["description" "learning_outcome"])
         recommended-qualifications (get-in course-map ["description" "recommended_qualifications"])
         summary (get-in course-map ["description" "summary"])]
+    ; if deparmtent is empty: print the error
+    (if (empty? departments)
+      (println "Course " title " has no departments"))
     {:course/id id
      :course/title title
      :course/ects ects
@@ -116,7 +119,8 @@
      :course/duration duration
      :course/degree (mapv #(hash-map :degree/type %) degrees)
      :course/capacity capacity
-     :course/department (mapv #(hash-map :department/name %) departments)
+     ; TODO: fix that the rust parser doesnt grab the departments for some courses
+     :course/department (mapv #(hash-map :department/name %) (if (empty? departments) [""] departments))
      :course/faculty (hash-map :faculty/name faculty)
      :course/coordinator coordinators
      :course/workload workloads
