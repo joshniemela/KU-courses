@@ -106,7 +106,10 @@
             </table>
         </div>
 
-        <p class="">{course.title} this should be a summary of the course</p>
+        <p class="">
+            {course.summary.length > 200
+            ? course.summary.substring(0, 200) + "..."
+            : course.summary}</p>
     </div>
     <div class="w-full bg-kuGray text-white flex flex-row">
         <div class="w-full items-center justify-center flex flex-col">
