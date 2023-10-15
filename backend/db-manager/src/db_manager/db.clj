@@ -199,7 +199,9 @@
                         :course/block [*]
                         :course/exam [*]
                         :course/degree [*]
-                        :course/statistics [*]}]
+                        :course/statistics [:statistics/mean
+                                            :statistics/median
+                                            :statistics/pass-rate]}]
                (mapv #(vector :course/id %) ids)))
 
 (defn get-courses [conn predicate-map]

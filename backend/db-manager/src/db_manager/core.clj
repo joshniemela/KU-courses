@@ -94,10 +94,15 @@
     (let [exam (stats "exam")
           pass-rate (exam "pass-rate")
           mean (exam "mean")
-          median (exam "median")]
+          median (exam "median")
+          graded? (exam "graded")
+          grades (exam "grades")]
+
       {:statistics/pass-rate pass-rate
        :statistics/mean mean
-       :statistics/median median})))
+       :statistics/median median
+       :statistics/graded? graded?
+       :statistics/grades grades})))
 
 (defn read-json-file [file-name]
   (let [file (slurp file-name)]
