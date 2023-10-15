@@ -4,7 +4,8 @@
                                    get-course-by-id
                                    get-courses]]
             [clojure.data.json :as json]
-            [db-manager.cache :refer [cache]]))
+            [db-manager.cache :refer [cache]]
+            [org.httpkit.client :as http]))
 
 ; TODO: fix code duplication, this also apperas in core.clj
 
@@ -60,4 +61,17 @@
                                                    :body (let [get-courses-partial (partial get-courses db)
                                                                courses (cache predicates get-courses-partial)]
                                                            {:count (count courses)
-                                                            :courses courses})}))}}]])
+                                                            :courses courses})}))}}]
+   ["/run-get-on-link" {:post {:parameters {:body map?}
+                               :handler (fn [request]
+                                          (let [body (-> request :parameters :body)
+                                                link (get body :link)]
+                                            (println link)
+                                            (let [response @(http/get link)]
+                                              (if (= (:status response) 200)
+                                                (let [body (:body response)]
+                                                  {:status 200
+                                                   :body body})
+                                                (do
+                                                  (println response)
+                                                  (throw (Exception. "Request failed")))))))}}]])

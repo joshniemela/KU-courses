@@ -1,6 +1,7 @@
 (ns db-manager.db
   (:require [datascript.core :as d]
-
+            [org.httpkit.client :as http]
+            [clojure.data.json :as json]
             [clojure.walk :refer [postwalk]]))
 
 (def many-ref {:db/valueType :db.type/ref
@@ -156,40 +157,63 @@
 (defn denest [v]
   (mapv first v))
 
+(defn search-vector-store [query]
+  ; send http request to localhost:4000/search
+  (let [response @(http/get "http://vectorstore:4000/search" {:query-params {:query query}})]
+    (if (= (:status response) 200)
+      (let [body (:body response)]
+        (json/read-str body))
+      (do
+        (println response)
+        (throw (Exception. "Search request failed"))))))
+
 (defn query-course-ids [conn predicate-map]
   (let [blocks (get predicate-map :blocks)
         schedules (get predicate-map :schedules)
         exams (get predicate-map :exams)
         degrees (get predicate-map :degrees)
-        departments (get predicate-map :departments)]
-    (denest (d/q (concat '[:find ?course-id :in $
-                           :where
-                           [?e :course/block ?block]
-                           [?e :course/id ?course-id]
-                           [?e :course/schedule ?schedule]
-                           [?e :course/exam ?exam]
-                           [?e :course/degree ?degree]
-                           [?e :course/department ?department]]
-                         (if (empty? blocks)
-                           []
-                           (list (cons 'or (mapv (fn [block] (vector '?block ':block/type block)) blocks))))
+        departments (get predicate-map :departments)
+        search (get predicate-map :search)
+        courses (denest (d/q (concat '[:find ?course-id :in $
+                                       :where
+                                       [?e :course/block ?block]
+                                       [?e :course/id ?course-id]
+                                       [?e :course/schedule ?schedule]
+                                       [?e :course/exam ?exam]
+                                       [?e :course/degree ?degree]
+                                       [?e :course/department ?department]]
+                                     (if (empty? blocks)
+                                       []
+                                       (list (cons 'or (mapv (fn [block] (vector '?block ':block/type block)) blocks))))
 
-                         (if (empty? schedules)
-                           []
-                           (list (cons 'or (mapv (fn [schedule] (vector '?schedule ':schedule/type schedule)) schedules))))
+                                     (if (empty? schedules)
+                                       []
+                                       (list (cons 'or (mapv (fn [schedule] (vector '?schedule ':schedule/type schedule)) schedules))))
 
-                         (if (empty? exams)
-                           []
-                           (list (cons 'or (mapv (fn [exam] (vector '?exam ':exam/type exam)) exams))))
+                                     (if (empty? exams)
+                                       []
+                                       (list (cons 'or (mapv (fn [exam] (vector '?exam ':exam/type exam)) exams))))
 
-                         (if (empty? degrees)
-                           []
-                           (list (cons 'or (mapv (fn [degree] (vector '?degree ':degree/type degree)) degrees))))
+                                     (if (empty? degrees)
+                                       []
+                                       (list (cons 'or (mapv (fn [degree] (vector '?degree ':degree/type degree)) degrees))))
 
-                         (if (empty? departments)
-                           []
-                           (list (cons 'or (mapv (fn [department] (vector '?department ':department/name department)) departments)))))
-                 @conn))))
+                                     (if (empty? departments)
+                                       []
+                                       (list (cons 'or (mapv (fn [department] (vector '?department ':department/name department)) departments)))))
+                             @conn))]
+    (println search)
+    (println predicate-map)
+    (if (empty? search)
+      courses
+        ; we get a list of IDs from the search vector store, we need to find all the courses in
+        ; the returned courses which are in the vector store list whilst preserving the order
+      (let [search-result (search-vector-store search)
+            courses-set (set courses)]
+        (if (nil? search-result)
+          courses
+          ; perform an intersection of the two lists, but preserve the order of the first list
+          (filter #(contains? courses-set %) search-result))))))
 
 (defn get-overviews-from-ids [conn ids]
   (d/pull-many @conn '[:course/id

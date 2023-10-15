@@ -101,9 +101,12 @@
         loading = false;
         courses = json.courses;
         // sort courses alphanumerically or by weights
-        courses.sort((a, b) => {
-            return a.title.localeCompare(b.title);
-        });
+        // if queryStore.search is empty, then sort otherwise do nothing
+        if ($queryStore.search === "") {
+            courses.sort((a, b) => {
+                return a.title.localeCompare(b.title);
+            });
+        }
 
         visibleCourses = courses.slice(0, initialCourseNumber); // Courses to show
         remainingCourses = courses.slice(initialCourseNumber); // Courses to load in batches
@@ -144,6 +147,15 @@
     const url = "https://disku.jniemela.dk";
 
     console.log(visibleCourses);
+
+    let debounceTimeout: number;
+    const handleSearch = (e: Event) => {
+        clearTimeout(debounceTimeout);
+        debounceTimeout = setTimeout(() => {
+            const target = e.target as HTMLInputElement;
+            $queryStore.search = target.value;
+        }, 300);
+    };
 </script>
 
 <svelte:head>
@@ -175,7 +187,18 @@
     <main class="flex flex-col items-center space-y-4 mt-10">
         <h1 class="text-brand-500 text-4xl font-bold">KU Courses 2.0</h1>
 
+        <!-- comment ------------------------------------------------------
         <TextSearch bind:searches={$queryStore.searches} />
+        ------------------------------------------------------------------->
+        <div>
+            <input
+                type="text"
+                placeholder="Search"
+                on:input={handleSearch}
+            />
+            make a button to clear the search
+
+        </div>
         <div>
             <div class="grid grid-cols-2 gap-4 pb-2 md:grid-cols-4 md:pb-0">
                 <CheckboxMenu
