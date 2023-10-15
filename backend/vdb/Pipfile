@@ -4,22 +4,8 @@ verify_ssl = true
 name = "pypi"
 
 [packages]
-clean-text = "*"
-unidecode = "*"
-beautifulsoup4 = "*"
-requests = "*"
-pydantic = "*"
-python-decouple = "*"
-nltk = "*"
-regex = "*"
-black = "*"
-lxml = "*"
-mypy = "*"
-types-beautifulsoup4 = "*"
-types-requests = "*"
-chromadb = "*"
 sentence-transformers = "*"
-scikit-learn = "*"
+fastapi = "*"
 
 [dev-packages]
 
