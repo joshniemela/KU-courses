@@ -104,10 +104,8 @@
         exams (map convert-exam (get course-map "exams"))
         content (get-in course-map ["description" "content"])
         learning-outcome (get-in course-map ["description" "learning_outcome"])
-        recommended-qualifications (get-in course-map ["description" "recommended_qualifications"])]
-        ;content ""
-        ;learning-outcome ""
-        ;recommended-qualifications ""]
+        recommended-qualifications (get-in course-map ["description" "recommended_qualifications"])
+        summary (get-in course-map ["description" "summary"])]
     {:course/id id
      :course/title title
      :course/ects ects
@@ -124,7 +122,8 @@
      :course/exam exams
      :course/content content
      :course/learning-outcome learning-outcome
-     :course/recommended-qualifications (if (nil? recommended-qualifications) "" recommended-qualifications)}))
+     :course/recommended-qualifications (if (nil? recommended-qualifications) "" recommended-qualifications)
+     :course/summary summary}))
 
 (defn courses-to-transactions [courses]
   (map course-to-transaction courses))
@@ -150,7 +149,8 @@
                                   :course/language [*]
                                   :course/statistics [*]}]
                        [:course/id course-id])]
-    (remove-db-ids course)))
+    ; remove summary since we already bring it along from content
+    (remove-db-ids (dissoc course :course/summary))))
 
 ; denest a vector of vectors
 (defn denest [v]
@@ -195,6 +195,7 @@
   (d/pull-many @conn '[:course/id
                        :course/title
                        :course/ects
+                       :course/summary
                        {:course/schedule [*]
                         :course/block [*]
                         :course/exam [*]
