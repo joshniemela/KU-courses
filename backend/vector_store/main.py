@@ -5,12 +5,13 @@ from fastapi import FastAPI
 import re
 import uvicorn
 
+
 def split_document(document, max_token_len=512):
     """
     Split a document into multiple documents that are less than the max_token_len.
     """
     # remove html tags
-    document = re.sub('<[^<]+>', ' ', document)
+    document = re.sub("<[^<]+>", " ", document)
     sentences = document.split(".")
     for i in range(len(sentences)):
         if len(sentences[i]) > max_token_len:
@@ -21,7 +22,8 @@ def split_document(document, max_token_len=512):
 
     return sentences
 
-model = SentenceTransformer('multi-qa-MiniLM-L6-cos-v1')
+
+model = SentenceTransformer("multi-qa-MiniLM-L6-cos-v1")
 DATA_DIR = "../../data/new_json"
 
 # read the jsons in the data folder
@@ -57,13 +59,17 @@ for course in courses:
 def embed_pairs(pairs):
     ids = [p[0] for p in pairs]
     sentences = [p[1] for p in pairs]
-    embeddings = model.encode(sentences, show_progress_bar=True, normalize_embeddings=True)
+    embeddings = model.encode(
+        sentences, show_progress_bar=True, normalize_embeddings=True
+    )
     # return as pairs
     return list(zip(ids, embeddings))
+
 
 embedded_content = embed_pairs(id_content_pairs)
 embedded_coordinators = embed_pairs(id_coordination_pairs)
 embedded_titles = embed_pairs(id_title_pairs)
+
 
 def query_store(query):
     embedded_query = model.encode(query, normalize_embeddings=True)
@@ -88,7 +94,7 @@ def query_store(query):
     for id in content_scores_dict:
         scores = content_scores_dict[id]
         scores.sort(reverse=True)
-        top3_content_scores.append((id, sum(scores[:2])/2))
+        top3_content_scores.append((id, sum(scores[:2]) / 2))
     # for each course, find the coordinator that closest matches the query
     coordinator_scores_dict = {}
     for i in range(len(coordinator_scores)):
@@ -113,16 +119,20 @@ def query_store(query):
         coordinator_score = coordinator_scores[i]
         title_score = title_scores[i]
         # print the lengths of these
-        # if coordinator score is too low, set it to 0
         if coordinator_score < 0.5:
             coordinator_score = 0
         maxed_scores.append((id, max(content_score, coordinator_score, title_score)))
     # sort the scores
     maxed_scores.sort(key=lambda x: x[1], reverse=True)
 
+    # TODO: this should be done in db-manager since this happens before filtering,
+    # aka we might end up only matching the predicates of the entire db on only 100 courses
     return maxed_scores[:100]
 
+
 app = FastAPI()
+
+
 @app.get("/search")
 async def search(query: str):
     results = query_store(query)
@@ -130,9 +140,11 @@ async def search(query: str):
     ids = [r[0] for r in results]
     return ids
 
+
 @app.get("/health")
 async def health():
     return "healthy"
+
 
 if __name__ == "__main__":
     uvicorn.run(app, host="0.0.0.0", port=4000)
