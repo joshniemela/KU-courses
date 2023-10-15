@@ -11,7 +11,7 @@
      * @function navigateToCourse
      */
     function navigateToCourse() {
-        goto(`/course/${course.course_id}`);
+        goto(`/course/${course.id}`);
     }
 
     /**
@@ -95,7 +95,13 @@
                         )
                             .sort()
                             .join(", ")}
-                    </td><td class="px-1"> Group(s) </td>
+                    </td>
+                    <!--TODO: If this is an "other", this breaks and just shows object object-->
+                    <td class="px-1">
+                        Group(s): {denest_type_maps(course.schedule)
+                            .sort()
+                            .join(", ")}
+                    </td>
                 </tr>
             </table>
         </div>
@@ -116,35 +122,63 @@
             {/each}
         </div>
         <!--stats table, contains pass_rate, median_grade, and avg_grade-->
-        <table class="text-xs">
-            <tr>
-                <td class="border-e border-b border-white px-1"> Pass</td>
+        {#if course.statistics}
+            <table class="text-xs">
+                <tr>
+                    <td class="border-e border-b border-white px-1"> Pass</td>
 
-                <td class="border-b border-white px-1">
-                    {course["pass-rate"] == null
-                        ? "N/A"
-                        : `${Math.round(course["pass-rate"] * 10000) / 100}%`}
-                </td></tr
-            >
-            <tr>
-                <td class="border-e border-white px-1"> Median</td>
-                <td class="border-white px-1">
-                    {course.statistics.median == null
-                        ? "N/A"
-                        : course.statistics.median}
-                </td>
-            </tr>
-            <tr>
-                <td class="border-e border-t border-white px-1"> Average </td>
-                <td class="border-t border-white px-1">
-                    {course.mean == null ? "N/A" : course.mean}
-                </td>
-            </tr>
-        </table>
+                    <td class="border-b border-white px-1">
+                        {course.statistics["pass-rate"] == null
+                            ? "N/A"
+                            : `${
+                                  Math.round(
+                                      course.statistics["pass-rate"] * 10000
+                                  ) / 100
+                              }%`}
+                    </td>
+                </tr>
+                <tr>
+                    <td class="border-e border-white px-1"> Median</td>
+                    <td class="border-white px-1">
+                        {course.statistics.median == null
+                            ? "N/A"
+                            : course.statistics.median}
+                    </td>
+                </tr>
+                <tr>
+                    <td class="border-e border-t border-white px-1">
+                        Average
+                    </td>
+                    <td class="border-t border-white px-1">
+                        {course.statistics.mean == null
+                            ? "N/A"
+                            : Math.round(course.statistics.mean * 100) / 100}
+                    </td>
+                </tr>
+            </table>
+        {:else}
+            <table class="text-xs">
+                <tr>
+                    <td class="border-e border-b border-white px-1"> Pass</td>
+
+                    <td class="border-b border-white px-1">N/A</td>
+                </tr>
+                <tr>
+                    <td class="border-e border-white px-1"> Median</td>
+                    <td class="border-white px-1">N/A</td>
+                </tr>
+                <tr>
+                    <td class="border-e border-t border-white px-1">
+                        Average
+                    </td>
+                    <td class="border-t border-white px-1">N/A</td>
+                </tr>
+            </table>
+        {/if}
     </div>
     <!--put this relatively in the bottom right corner of the card-->
     <div class="w-8 h-8 absolute top-0 -top-px opacity-50">
-        {#if course.course_language == "da"}
+        {#if course.language.filter((lang) => lang.name == "Danish").length > 0}
             <Dk />
         {:else}
             <Gb />

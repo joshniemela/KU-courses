@@ -28,12 +28,12 @@ export function writableSession<T>(key: string, value: T): Writable<T> {
 
 // make a writableSession if we have a browser
 const emptyQuery = {
-  block: [],
-  study_level: [],
-  schedule_group: [],
-  examination_type: [],
+  blocks: [],
+  degrees: [],
+  schedules: [],
+  exams: [],
   searches: [],
-  department: [],
+  departments: [],
 };
 
 export const queryStore = writableSession("query", emptyQuery);
@@ -41,12 +41,12 @@ export const queryStore = writableSession("query", emptyQuery);
 export function clearAll() {
   // Cause the checkboxes to update
   queryStore.update((store) => {
-    store.block = [];
-    store.study_level = [];
-    store.schedule_group = [];
-    store.examination_type = [];
+    store.blocks = [];
+    store.degrees = [];
+    store.schedules = [];
+    store.exams = [];
     store.searches = [];
-    store.department = [];
+    store.departments = [];
     return store;
   });
 }

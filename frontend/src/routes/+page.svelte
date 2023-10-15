@@ -49,13 +49,53 @@ onMount(() => {
     const fetchCourses = async () => {
         loading = true;
         const filters = $queryStore;
+        // prepreocess the filters so they are in the correct format
+        // Convert blocks to longer format
+        // 1, 2, 3, 4 => "One", "Two", "Three", "Four
+        const blockMap = {
+            "1": "One",
+            "2": "Two",
+            "3": "Three",
+            "4": "Four",
+            "Summer": "Summer",
+        };
+        const departmentMap: { [key: string]: string } = {
+            "Department of Geoscience and Natural Resource Management": "GeosciencesAndNaturalResourceManagement",
+            "Department of Mathematics": "Mathematics",
+            "Department of Food and Resource Economics": "FoodAndResourceEconomics",
+            "Department of Biology": "Biology",
+            "Department of Computer Science": "ComputerScience",
+            "The Niels Bohr Institute": "NielsBohrInstitute",
+            "Department of Chemistry": "Chemistry",
+            "Department of Nutrition, Exercise and Sports": "NutritionExerciseAndSports",
+            "Department of Food Science": "FoodScience",
+            "Department of Science Education": "ScienceEducation",
+            "The Natural History Museum": "NaturalHistoryMuseumOfDenmark",
+        };
+
+        let coerced_filters = {
+            ...filters,
+            blocks: filters.blocks.map((block) => blockMap[block]),
+            departments: filters.departments.map(
+                (department) => departmentMap[department]
+            ),
+
+        // Convert Continous Assessment to ContinuousAssessment
+            exams: filters.exams.map((exam) =>
+                exam === "Continuous Assessment"
+                    ? "ContinuousAssessment"
+                    : exam
+            ),
+        };
+
+
         const res = await fetch(`${API_URL}/find-course-overviews`, {
             method: "POST",
             headers: {
                 accept: "application/json",
                 "Content-Type": "application/json",
             },
-            body: JSON.stringify(filters),
+            body: JSON.stringify(coerced_filters),
         });
 
         const json = await res.json();
@@ -72,14 +112,11 @@ onMount(() => {
         "Department of Biology", // 93
         "Department of Computer Science", // 92
         "The Niels Bohr Institute", // 90
-        "Department of Plant and Environmental Sciences", // 75
         "Department of Chemistry", // 63
         "Department of Nutrition, Exercise and Sports", // 53
         "Department of Food Science", // 43
-        "Department of Sports Science and Clinical Biomechanics", // 16
         "Department of Science Education", // 16
         "The Natural History Museum", // 14
-        "Department of Veterinary and Animal Sciences", // 10
         //"Department of Drug Design and Pharmacology", // 4
         //"Department of Media, Cognition and Communication", // 3
         //"Department of Public Health", // 2
@@ -102,6 +139,9 @@ onMount(() => {
     const description =
         "A more precise, user-friendly way to browse courses offered by University of Copenhagen which acutally gives you the information you were looking for";
     const url = "https://disku.jniemela.dk";
+
+
+ console.log(visibleCourses)
 </script>
 
 <svelte:head>
@@ -140,19 +180,19 @@ onMount(() => {
             <CheckboxMenu
                 header_name="Block"
                 options={["1", "2", "3", "4", "Summer"]}
-                bind:selected={$queryStore.block}
+                bind:selected={$queryStore.blocks}
             />
 
             <CheckboxMenu
                 header_name="Study Level"
                 options={["Bachelor", "Master"]}
-                bind:selected={$queryStore.study_level}
+                bind:selected={$queryStore.degrees}
             />
 
             <CheckboxMenu
                 header_name="Schedule Group"
                 options={["A", "B", "C", "D"]}
-                bind:selected={$queryStore.schedule_group}
+                bind:selected={$queryStore.schedules}
             />
 
             <CheckboxMenu
@@ -162,15 +202,16 @@ onMount(() => {
                     "Oral",
                     "Assignment",
                     "Continuous Assessment",
+                    "Other"
                 ]}
-                bind:selected={$queryStore.examination_type}
+                bind:selected={$queryStore.exams}
             />
         </div>
 
         <BigCheckbox
             header_name="Department"
             options={institutes}
-            bind:selected={$queryStore.department}
+            bind:selected={$queryStore.departments}
         />
     </div>
 
@@ -218,4 +259,5 @@ onMount(() => {
 </main>
 
 <Footer />
+
 </div>

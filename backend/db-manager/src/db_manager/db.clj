@@ -200,6 +200,7 @@
                         :course/block [*]
                         :course/exam [*]
                         :course/degree [*]
+                        :course/language [*]
                         :course/statistics [:statistics/mean
                                             :statistics/median
                                             :statistics/pass-rate]}]
