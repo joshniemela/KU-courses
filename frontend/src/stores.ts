@@ -55,7 +55,7 @@ export function clearAll() {
 export function apiUrl() {
   // check that window is defined, this is used for checking if we are running in the browser
   if (typeof window === "undefined") {
-    return "http://localhost:3000/api"; // SSR
+    return "https://disku.jniemela.dk:3000/api"; // SSR
   }
 
   let hostname = window.location.hostname;
