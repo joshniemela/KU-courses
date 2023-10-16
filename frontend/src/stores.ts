@@ -28,31 +28,33 @@ export function writableSession<T>(key: string, value: T): Writable<T> {
 
 // make a writableSession if we have a browser
 const emptyQuery = {
-  block: [],
-  study_level: [],
-  schedule_group: [],
-  examination_type: [],
-  searches: [],
-  department: [],
+  blocks: [],
+  degrees: [],
+  schedules: [],
+  exams: [],
+  departments: [],
+  search: null,
 };
 
-export const queryStore = writableSession("query", emptyQuery);
+
+export const queryStore = writableSession("filters", emptyQuery);
 
 export function clearAll() {
   // Cause the checkboxes to update
   queryStore.update((store) => {
-    store.block = [];
-    store.study_level = [];
-    store.schedule_group = [];
-    store.examination_type = [];
-    store.searches = [];
-    store.department = [];
+    store.blocks = [];
+    store.degrees = [];
+    store.schedules = [];
+    store.exams = [];
+    store.departments = [];
+    store.search = null;
     return store;
   });
 }
 
 // API URL
 export function apiUrl() {
+  return "https://disku.jniemela.dk/api"; // SSR
   // check that window is defined, this is used for checking if we are running in the browser
   if (typeof window === "undefined") {
     return "https://disku.jniemela.dk/api"; // SSR

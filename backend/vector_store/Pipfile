@@ -4,6 +4,9 @@ verify_ssl = true
 name = "pypi"
 
 [packages]
+sentence-transformers = "*"
+fastapi = "*"
+uvicorn = "*"
 
 [dev-packages]
 

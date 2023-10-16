@@ -1,37 +1,6 @@
 version: "3.8"
 
 services:
-  db:
-    image: postgres
-    container_name: disku_pgdb
-    restart: always
-    ports:
-      - "5432:5432"
-    environment:
-      POSTGRES_USER: admin
-      POSTGRES_PASSWORD: admin
-    networks:
-      - dis-network
-    volumes: 
-      - ./data/postgres:/var/lib/postgresql/data
-
-  pgadmin:
-    image: dpage/pgadmin4
-    container_name: pgadmin4_container 
-    restart: always
-    ports:
-      - "5050:80"
-    environment:
-      PGADMIN_DEFAULT_EMAIL: admin@private.org
-      PGADMIN_DEFAULT_PASSWORD: admin
-    user: "${UID}:${GID}"
-    networks:
-      - dis-network
-    volumes:
-      - ./data/pg-admin:/var/lib/pgadmin
-    profiles:
-      - debug
-
   frontend:
     build: 
       context: ./frontend
@@ -56,16 +25,34 @@ services:
     networks:
       - dis-network
     depends_on:
-      scraper:
+      vector_store:
+        condition: service_healthy
+      rust_builder:
         condition: service_completed_successfully
-      db:
-        condition: service_started
 
-  scraper:
-    build: ./backend/courses
+
+  vector_store:
+    build: ./backend/vector_store
+    container_name: vectorstore
     restart: on-failure
+    ports:
+      - "4000:4000"
+
     volumes:
       - ./data:/data
 
+    networks:
+      - dis-network
+
+    healthcheck:
+      test: curl --fail http://localhost:4000/health || exit 1
+      start_period: 30s
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
+  rust_builder:
+    build: ./backend/rust_parser
+    image: rust_parser
 networks:
   dis-network:

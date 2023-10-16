@@ -12,24 +12,17 @@
             [reitit.swagger :as swagger]
             [org.httpkit.server :refer [run-server]]
             [db-manager.routes :refer [ping-route api-routes]]
-            [db-manager.db :refer [nuke-db! populate-courses!]]
+            [db-manager.db :refer [course-to-transaction schema remove-nils]]
             [course-scraper.watcher :refer [sitemap-watcher scrape-course]]
             [statistics.core :refer [stats-watcher]]
-            [next.jdbc :as jdbc]
-            [next.jdbc.types :refer [as-other]]
             [ring.middleware.cors :refer [wrap-cors]]
             [io.staticweb.rate-limit.storage :as storage]
-            [io.staticweb.rate-limit.middleware :refer [wrap-rate-limit ip-rate-limit]])
+            [io.staticweb.rate-limit.middleware :refer [wrap-rate-limit ip-rate-limit]]
+            [clojure.java.shell :as shell]
+            [datascript.core :as d])
   (:gen-class))
 
-(def db-config
-  {:dbtype "postgresql"
-   :dbname "admin"
-   :host "db"
-   :user "admin"
-   :password "admin"
-   :stringtype "unspecified"})
-(def db (jdbc/get-datasource db-config))
+(def conn (d/create-conn schema))
 
 (def storage (storage/local-storage))
 
@@ -38,8 +31,9 @@
 (def rate-limit-config {:storage storage :limit limit})
 
 (def data-dir "../../data/")
-(def json-dir (str data-dir "json/"))
+(def json-dir (str data-dir "new_json/"))
 (def stats-dir (str data-dir "statistics/"))
+(def pages-dir "../../data/pages")
 
 ; https://andersmurphy.com/2022/03/27/clojure-removing-namespace-from-keywords-in-response-middleware.html
 (defn transform-keys
@@ -64,7 +58,7 @@
              :handler (swagger/create-swagger-handler)}}]
      ["/api" {:middleware [remove-namespace-keywords-in-response-middleware]}
       ping-route
-      (api-routes db)]]
+      (api-routes conn)]]
     {:data {:coercion reitit.coercion.spec/coercion
             :muuntaja m/instance
             ; TODO: fix the CORS middleware, it seems to not work for Chromium
@@ -89,14 +83,6 @@
                                            :url "/api/swagger.json"})
     (ring/create-default-handler))))
 
-; Read every json in data-dir
-(defn read-json [file]
-  (json/read-str (slurp (str json-dir file)) :key-fn keyword))
-
-; find all jsons
-(def course-files (for [file (file-seq (io/file json-dir)) :when (.endsWith (.getName file) ".json")]
-                    (.getName file)))
-
 (defn try-finding-stats [course-id]
   (try
     ; stats file is in stats-dir
@@ -110,50 +96,52 @@
     (let [exam (stats "exam")
           pass-rate (exam "pass-rate")
           mean (exam "mean")
-          median (exam "median")]
-      {:pass_rate pass-rate
-       :avg_grade mean
-       :median_grade median})))
+          median (exam "median")
+          graded? (exam "graded")
+          grades (exam "grades")
+          absent (exam "absent")
+          fail (exam "fail")
+          pass (exam "pass")
+          total (exam "total")]
+      (if graded?
+        {:statistics/pass-rate pass-rate
+         :statistics/absent absent
+         :statistics/fail fail
+         :statistics/pass pass
+         :statistics/total total
+         :statistics/mean mean
+         :statistics/median median
+         :statistics/grades grades}
+        {:statistics/pass-rate pass-rate
+         :statistics/pass pass
+         :statistics/absent absent
+         :statistics/fail fail
+         :statistics/total total}))))
 
-(def courses (map read-json course-files))
+(defn read-json-file [file-name]
+  (let [file (slurp file-name)]
+    (json/read-str file)))
+(def courses (map read-json-file (drop 1 (file-seq (clojure.java.io/file json-dir)))))
 
-; This is responsible for coercing the data into the enums expected by Postgres
-(defn coerce-as-other [course-map]
-  ; make schedule_group into "as-other"
-  (-> course-map
-      (assoc :start_block (as-other (:start_block course-map)))
-      ; workloads is a vector of maps with :workload_type and :hours
-      ; workload_types should have as-other
-      (update :workloads #(map (fn [workload]
-                                 (assoc workload :workload_type (as-other (:workload_type workload))))
-                               %))
-      ; exact same thing with schedule_groups
-      (update :schedules #(map (fn [schedule_group]
-                                 (assoc schedule_group :schedule_type (as-other (:schedule_type schedule_group))))
-                               %))
-      ; same with exams
-      (update :exams #(map (fn [exam]
-                             (assoc exam :exam_type (as-other (:exam_type exam))))
-                           %))))
-
-(def courses-w-stats (map (fn [course]
-                            (let [stats (try-finding-stats (:course_id course))]
-                              (if stats
-                                (merge course (transform-stats stats))
-                                course)))
-                          courses))
-
-(def coerced-courses (pmap coerce-as-other courses-w-stats))
+(def transactions-w-stats (map (fn [course]
+                                 (let [course-id (get-in course ["info" "id"])
+                                       stats (try-finding-stats course-id)
+                                       transacted-course (course-to-transaction course)]
+                                   (remove-nils (if stats
+                                                  (assoc transacted-course :course/statistics (transform-stats stats))
+                                                  transacted-course))))
+                               courses))
 
 (def main-config {:port 3000})
 (defn -main [& args]
-  ; concurrently run sitemap-watcher scrape-course and stats-watcher so that they don't block the server
+; concurrently run sitemap-watcher scrape-course and stats-watcher so that they don't block the server
   (future (sitemap-watcher scrape-course))
   (future (stats-watcher))
+  ;(shell/sh "rust_parser" pages-dir json-dir)
 
-  (println "Nuking database and repopulating with courses from" json-dir)
-  (nuke-db! db)
-  (populate-courses! db coerced-courses)
-  (println "Starting database with existing data...")
+  (println "Populating database...")
+  (d/transact! conn transactions-w-stats)
+  (println "Done!")
+
   (println "Starting server on port " (:port main-config))
   (run-server (app) main-config))

@@ -1,141 +1,234 @@
 (ns db-manager.db
-  (:refer-clojure :exclude [filter for group-by into partition-by set update])
-  (:require [next.jdbc :as jdbc]
-            [next.jdbc.sql :as jdbc.sql]
-            [honey.sql :as sql]
-            [clojure.java.io :as io]
-            [honey.sql.helpers :refer :all :as h]
-            [clojure.set :as set]
+  (:require [datascript.core :as d]
+            [org.httpkit.client :as http]
             [clojure.data.json :as json]
-            [db-manager.querier :refer [generate-course-by-id-query
-                                        generate-overview-query
-                                        find-course-ids-query]]))
+            [clojure.walk :refer [postwalk]]))
 
-(defn nuke-db! [db]
-  (jdbc/with-transaction [tx db]
-    (jdbc/execute! tx [(slurp (io/resource "extensions.sql"))])
-    (jdbc/execute! tx [(slurp (io/resource "nuke.sql"))])
-    (jdbc/execute! tx [(slurp (io/resource "types.sql"))])
-    (jdbc/execute! tx [(slurp (io/resource "schema.sql"))])))
+(def many-ref {:db/valueType :db.type/ref
+               :db/cardinality :db.cardinality/many})
+(def one-ref {:db/valueType :db.type/ref
+              :db/cardinality :db.cardinality/one})
+(def unique {:db/unique :db.unique/identity})
 
-(defn insert-course! [ds course-map]
-  (let [course-schema [:course_id :title :course_language
-                       :description :start_block :duration
-                       :credits :study_level :url
-                       :raw_description :pass_rate :avg_grade :median_grade]]
+(defn component [schema]
+  (assoc schema :db/isComponent true))
 
-    (jdbc.sql/insert! ds :course (select-keys course-map course-schema))))
+(def schema
+  {:course/id unique
+   :course/title {}
+   :course/ects {}
 
-(defn emp-fields [emp]
-  (select-keys emp [:email :full_name]))
+   :course/block many-ref
 
-(defn insert-employees! [ds emps-map]
-  (jdbc/execute! ds (-> (insert-into :employee)
-                        (values (map emp-fields (:coordinators emps-map)))
-                        (on-conflict :email)
-                        do-nothing
-                        (sql/format))))
+   :course/schedule many-ref
 
-(defn insert-coordinates! [ds course-emp-map]
-  ; associate course_id with each coordinator
+   :course/language many-ref
+   :course/duration {:db/cardinality :db.cardinality/one}
+   :course/degree many-ref
+   :course/capacity {:db/cardinality :db.cardinality/one}
+   :course/department many-ref
+   :course/faculty one-ref
+   :course/coordinator many-ref
 
-  (let [cid (:course_id course-emp-map)]
+   :course/workload (component many-ref)
 
-    ; select only the email from the coordinators and associate with course_id
-    (jdbc.sql/insert-multi! ds :coordinates (map #(select-keys (assoc % :course_id cid) [:email
-                                                                                         :course_id])
-                                                 (:coordinators course-emp-map)))))
-(defn insert-workloads! [ds course-emp-map]
-  (let [workloads (:workloads course-emp-map)]
-    (jdbc.sql/insert-multi! ds :workload (map #(select-keys (assoc % :course_id (:course_id course-emp-map))
-                                                            [:course_id :workload_type :hours])
-                                              workloads))))
+   :course/exam (component many-ref)
+   :course/content {}
+   :course/learning-outcome {}
+   :course/recommended-qualifications {}
+   :course/statistics (component one-ref)
 
-(defn insert-schedule-groups! [ds course-emp-map]
-  (let [schedule-groups (:schedules course-emp-map)]
-    (jdbc.sql/insert-multi! ds :schedule (map #(select-keys (assoc % :course_id (:course_id course-emp-map))
-                                                            [:course_id :schedule_type :minutes])
-                                              schedule-groups))))
+   :schedule/type unique
+   :block/type unique
+   :faculty/name unique
+   :department/name unique
+   :degree/type unique
+   :language/name unique
+   :employee/email unique
+   :employee/name {}
+   :statistics/mean {:db/cardinality :db.cardinality/one}
+   :statistics/median {:db/cardinality :db.cardinality/one}
+   :statistics/pass-rate {:db/cardinality :db.cardinality/one}})
 
-; add null minutes to exams if not present,
-; otherwise the insert-multi! will fail (key must be present for insert)
-(defn add-null-minutes [exam]
-  (if (:minutes exam)
-    exam
-    (assoc exam :minutes nil)))
-(defn insert-exams! [ds course-emp-map]
-  (let [exams (map add-null-minutes (:exams course-emp-map))]
-    (jdbc.sql/insert-multi! ds :exam (map #(select-keys (assoc % :course_id (:course_id course-emp-map))
-                                                        [:course_id :exam_type :minutes])
-                                          exams))))
+(defn convert-coordinator
+  "Convert a coordinator map from rust parser to a datascript map"
+  [coordinator]
+  (let [name (get coordinator "name")
+        email (get coordinator "email")]
+    {:employee/name name
+     :employee/email email}))
+(defn convert-workload
+  "Convert a workload map from rust parser to a datascript map"
+  [workload]
+  (let [type (get workload "workload_type")
+        hours (get workload "hours")]
+    {:workload/type type
+     :workload/hours hours}))
+(defn convert-exam [exam]
+  ; this can either be a string or a map, if its a string then it has no duration
+  (if (string? exam)
+    {:exam/type exam}
+    ; the key is the exam type, the value is the duration
+    ; ensure that the map is exactly 1 element
+    (if (= 1 (count exam))
+      (let [[exam-type duration] (first exam)]
+        {:exam/type exam-type
+         :exam/duration duration})
+      (throw (Exception. "Exam map has more than 1 element, this should be impossible")))))
 
-(defn insert-departments! [ds course-emp-map]
-  (let [departments (:departments course-emp-map)]
-    (jdbc.sql/insert-multi! ds :department (map #(select-keys (assoc % :course_id (:course_id course-emp-map))
-                                                              [:course_id :department_type])
-                                                departments))))
+(defn remove-nils
+  "As hinted by the name, it traverses the entire map and removes all fields with nils
+    This is necessary because the rust parser returns a lot of nils, and datascript does not like nils
+    Snippet from https://stackoverflow.com/questions/3937661/remove-nil-values-from-a-map"
+  [m]
+  (let [f (fn [[k v]] (when v [k v]))]
+    (postwalk (fn [x] (if (map? x) (into {} (map f x)) x)) m)))
 
-(defn insert-course-emp! [db course-emp-map]
-  (jdbc/with-transaction [tx db]
-    (insert-course! tx course-emp-map)
-    (insert-employees! tx course-emp-map)
-    (insert-coordinates! tx course-emp-map)
-    (insert-workloads! tx course-emp-map)
-    (insert-schedule-groups! tx course-emp-map)
-    (insert-exams! tx course-emp-map)
-    (insert-departments! tx course-emp-map)))
+(defn remove-db-ids
+  [coll]
+  (postwalk (fn [x] (if (map? x) (dissoc x :db/id) x)) coll))
 
-(defn populate-courses! [db courses]
-  (println (str "Populating database with " (count courses) " courses"))
-  ; TODO, fix print race condition
-  (doall (pmap #(do (insert-course-emp! db %)
-                    (println (str "Inserted course " (:course_id %))))
-               courses))
-  (println "Done populating database"))
+(defn course-to-transaction  [course-map]
+  (let [id (get-in course-map ["info" "id"])
+        title (get course-map "title")
+        ects (get-in course-map ["info" "ects"])
+        blocks (get-in course-map ["info" "block"])
+        schedules (get-in course-map ["info" "schedule"])
+        languages (get-in course-map ["info" "language"])
+        duration (get-in course-map ["info" "duration"])
+        degrees (get-in course-map ["info" "degree"])
+        capacity (get-in course-map ["info" "capacity"])
+        departments (get-in course-map ["logistics" "departments"])
+        faculty (get-in course-map ["logistics" "faculty"])
+        coordinators (map convert-coordinator (get-in course-map ["logistics" "coordinators"]))
+        workloads (map convert-workload (get course-map "workloads"))
+        exams (map convert-exam (get course-map "exams"))
+        content (get-in course-map ["description" "content"])
+        learning-outcome (get-in course-map ["description" "learning_outcome"])
+        recommended-qualifications (get-in course-map ["description" "recommended_qualifications"])
+        summary (get-in course-map ["description" "summary"])]
+    (if (empty? departments)
+      (println "Course " title " has no departments"))
+    {:course/id id
+     :course/title title
+     :course/ects ects
+     :course/block (mapv #(hash-map :block/type %) blocks)
+     :course/schedule (mapv #(hash-map :schedule/type %) schedules)
+     :course/language (mapv #(hash-map :language/name %) languages)
+     :course/duration duration
+     :course/degree (mapv #(hash-map :degree/type %) degrees)
+     :course/capacity capacity
+     :course/department (mapv #(hash-map :department/name %) departments)
+     :course/faculty (hash-map :faculty/name faculty)
+     :course/coordinator coordinators
+     :course/workload workloads
+     :course/exam exams
+     :course/content content
+     :course/learning-outcome learning-outcome
+     :course/recommended-qualifications (if (nil? recommended-qualifications) "" recommended-qualifications)
+     :course/summary summary}))
 
-; queries section begins here
+(defn courses-to-transactions [courses]
+  (map course-to-transaction courses))
 
-(defn find-email-by-name [db name]
-  (jdbc/execute-one! db ["SELECT email, full_name, similarity(full_name, ?) AS search_similarity
-                          FROM employee
-                          ORDER BY search_similarity DESC
-                          LIMIT 1;" name]))
+(defn get-course-ids [conn]
+  (let [course-ids (d/q '[:find ?id
+                          :where
+                          [?e :course/id ?id]]
+                        @conn)]
+    ; this is a vector of vectors, we want a vector of strings
+    (mapv first course-ids)))
+(defn get-course-by-id
+  "Find all the detailed information about a course by its id"
+  [conn course-id]
+  (let [course (d/pull @conn '[* {:course/schedule [*]
+                                  :course/exam [*]
+                                  :course/degree [*]
+                                  :course/block [*]
+                                  :course/faculty [*]
+                                  :course/department [*]
+                                  :course/coordinator [*]
+                                  :course/workload [*]
+                                  :course/language [*]
+                                  :course/statistics [*]}]
+                       [:course/id course-id])]
+    ; remove summary since we already bring it along from content
+    (remove-db-ids (dissoc course :course/summary))))
 
-(defn find-course-by-name [db name]
-  (jdbc/execute-one! db ["SELECT course_id, title, similarity(title, ?) AS search_similarity
-                          FROM course
-                          ORDER BY search_similarity DESC
-                          LIMIT 1;" name]))
+; denest a vector of vectors
+(defn denest [v]
+  (mapv first v))
 
-(defn fix-json [course]
-  ; exams, schedules, workloads, and coordinators are text that needs to be parsed to json
-  (assoc course
-         :exams (json/read-str (:exams course))
-         :schedules (json/read-str (:schedules course))
-         :workloads (json/read-str (:workloads course))
-         :employees (json/read-str (:employees course))
-         :departments (json/read-str (:departments course))
-         :course/description (json/read-str (:course/description course))))
+(defn search-vector-store [query]
+  ; send http request to localhost:4000/search
+  (let [response @(http/get "http://vectorstore:4000/search" {:query-params {:query query}})]
+    (if (= (:status response) 200)
+      (let [body (:body response)]
+        (json/read-str body))
+      (do
+        (println response)
+        (throw (Exception. "Search request failed"))))))
 
-(defn get-course-by-id [db course-id]
-  (fix-json (jdbc/execute-one! db [(generate-course-by-id-query course-id)])))
+(defn query-course-ids [conn predicate-map]
+  (let [blocks (get predicate-map :blocks)
+        schedules (get predicate-map :schedules)
+        exams (get predicate-map :exams)
+        degrees (get predicate-map :degrees)
+        departments (get predicate-map :departments)
+        search (get predicate-map :search)
+        courses (denest (d/q (concat '[:find ?course-id :in $
+                                       :where
+                                       [?e :course/block ?block]
+                                       [?e :course/id ?course-id]
+                                       [?e :course/schedule ?schedule]
+                                       [?e :course/exam ?exam]
+                                       [?e :course/degree ?degree]
+                                       [?e :course/department ?department]]
+                                     (if (empty? blocks)
+                                       []
+                                       (list (cons 'or (mapv (fn [block] (vector '?block ':block/type block)) blocks))))
 
-(defn fix-overview-query [course]
-  ; exams, schedules, workloads, and coordinators are text that needs to be parsed to json
-  (let [raw-desc (:course/raw_description course)
-        max-len 200]
-    (dissoc (assoc course
-                   :exams (json/read-str (:exams course))
-                   :schedules (json/read-str (:schedules course))
-                   :summary (subs raw-desc 0 (min (count raw-desc) max-len)))
+                                     (if (empty? schedules)
+                                       []
+                                       (list (cons 'or (mapv (fn [schedule] (vector '?schedule ':schedule/type schedule)) schedules))))
 
-            :course/raw_description)))
+                                     (if (empty? exams)
+                                       []
+                                       (list (cons 'or (mapv (fn [exam] (vector '?exam ':exam/type exam)) exams))))
 
-(defn get-courses [db predicates]
-  (let [courses (jdbc/execute! db [(generate-overview-query predicates)])]
-    ; sort the list of maps alphabetically according to course/title
-    ; TODO: allow other sorting options (similarity, credits, etc...)
-    (sort-by #(:course/title %) (map fix-overview-query courses))))
+                                     (if (empty? degrees)
+                                       []
+                                       (list (cons 'or (mapv (fn [degree] (vector '?degree ':degree/type degree)) degrees))))
 
-(defn get-course-ids [db]
-  (jdbc/execute! db [find-course-ids-query]))
+                                     (if (empty? departments)
+                                       []
+                                       (list (cons 'or (mapv (fn [department] (vector '?department ':department/name department)) departments)))))
+                             @conn))]
+    (if (empty? search)
+      courses
+        ; we get a list of IDs from the search vector store, we need to find all the courses in
+        ; the returned courses which are in the vector store list whilst preserving the order
+      (let [search-result (search-vector-store search)]
+        (if (nil? search-result)
+          courses
+          ; perform an intersection of the two lists, but preserve the order of the first list
+          (filter #(contains? (set courses) %) search-result))))))
+
+(defn get-overviews-from-ids [conn ids]
+  (d/pull-many @conn '[:course/id
+                       :course/title
+                       :course/ects
+                       :course/summary
+                       {:course/schedule [*]
+                        :course/block [*]
+                        :course/exam [*]
+                        :course/degree [*]
+                        :course/language [*]
+                        :course/statistics [:statistics/mean
+                                            :statistics/median
+                                            :statistics/pass-rate]}]
+               (mapv #(vector :course/id %) ids)))
+
+(defn get-courses [conn predicate-map]
+  (let [course-ids (query-course-ids conn predicate-map)]
+    (map remove-db-ids (get-overviews-from-ids conn course-ids))))

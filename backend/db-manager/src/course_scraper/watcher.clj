@@ -2,13 +2,15 @@
   (:require [clojure.zip :as zip]
             [clojure.xml :as xml]
             [clojure.java.io :as io]
-            [org.httpkit.client :as http])
+            [org.httpkit.client :as http]
+            [clojure.java.shell :as shell])
   (:import (javax.net.ssl SSLEngine SSLParameters SNIHostName)
            (java.net URI))
 
   (:gen-class))
 
 (def pages-dir "../../data/pages")
+(def new-json-dir "../../data/new_json")
 
 (defn grab-info-from-course [course]
   (let [content (:content course)
@@ -57,8 +59,16 @@
     ; go to sleep for 30 minutes and then do it again
     (println "[course scraper]: Finished scraping, going to sleep")
     (println "[course scraper]: Modified" (count @newly-scraped) "courses")
+
+    (if-not (zero? (count @newly-scraped))
+      (let [result (future (shell/sh "rust_parser" pages-dir new-json-dir))]
+        (println "[course parser] Running rust parser...")
+        (println "[course parser] Parser stderr: " (:err @result))
+        (println "[course parser] Finished parsing courses"))
+      (println "[course parser] No new courses, not running parser"))
+
     (reset! newly-scraped [])
-    (Thread/sleep (* 1000 60 60))
+    (Thread/sleep (* 1000 60 60)) ;; 1 hour, unit is ms
     (recur callback)))
 
 ; Magical snippet of code that allows us to use SNI with http-kit
