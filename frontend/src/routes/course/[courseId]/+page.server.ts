@@ -32,6 +32,9 @@ function transform_stats(stats) {
 
 function null_to_zero(grades) {
     // in each grade, count pair, if count is null, set it to 0
+    if (grades == null) {
+        return null;
+    }
     return grades.map((grade) => {
         if (grade.count == null) {
             return { grade: grade.grade, count: 0 };

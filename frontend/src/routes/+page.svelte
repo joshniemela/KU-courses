@@ -149,13 +149,18 @@
     console.log(visibleCourses);
 
     let debounceTimeout: number;
-    let search = null;
+    let firstDebounce = true;
+    let search = $queryStore.search;
     // when search changes, we want to debounce it and then update the queryStore
     $: {
+        if (firstDebounce) {
+            firstDebounce = false;
+        } else {
         clearTimeout(debounceTimeout);
         debounceTimeout = setTimeout(() => {
             $queryStore.search = search;
         }, 500);
+        }
     }
 </script>
 
