@@ -10,14 +10,7 @@
     import GradeGraph from "../../../components/GradeGraph/GradeGraph.svelte";
 
     export let data;
-    let { courseId, course, totalHours, loading } = data;
-
-    /**
-     * TODO: remove this since it is duplicated in the project multiple times
-     */
-    function convertExamToString(input: string) {
-        return input.replace(/(\w)_(\w)/g, "$1 $2");
-    }
+    let { courseId, course, totalHours, statistics, loading } = data;
 
     /**
      * This function takes an exam duration and changes the unit depending on the duration, e.g. 120 minutes -> 2 hours
@@ -38,16 +31,11 @@
         goto("/browse");
     }
 
-
-    function transform_grades(exam) {
-        if (exam["graded"]) {
-            return exam["grades"]
+    function zero_if_null(value) {
+        if (value == null) {
+            return 0;
         } else {
-            return [
-                {"grade": "Passed", "count": exam["pass"]},
-                {"grade": "Failed", "count": exam["fail"]},
-                {"grade": "Absent", "count": exam["absent"]}
-                ]
+            return value;
         }
     }
 
@@ -57,6 +45,63 @@
     const description =
         "A more precise, user-friendly way to browse courses offered by University of Copenhagen which acutally gives you the information you were looking for";
     const url = "https://disku.jniemela.dk/course/" + courseId;
+
+    // To every li tag, add class="list-square list-inside" in content["learning-outcome"]
+    let content = course.content;
+    if (content != null) {
+        content = content.replaceAll(
+            "<li>",
+            '<li class="list-square list-inside ml-4">'
+        );
+    }
+
+    let learning_outcome = course["learning-outcome"];
+    if (learning_outcome != null) {
+        learning_outcome = learning_outcome.replaceAll(
+            "<li>",
+            '<li class="list-square list-inside ml-4">'
+        );
+    }
+
+
+ // this takes a vector of maps ex: [{:type "A"}, {:type "B"}] and returns a vector of strings ex: ["A", "B"]
+    function denest_type_maps(map_vector: any) {
+        let type_vector: string[] = [];
+        for (let i = 0; i < map_vector.length; i++) {
+            type_vector.push(map_vector[i].type);
+        }
+        return type_vector;
+    }
+
+
+function coerce_blocks_to_int(blocks: any) {
+        // blocks are written in One Two Three Four
+        // this function converts them to "1" "2" "3" "4"
+        let block_vector: string[] = [];
+        for (let i = 0; i < blocks.length; i++) {
+            switch (blocks[i]) {
+                case "One":
+                    block_vector.push("1");
+                    break;
+                case "Two":
+                    block_vector.push("2");
+                    break;
+                case "Three":
+                    block_vector.push("3");
+                    break;
+                case "Four":
+                    block_vector.push("4");
+                    break;
+                default:
+                    block_vector.push(blocks[i]);
+                    break;
+            }
+        }
+        return block_vector;
+    }
+function separate_capitals_letters(sentence) {
+     return sentence.replace(/([A-Z])/g, " $1").trim()
+ }
 </script>
 
 <svelte:head>
@@ -99,73 +144,67 @@
             </button>
             <div class="items-left mb-5 px-4">
                 <h1 class="text-2xl font-bold md:text-4xl">{course.title}</h1>
-                <h2>{course.course_id} - SCIENCE</h2>
+                <h2>{course.id} - SCIENCE</h2>
             </div>
 
             <div class="w-[80%] text-center">
-                {#if course["stats"] != null}
-                <h2 class="text-l font-bold">Grades</h2>
-                <GradeGraph
-                    legend="Frequency"
-                    title="Exam grades"
-                    data={transform_grades(course["stats"]["exam"])}
-                />
+                {#if course["statistics"] != null}
+                    <h2 class="text-l font-bold">Grades</h2>
+                    <GradeGraph
+                        legend="Frequency"
+                        title="Exam grades"
+                        data={statistics}
+                    />
                 {/if}
             </div>
 
             <div class="w-full flex flex-col md:flex-row justify-center">
-                <div class="px-4">
-                    {#each course.description as de}
-                        {#if de.type == "h1"}
-                            <h1 class="text-xl font-bold">{de.string}</h1>
-                        {:else if de.type == "li"}
-                            <li class="list-square list-inside">{de.string}</li>
-                        {:else}
-                            <p>{de.string}</p>
-                        {/if}
-                    {/each}
+                <div class="px-16">
+                    <h1 class="text-xl font-bold">
+                        Description
+                    </h1>
+
+                    {@html content}
+                    {@html learning_outcome}
+                    {#if course["recommended-qualifications"] != null}
+                        <h2 class="text-l font-bold">Recommended qualifications</h2>
+                        {@html course["recommended-qualifications"]}
+                    {/if}
                 </div>
                 <div class="">
                     <SideCard heading={"Coordinators"}>
-                        {#each course.employees as emp}
+                        {#each course.coordinator as emp}
                             <div class="">
-                                <p class="">{emp.full_name}</p>
+                                <p class="">{emp.name}</p>
                             </div>
                             <p class="">{emp.email}</p>
                         {/each}
                     </SideCard>
-
                     <SideCard heading={"Exam"}>
-                        {#each course.exams as exam}
+                        {#each course.exam as exam}
                             <p class="">
-                                {convertExamToString(exam.exam_type)}
+                                {separate_capitals_letters(exam.type)}
                                 {#if exam.minutes}
                                     - ({formatExamDuration(exam.minutes)})
                                 {/if}
                             </p>
                         {/each}
                     </SideCard>
-
                     <SideCard heading={"Course Info"}>
-                        <p class="">{course.study_level} course</p>
-                        <p class="">ECTS: {course.credits}</p>
+                        <p class="">Level: {denest_type_maps(course.degree).join("\n")}</p>
+                        <p class="">ECTS: {course.ects}</p>
 
                         <p class="">
-                            Block: {course.start_block}
-                            {#if Number(course.duration) > 1}
-                                - {Number(course.start_block) +
-                                    Number(course.duration) -
-                                    1}
-                            {/if}
+                            Block(s): {coerce_blocks_to_int(
+                            denest_type_maps(course.block)
+                        )
+                            .sort()
+                            .join(", ")}
                         </p>
                         <p class="">
-                            Schedule group(s): {#each course.schedules as sch}
-                                {#if sch != course.schedules[course.schedules.length - 1]}
-                                    {sch.schedule_type}, &nbsp
-                                {:else}
-                                    {sch.schedule_type}
-                                {/if}
-                            {/each}
+                            Group(s): {denest_type_maps(course.schedule)
+                            .sort()
+                            .join(", ")}
                         </p>
 
                         <p class="flex flex-col" />
@@ -178,19 +217,17 @@
                         </a>
                     </SideCard>
                     <SideCard heading={"Department(s)"}>
-                        {#each course.departments as dep}
-                            <p class="mb-2">
-                                {dep.department_type}
-                            </p>
-                        {/each}
+                        <ul class="list-square">
+                            {#each course.department as dep}
+                                <li class="">{separate_capitals_letters(dep.name)}</li>
+                            {/each}
+                        </ul>
                     </SideCard>
-
                     <SideCard heading={"Workload"}>
-                        <!--arrange in a table------------------------------------>
                         <table>
-                            {#each course.workloads as wl}
+                            {#each course.workload as wl}
                                 <tr class="border-b-4 border-kuGray">
-                                    <td class=""> {wl.workload_type}</td>
+                                    <td class=""> {separate_capitals_letters(wl.type)}</td>
                                     <td class="pl-2">{wl.hours}h</td>
                                 </tr>
                             {/each}
@@ -198,6 +235,7 @@
                         <p class="font-bold">Total: {totalHours}h</p>
                     </SideCard>
                 </div>
+
             </div>
         </div>
 

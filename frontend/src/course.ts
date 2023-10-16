@@ -60,7 +60,7 @@ export const empty_course: Course = {
 
 export function total_hours(course: Course): number {
   let total = 0;
-  course.workloads.forEach((workload) => {
+  course.workload.forEach((workload) => {
     total += workload.hours;
   });
   return total;

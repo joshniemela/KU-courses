@@ -18,6 +18,7 @@
             [ring.middleware.cors :refer [wrap-cors]]
             [io.staticweb.rate-limit.storage :as storage]
             [io.staticweb.rate-limit.middleware :refer [wrap-rate-limit ip-rate-limit]]
+            [clojure.java.shell :as shell]
             [datascript.core :as d])
   (:gen-class))
 
@@ -32,6 +33,7 @@
 (def data-dir "../../data/")
 (def json-dir (str data-dir "new_json/"))
 (def stats-dir (str data-dir "statistics/"))
+(def pages-dir "../../data/pages")
 
 ; https://andersmurphy.com/2022/03/27/clojure-removing-namespace-from-keywords-in-response-middleware.html
 (defn transform-keys
@@ -96,13 +98,25 @@
           mean (exam "mean")
           median (exam "median")
           graded? (exam "graded")
-          grades (exam "grades")]
-
-      {:statistics/pass-rate pass-rate
-       :statistics/mean mean
-       :statistics/median median
-       :statistics/graded? graded?
-       :statistics/grades grades})))
+          grades (exam "grades")
+          absent (exam "absent")
+          fail (exam "fail")
+          pass (exam "pass")
+          total (exam "total")]
+      (if graded?
+        {:statistics/pass-rate pass-rate
+         :statistics/absent absent
+         :statistics/fail fail
+         :statistics/pass pass
+         :statistics/total total
+         :statistics/mean mean
+         :statistics/median median
+         :statistics/grades grades}
+        {:statistics/pass-rate pass-rate
+         :statistics/pass pass
+         :statistics/absent absent
+         :statistics/fail fail
+         :statistics/total total}))))
 
 (defn read-json-file [file-name]
   (let [file (slurp file-name)]
@@ -122,7 +136,8 @@
 (defn -main [& args]
 ; concurrently run sitemap-watcher scrape-course and stats-watcher so that they don't block the server
   (future (sitemap-watcher scrape-course))
-  ;(future (stats-watcher))
+  (future (stats-watcher))
+  ;(shell/sh "rust_parser" pages-dir json-dir)
 
   (println "Populating database...")
   (d/transact! conn transactions-w-stats)

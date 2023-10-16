@@ -107,7 +107,6 @@
         learning-outcome (get-in course-map ["description" "learning_outcome"])
         recommended-qualifications (get-in course-map ["description" "recommended_qualifications"])
         summary (get-in course-map ["description" "summary"])]
-    ; if deparmtent is empty: print the error
     (if (empty? departments)
       (println "Course " title " has no departments"))
     {:course/id id
@@ -119,8 +118,7 @@
      :course/duration duration
      :course/degree (mapv #(hash-map :degree/type %) degrees)
      :course/capacity capacity
-     ; TODO: fix that the rust parser doesnt grab the departments for some courses
-     :course/department (mapv #(hash-map :department/name %) (if (empty? departments) [""] departments))
+     :course/department (mapv #(hash-map :department/name %) departments)
      :course/faculty (hash-map :faculty/name faculty)
      :course/coordinator coordinators
      :course/workload workloads
@@ -206,18 +204,15 @@
                                        []
                                        (list (cons 'or (mapv (fn [department] (vector '?department ':department/name department)) departments)))))
                              @conn))]
-    (println search)
-    (println predicate-map)
     (if (empty? search)
       courses
         ; we get a list of IDs from the search vector store, we need to find all the courses in
         ; the returned courses which are in the vector store list whilst preserving the order
-      (let [search-result (search-vector-store search)
-            courses-set (set courses)]
+      (let [search-result (search-vector-store search)]
         (if (nil? search-result)
           courses
           ; perform an intersection of the two lists, but preserve the order of the first list
-          (filter #(contains? courses-set %) search-result))))))
+          (filter #(contains? (set courses) %) search-result))))))
 
 (defn get-overviews-from-ids [conn ids]
   (d/pull-many @conn '[:course/id

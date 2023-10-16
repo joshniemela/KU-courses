@@ -149,13 +149,14 @@
     console.log(visibleCourses);
 
     let debounceTimeout: number;
-    const handleSearch = (e: Event) => {
+    let search = null;
+    // when search changes, we want to debounce it and then update the queryStore
+    $: {
         clearTimeout(debounceTimeout);
         debounceTimeout = setTimeout(() => {
-            const target = e.target as HTMLInputElement;
-            $queryStore.search = target.value;
-        }, 300);
-    };
+            $queryStore.search = search;
+        }, 500);
+    }
 </script>
 
 <svelte:head>
@@ -191,13 +192,13 @@
         <TextSearch bind:searches={$queryStore.searches} />
         ------------------------------------------------------------------->
         <div>
-            <input
-                type="text"
-                placeholder="Search"
-                on:input={handleSearch}
-            />
-            make a button to clear the search
-
+            <input type="text" placeholder="Search" bind:value={search} />
+            <button
+                class="bg-kuRed text-white p-2"
+                on:click={() => (search = "")}
+            >
+                Clear search
+            </button>
         </div>
         <div>
             <div class="grid grid-cols-2 gap-4 pb-2 md:grid-cols-4 md:pb-0">
