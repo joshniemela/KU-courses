@@ -61,10 +61,15 @@ enum Department {
     Chemistry,
     NielsBohrInstitute,
     NaturalHistoryMuseumOfDenmark,
+    VeterinaryAndAnimalSciences,
+    BiomedicalSciences,
+    PublicHealth,
+    DrugDesignAndPharmacology,
+    CellularAndMolecularMedicine,
 }
 impl Department {
     fn from_str(s: &str) -> Result<Self> {
-        match s {
+        match s.replace("\n", " ").as_str() {
             "Department of Computer Science" | "Datalogisk Institut" => {
                 Ok(Department::ComputerScience)
             }
@@ -85,7 +90,7 @@ impl Department {
                 Ok(Department::NielsBohrInstitute)
             }
             "Institut for Geovidenskab og Naturforvaltning"
-            | "Department of Geoscience and Natural Resource\nManagement" => {
+            | "Department of Geoscience and Natural Resource Management" => {
                 Ok(Department::GeosciencesAndNaturalResourceManagement)
             }
             "Institut for Naturfagenes Didaktik" | "Department of Science Education" => {
@@ -100,6 +105,19 @@ impl Department {
             }
             "Kemisk Institut" | "Department of Chemistry" => Ok(Department::Chemistry),
             "Biologisk Institut" | "Department of Biology" => Ok(Department::Biology),
+            "Department of Veterinary and Animal Sciences"
+            | "Institut for Veterinær- og Husdyrvidenskab (IVH)" => {
+                Ok(Department::VeterinaryAndAnimalSciences)
+            }
+            "Department of Biomedical Sciences" => Ok(Department::BiomedicalSciences),
+            "Institut for Lægemiddeldesign og Farmakologi"
+            | "Department of Drug Design and Pharmacology" => {
+                Ok(Department::DrugDesignAndPharmacology)
+            }
+            "Department of Cellular and Molecular Medicine" => {
+                Ok(Department::CellularAndMolecularMedicine)
+            }
+            "Department of Public Health" => Ok(Department::PublicHealth),
             "Institut for Nordiske Studier og Sprogvidenskab" => {
                 bail!("Nordic studies not supported <EXPECTED>")
             }

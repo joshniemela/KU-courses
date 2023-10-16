@@ -50,7 +50,7 @@ pub fn parse_logistic_info(dom: &VDom) -> Result<LogisticInformation> {
     let mut coordinators: Vec<parser::Coordinator> = vec![];
     let mut faculty: Option<parser::Faculty> = None;
 
-    for (h5, lis) in info {
+    for (h5, lis) in &info {
         match h5.as_str() {
             "Kursusansvarlige" | "Course Coordinators" => {
                 for li in lis {
@@ -72,7 +72,7 @@ pub fn parse_logistic_info(dom: &VDom) -> Result<LogisticInformation> {
                     _ => bail!("Unknown faculty: {} <EXPECTED>", faculty_str),
                 }
             }
-            "Udbydende institut" | "Contracting department" => {
+            _ if h5.contains("institut") || h5.contains("department") => {
                 for li in lis {
                     departments.push(parser::Department::from_str(&li)?);
                 }
@@ -81,6 +81,11 @@ pub fn parse_logistic_info(dom: &VDom) -> Result<LogisticInformation> {
             &_ => {}
         }
     }
+    // ensure we have
+    ensure!(
+        departments.len() > 0,
+        format!("No departments found in logistic information: {:?}", info)
+    );
 
     Ok(parser::LogisticInformation {
         departments,
