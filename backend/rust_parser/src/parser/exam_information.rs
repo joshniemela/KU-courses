@@ -92,10 +92,10 @@ fn parse_text_to_exam(text: &str) -> Result<Exam> {
         _ if exam_name.contains("aflevering") || exam_name.contains("assignment") => {
             Ok(Exam::Assignment(exam_minutes))
         }
-        _ if exam_name.contains("skriftlig prøve") || exam_name.contains("written examination") => {
+        _ if exam_name.contains("skriftlig prøve") || exam_name.contains("written exam") => {
             Ok(Exam::Written(exam_minutes))
         }
-        _ if exam_name.contains("mundtlig prøve") || exam_name.contains("oral examination") => {
+        _ if exam_name.contains("mundtlig prøve") || exam_name.contains("oral exam") => {
             Ok(Exam::Oral(exam_minutes))
         }
         _ if exam_name.contains("portfolio")

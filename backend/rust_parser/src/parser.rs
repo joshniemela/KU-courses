@@ -66,6 +66,7 @@ enum Department {
     PublicHealth,
     DrugDesignAndPharmacology,
     CellularAndMolecularMedicine,
+    Pharmacy,
 }
 impl Department {
     fn from_str(s: &str) -> Result<Self> {
@@ -110,6 +111,7 @@ impl Department {
                 Ok(Department::VeterinaryAndAnimalSciences)
             }
             "Department of Biomedical Sciences" => Ok(Department::BiomedicalSciences),
+            "Department of Pharmacy" => Ok(Department::Pharmacy),
             "Institut for Lægemiddeldesign og Farmakologi"
             | "Department of Drug Design and Pharmacology" => {
                 Ok(Department::DrugDesignAndPharmacology)
