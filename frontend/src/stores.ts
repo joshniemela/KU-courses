@@ -27,6 +27,7 @@ export function writableSession<T>(key: string, value: T): Writable<T> {
 //  END Generic store functions
 
 // make a writableSession if we have a browser
+const STORE_VERSION = 2;
 const emptyQuery = {
   blocks: [],
   degrees: [],
@@ -35,6 +36,7 @@ const emptyQuery = {
   searches: [],
   departments: [],
 };
+
 
 export const queryStore = writableSession("query", emptyQuery);
 
@@ -50,6 +52,18 @@ export function clearAll() {
     return store;
   });
 }
+
+export function check_store() {
+  // Check if the store is up to date
+  if (sessionStorage.getItem("version") != STORE_VERSION.toString()) {
+    // we want to not only clearAll but also remove the store
+    sessionStorage.clear();
+    clearAll();
+    sessionStorage.setItem("version", STORE_VERSION.toString());
+  }
+}
+
+
 
 // API URL
 export function apiUrl() {
