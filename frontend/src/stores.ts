@@ -53,7 +53,7 @@ export function clearAll() {
   });
 }
 
-export function check_store() {
+export function checkStore() {
   // Check if the store is up to date
   if (sessionStorage.getItem("version") != STORE_VERSION.toString()) {
     // we want to not only clearAll but also remove the store
