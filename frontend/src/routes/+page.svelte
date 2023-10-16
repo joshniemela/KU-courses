@@ -3,7 +3,7 @@
     import BigCheckbox from "../components/BigCheckbox.svelte";
     import TextSearch from "../components/TextSearch.svelte";
     import Footer from "../components/Footer/Footer.svelte";
-    import { queryStore, clearAll } from "../stores";
+    import { queryStore, clearAll, checkStore } from "../stores";
 
     // browse route content
     import Loader from "../components/Loader/Loader.svelte";
@@ -157,6 +157,8 @@
             $queryStore.search = search;
         }, 500);
     }
+    // checks if the store is up to date
+    checkStore();
 </script>
 
 <svelte:head>
