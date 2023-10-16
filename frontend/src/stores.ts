@@ -32,8 +32,8 @@ const emptyQuery = {
   degrees: [],
   schedules: [],
   exams: [],
-  searches: [],
   departments: [],
+  search: null,
 };
 
 
@@ -46,14 +46,15 @@ export function clearAll() {
     store.degrees = [];
     store.schedules = [];
     store.exams = [];
-    store.searches = [];
     store.departments = [];
+    store.search = null;
     return store;
   });
 }
 
 // API URL
 export function apiUrl() {
+  return "https://disku.jniemela.dk/api"; // SSR
   // check that window is defined, this is used for checking if we are running in the browser
   if (typeof window === "undefined") {
     return "https://disku.jniemela.dk/api"; // SSR
