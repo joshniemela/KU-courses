@@ -1,4 +1,4 @@
 frontend/src/assets/* linguist-vendored
 frontend/src/theme.js linguist-vendored
-backend/rust/course-parser/test_data/pages/* linguist-vendored
+backend/rust_parser/test_data/pages/* linguist-vendored
 
