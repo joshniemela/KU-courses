@@ -127,7 +127,7 @@ def query_store(query):
 
     # TODO: this should be done in db-manager since this happens before filtering,
     # aka we might end up only matching the predicates of the entire db on only 100 courses
-    return maxed_scores[:100]
+    return maxed_scores[:150]
 
 
 app = FastAPI()
