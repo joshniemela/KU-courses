@@ -225,7 +225,7 @@ onMount(() =>
                         <p class="flex flex-col" />
 
                         <a
-                            href={`https://kurser.ku.dk/course/${course.course_id}`}
+                            href={`https://kurser.ku.dk/course/${course.id}`}
                             class="text-kuRed font-bold"
                         >
                             Go to official page
