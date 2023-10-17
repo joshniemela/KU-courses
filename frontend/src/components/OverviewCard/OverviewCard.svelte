@@ -73,7 +73,7 @@
         <div class="flex flex-row justify-between">
             <div class="w-full">
                 <h1 class="text-l font-bold text-center z-10">
-                    {course.title}
+                    {@html course.title}
                 </h1>
                 <h2>
                     {course.id} - SCIENCE
@@ -99,6 +99,8 @@
                     <!--TODO: If this is an "other", this breaks and just shows object object-->
                     <td class="px-1">
                         Group(s): {denest_type_maps(course.schedule)
+                            // TODO: acutally process the string schedules instead of calling them other
+                            .map((x) => (typeof x === "object" ? "Other" : x))
                             .sort()
                             .join(", ")}
                     </td>
@@ -106,10 +108,11 @@
             </table>
         </div>
 
-        <p class="">
-            {course.summary.length > 200
-            ? course.summary.substring(0, 200) + "..."
-            : course.summary}</p>
+        <p class="break-all">
+            {@html course.summary.length > 200
+                ? course.summary.substring(0, 200) + "..."
+                : course.summary}
+        </p>
     </div>
     <div class="w-full bg-kuGray text-white flex flex-row">
         <div class="w-full items-center justify-center flex flex-col">

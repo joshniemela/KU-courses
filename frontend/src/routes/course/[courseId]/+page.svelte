@@ -64,6 +64,7 @@
     }
 
 
+
  // this takes a vector of maps ex: [{:type "A"}, {:type "B"}] and returns a vector of strings ex: ["A", "B"]
     function denest_type_maps(map_vector: any) {
         let type_vector: string[] = [];
@@ -102,6 +103,20 @@ function coerce_blocks_to_int(blocks: any) {
 function separate_capitals_letters(sentence) {
      return sentence.replace(/([A-Z])/g, " $1").trim()
  }
+
+function remove_repeated_br_tags(dom) {
+    let brs = dom.getElementsByTagName("br");
+    for (let i = 0; i < brs.length; i++) {
+        if (brs[i].nextSibling != null) {
+                brs[i].nextSibling.remove();
+        }
+    }
+}
+
+onMount(() =>
+    remove_repeated_br_tags(document)
+);
+
 </script>
 
 <svelte:head>
