@@ -63,9 +63,7 @@
         );
     }
 
-
-
- // this takes a vector of maps ex: [{:type "A"}, {:type "B"}] and returns a vector of strings ex: ["A", "B"]
+    // this takes a vector of maps ex: [{:type "A"}, {:type "B"}] and returns a vector of strings ex: ["A", "B"]
     function denest_type_maps(map_vector: any) {
         let type_vector: string[] = [];
         for (let i = 0; i < map_vector.length; i++) {
@@ -74,8 +72,7 @@
         return type_vector;
     }
 
-
-function coerce_blocks_to_int(blocks: any) {
+    function coerce_blocks_to_int(blocks: any) {
         // blocks are written in One Two Three Four
         // this function converts them to "1" "2" "3" "4"
         let block_vector: string[] = [];
@@ -100,23 +97,20 @@ function coerce_blocks_to_int(blocks: any) {
         }
         return block_vector;
     }
-function separate_capitals_letters(sentence) {
-     return sentence.replace(/([A-Z])/g, " $1").trim()
- }
+    function separate_capitals_letters(sentence) {
+        return sentence.replace(/([A-Z])/g, " $1").trim();
+    }
 
-function remove_repeated_br_tags(dom) {
-    let brs = dom.getElementsByTagName("br");
-    for (let i = 0; i < brs.length; i++) {
-        if (brs[i].nextSibling != null) {
+    function remove_repeated_br_tags(dom) {
+        let brs = dom.getElementsByTagName("br");
+        for (let i = 0; i < brs.length; i++) {
+            if (brs[i].nextSibling != null) {
                 brs[i].nextSibling.remove();
+            }
         }
     }
-}
 
-onMount(() =>
-    remove_repeated_br_tags(document)
-);
-
+    onMount(() => remove_repeated_br_tags(document));
 </script>
 
 <svelte:head>
@@ -149,20 +143,12 @@ onMount(() =>
 {:else}
     <div class="flex flex-col min-h-screen justify-between">
         <div class="mt-10 flex flex-col items-center">
-            <button
-                class="fixed top-0 mx-auto bg-kuRed text-white font-bold py-1 px-6"
-                on:click={() => {
-                    window.history.back();
-                }}
-            >
-                Back
-            </button>
             <div class="items-left mb-5 px-4">
                 <h1 class="text-2xl font-bold md:text-4xl">{course.title}</h1>
                 <h2>{course.id} - SCIENCE</h2>
             </div>
 
-            <div class="w-[80%] text-center">
+            <div class="w-full md:w-3/4 px-4">
                 {#if course["statistics"] != null}
                     <h2 class="text-l font-bold">Grades</h2>
                     <GradeGraph
@@ -172,17 +158,25 @@ onMount(() =>
                     />
                 {/if}
             </div>
+            <button
+                class="fixed top-0 mx-auto bg-kuRed text-white font-bold py-1 px-6"
+                on:click={() => {
+                    window.history.back();
+                }}
+            >
+                Back
+            </button>
 
             <div class="w-full flex flex-col md:flex-row justify-center">
-                <div class="px-16">
-                    <h1 class="text-xl font-bold">
-                        Description
-                    </h1>
+                <div class="w-text px-16">
+                    <h1 class="text-xl font-bold">Description</h1>
 
                     {@html content}
                     {@html learning_outcome}
                     {#if course["recommended-qualifications"] != null}
-                        <h2 class="text-l font-bold">Recommended qualifications</h2>
+                        <h2 class="text-l font-bold">
+                            Recommended qualifications
+                        </h2>
                         {@html course["recommended-qualifications"]}
                     {/if}
                 </div>
@@ -206,20 +200,22 @@ onMount(() =>
                         {/each}
                     </SideCard>
                     <SideCard heading={"Course Info"}>
-                        <p class="">Level: {denest_type_maps(course.degree).join("\n")}</p>
+                        <p class="">
+                            Level: {denest_type_maps(course.degree).join("\n")}
+                        </p>
                         <p class="">ECTS: {course.ects}</p>
 
                         <p class="">
                             Block(s): {coerce_blocks_to_int(
-                            denest_type_maps(course.block)
-                        )
-                            .sort()
-                            .join(", ")}
+                                denest_type_maps(course.block)
+                            )
+                                .sort()
+                                .join(", ")}
                         </p>
                         <p class="">
                             Group(s): {denest_type_maps(course.schedule)
-                            .sort()
-                            .join(", ")}
+                                .sort()
+                                .join(", ")}
                         </p>
 
                         <p class="flex flex-col" />
@@ -234,7 +230,9 @@ onMount(() =>
                     <SideCard heading={"Department(s)"}>
                         <ul class="list-square">
                             {#each course.department as dep}
-                                <li class="">{separate_capitals_letters(dep.name)}</li>
+                                <li class="">
+                                    {separate_capitals_letters(dep.name)}
+                                </li>
                             {/each}
                         </ul>
                     </SideCard>
@@ -242,7 +240,9 @@ onMount(() =>
                         <table>
                             {#each course.workload as wl}
                                 <tr class="border-b-4 border-kuGray">
-                                    <td class=""> {separate_capitals_letters(wl.type)}</td>
+                                    <td class="">
+                                        {separate_capitals_letters(wl.type)}</td
+                                    >
                                     <td class="pl-2">{wl.hours}h</td>
                                 </tr>
                             {/each}
@@ -250,7 +250,6 @@ onMount(() =>
                         <p class="font-bold">Total: {totalHours}h</p>
                     </SideCard>
                 </div>
-
             </div>
         </div>
 

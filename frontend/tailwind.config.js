@@ -5,6 +5,9 @@ export default {
     './node_modules/flowbite-svelte/**/*.{html,js,svelte,ts}'],
   theme: {
     extend: {
+      spacing: {
+        text: "clamp(45ch,50%,75ch)",
+      },
       listStyleType: {square: "square",},
       colors: {
         kuRed: "#901A1E",

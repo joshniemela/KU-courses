@@ -41,6 +41,7 @@
                                 .map((row) => row.count / total)
                                 .reverse(),
                             backgroundColor: "rgba(200, 56, 60, 0.6)",
+                            barPercentage: 0.4,
                         },
                     ],
                 },
@@ -69,8 +70,18 @@
                     scales: {
                         y: {
                             ticks: {
+                                font: {
+                                    weight: "bolder",
+                                },
                                 format: {
                                     style: "percent",
+                                },
+                            },
+                        },
+                        x: {
+                            ticks: {
+                                font: {
+                                    weight: "bolder",
                                 },
                             },
                         },
