@@ -167,7 +167,7 @@
         (json/read-str body))
       (do
         (println response)
-        (throw (Exception. "Search request failed"))))))
+        (throw (Exception. "Search request failed, the vectorstore is down or unhealthy"))))))
 
 (defn query-course-ids [conn predicate-map]
   (let [blocks (get predicate-map :blocks)
