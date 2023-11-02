@@ -1,6 +1,6 @@
 # KU-Courses
 
-![Example of KU-Courses](frontend/static/assets/og-image.png "KU Courses")
+![Example of KU-Courses](frontend/static/assets/preview.png "KU Courses")
 
 The entire application is governed through the `docker-compose.yml` file and is built with `docker compose`:
 
