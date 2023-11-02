@@ -117,7 +117,7 @@ def query_store(query):
         id = top3_content_scores[i][0]
         content_score = top3_content_scores[i][1]
         coordinator_score = coordinator_scores[i]
-        title_score = title_scores[i]
+        title_score = title_scores[i] * 1.25  # give title more weight
         # print the lengths of these
         if coordinator_score < 0.5:
             coordinator_score = 0
