@@ -145,9 +145,7 @@
     $: debounceTimeout = (browser && (() => {
         $queryStore;
         clearTimeout(debounceTimeout);
-        return setTimeout(() => {
-            fetchCourses();
-        }, 500);
+        return setTimeout(fetchCourses, 500);
     })()) || undefined;
 </script>
 
