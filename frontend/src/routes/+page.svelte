@@ -133,13 +133,6 @@
         //"Department of Biomedical Sciences", // 1
     ];
 
-    onMount(async () => {
-        await fetchCourses();
-    });
-
-    // If the store changes, we should fetch new courses
-    $: $queryStore, browser && fetchCourses();
-
     // SEO
     const title = "DISKU - KU Courses 2.0";
     const description =
@@ -149,19 +142,13 @@
     console.log(visibleCourses);
 
     let debounceTimeout: number;
-    let firstDebounce = true;
-    let search = $queryStore.search;
-    // when search changes, we want to debounce it and then update the queryStore
-    $: {
-        if (firstDebounce) {
-            firstDebounce = false;
-        } else {
+    // If the store changes, we should fetch new courses
+    $: $queryStore, browser && (() => {
         clearTimeout(debounceTimeout);
         debounceTimeout = setTimeout(() => {
-            $queryStore.search = search;
+            fetchCourses();
         }, 500);
-        }
-    }
+    })();
 </script>
 
 <svelte:head>
@@ -193,10 +180,10 @@
     <main class="flex flex-col items-center space-y-4 mt-10">
         <h1 class="text-brand-500 text-4xl font-bold">KU Courses 2.0</h1>
         <div>
-            <input type="text" placeholder="Search" bind:value={search} />
+            <input type="text" placeholder="Search" bind:value={$queryStore.search} />
             <button
                 class="bg-kuRed text-white p-2"
-                on:click={() => (search = "")}
+                on:click={() => ($queryStore.search = "")}
             >
                 Clear search
             </button>
