@@ -141,14 +141,14 @@
 
     console.log(visibleCourses);
 
-    let debounceTimeout: number;
     // If the store changes, we should fetch new courses
-    $: $queryStore, browser && (() => {
+    $: debounceTimeout = (browser && (() => {
+        $queryStore;
         clearTimeout(debounceTimeout);
-        debounceTimeout = setTimeout(() => {
+        return setTimeout(() => {
             fetchCourses();
         }, 500);
-    })();
+    })()) || undefined;
 </script>
 
 <svelte:head>
