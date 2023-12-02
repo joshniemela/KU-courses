@@ -146,7 +146,7 @@
     // If the store changes, we should fetch new courses
     $: debounceTimeout = ((() => {
         clearTimeout(debounceTimeout ?? undefined);
-        return setTimeout(() => { $queryStore.search = search; }, 500);
+        return setTimeout(() => { queryStore.search = search; }, 500);
     })()) || null;
 
     $: $queryStore, browser && fetchCourses()
