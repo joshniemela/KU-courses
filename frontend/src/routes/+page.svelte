@@ -141,12 +141,15 @@
 
     console.log(visibleCourses);
 
+    let search: string | null = queryStore.search;
+
     // If the store changes, we should fetch new courses
-    $: debounceTimeout = (browser && (() => {
-        $queryStore;
-        clearTimeout(debounceTimeout);
-        return setTimeout(fetchCourses, 500);
-    })()) || undefined;
+    $: debounceTimeout = ((() => {
+        clearTimeout(debounceTimeout ?? undefined);
+        return setTimeout(() => { $queryStore.search = search; }, 500);
+    })()) || null;
+
+    $: $queryStore, browser && fetchCourses()
 </script>
 
 <svelte:head>
@@ -178,10 +181,10 @@
     <main class="flex flex-col items-center space-y-4 mt-10">
         <h1 class="text-brand-500 text-4xl font-bold">KU Courses 2.0</h1>
         <div>
-            <input type="text" placeholder="Search" bind:value={$queryStore.search} />
+            <input type="text" placeholder="Search" bind:value={search} />
             <button
                 class="bg-kuRed text-white p-2"
-                on:click={() => ($queryStore.search = "")}
+                on:click={() => (search = "")}
             >
                 Clear search
             </button>
