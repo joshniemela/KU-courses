@@ -1,9 +1,8 @@
-use crate::parser;
 use crate::parser::Description;
 
-use tl::{NodeHandle, Parser, VDom};
+use tl::VDom;
 
-use anyhow::{anyhow, bail, ensure, Context, Result};
+use anyhow::{Context, Result};
 
 // grab some specific htmls and return the html
 pub fn grab_htmls(dom: &VDom) -> Result<Description> {
@@ -33,16 +32,8 @@ pub fn grab_htmls(dom: &VDom) -> Result<Description> {
             );
         });
 
-    let recommended_qualifications_html = match recommended_qualifications_html {
-        Some(s) => {
-            if s.contains("Ingen") || s.contains("None") {
-                None
-            } else {
-                Some(s)
-            }
-        }
-        None => None,
-    };
+    let recommended_qualifications_html =
+        recommended_qualifications_html.filter(|s| !(s.contains("Ingen") || s.contains("None")));
 
     // grab the first 300 chars of the content
     let summary = content_html

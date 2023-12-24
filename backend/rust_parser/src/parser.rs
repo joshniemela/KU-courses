@@ -1,4 +1,4 @@
-use anyhow::{anyhow, bail, ensure, Context, Result};
+use anyhow::{bail, ensure, Context, Result};
 use serde::Serialize;
 use tl::VDom;
 
@@ -57,7 +57,7 @@ enum Department {
     NutritionExerciseAndSports,
     Mathematics,
     ScienceEducation,
-    PlantAndEnvironmentalSciences,
+    // PlantAndEnvironmentalSciences, this never occurs as of end of 2023
     Chemistry,
     NielsBohrInstitute,
     NaturalHistoryMuseumOfDenmark,
@@ -70,7 +70,7 @@ enum Department {
 }
 impl Department {
     fn from_str(s: &str) -> Result<Self> {
-        match s.replace("\n", " ").as_str() {
+        match s.replace('\n', " ").as_str() {
             "Department of Computer Science" | "Datalogisk Institut" => {
                 Ok(Department::ComputerScience)
             }
@@ -147,6 +147,7 @@ pub struct LogisticInformation {
 }
 
 impl CourseInformation {
+    #[allow(clippy::too_many_arguments)]
     pub fn new(
         id: String,
         ects: f32,

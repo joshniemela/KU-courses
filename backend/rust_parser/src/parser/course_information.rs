@@ -1,7 +1,7 @@
 // File for the course info side-table
 use crate::parser;
-use crate::parser::{Capacity, CourseInformation, Duration};
-use anyhow::{anyhow, bail, ensure, Context, Result};
+use crate::parser::CourseInformation;
+use anyhow::{bail, ensure, Context, Result};
 use tl::VDom;
 
 pub fn parse_course_info(dom: &VDom) -> Result<CourseInformation> {
@@ -93,7 +93,7 @@ fn coerce_course_info(
             }
             e_one.context("Failed to get duration")
         },
-        |d| Ok(d),
+        Ok,
     );
     let duration = duration?;
     let degree = degree.context("Failed to get degree")?;
@@ -139,7 +139,7 @@ fn coerce_course_info(
 fn parse_code(code: &str) -> Result<String> {
     match code {
         "NORS" => bail!("Wrong faculty <EXPECTED>"),
-        code if code.starts_with("N") || code.starts_with("L") => Ok(code.to_string()),
+        code if code.starts_with('N') || code.starts_with('L') => Ok(code.to_string()),
         _ => bail!("Wrong faculty <EXPECTED>"),
     }
 }
@@ -180,10 +180,8 @@ fn parse_block(input: &str, duration: &parser::Duration) -> Result<Vec<parser::B
                     _ => (),
                 }
             }
-            if blocks.is_empty() {
-                if input.contains("Summer") || input.contains("Sommer") {
-                    blocks.push(parser::Block::Summer);
-                }
+            if blocks.is_empty() && (input.contains("Summer") || input.contains("Sommer")) {
+                blocks.push(parser::Block::Summer);
             }
         }
         parser::Duration::Two => {

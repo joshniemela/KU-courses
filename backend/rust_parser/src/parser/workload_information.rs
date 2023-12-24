@@ -1,8 +1,7 @@
-use crate::parser;
 use crate::parser::{Workload, WorkloadType};
-use anyhow::{anyhow, bail, ensure, Context, Result};
+use anyhow::{ensure, Context, Result};
 
-use tl::{NodeHandle, VDom};
+use tl::VDom;
 
 pub fn parse_workloads(dom: &VDom) -> Result<Vec<Workload>> {
     let parser = dom.parser();
@@ -31,7 +30,7 @@ pub fn parse_workloads(dom: &VDom) -> Result<Vec<Workload>> {
             let workload = Workload {
                 workload_type: WorkloadType::from_str(&pair[0])?,
                 hours: pair[1]
-                    .replace(",", ".")
+                    .replace(',', ".")
                     .parse::<f32>()
                     .context(format!("Unable to parse workload hours: {}", pair[1]))?,
             };

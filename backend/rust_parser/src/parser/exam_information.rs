@@ -1,6 +1,5 @@
-use crate::parser;
 use crate::parser::Exam;
-use anyhow::{anyhow, bail, ensure, Context, Result};
+use anyhow::{bail, ensure, Context, Result};
 
 use tl::{NodeHandle, VDom};
 
@@ -43,7 +42,7 @@ pub fn parse_course_exams(dom: &VDom) -> Result<Vec<Exam>> {
                     exams.push(parse_text_to_exam(&text)?);
                 }
                 ensure!(
-                    exams.len() > 0,
+                    !exams.is_empty(),
                     format!(
                         "No exams found in exam table: {}",
                         dd.get(parser).unwrap().inner_text(parser)

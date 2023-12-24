@@ -1,7 +1,6 @@
 use crate::parser;
 use crate::parser::LogisticInformation;
-use anyhow::{anyhow, bail, ensure, Context, Result};
-use regex::Regex;
+use anyhow::{bail, ensure, Result};
 use tl::{NodeHandle, VDom};
 
 // Convert two chars in a string to a u8
@@ -15,7 +14,7 @@ fn double_hex_to_u8(hex: &str) -> u8 {
 }
 
 fn deobfuscate_email(obfuscated_email: &str) -> Result<String> {
-    let mut split = obfuscated_email.split("-");
+    let split = obfuscated_email.split('-');
     if split.clone().count() == 1 {
         return Ok(obfuscated_email.to_string());
     }
@@ -27,7 +26,7 @@ fn deobfuscate_email(obfuscated_email: &str) -> Result<String> {
     // if the regex matches an email we return it
     // else we continue incrementing the offset and hoping we find a match
     for i in 0..25 {
-        for j in (0..text.clone().len()).step_by(2) {
+        for j in (0..text.len()).step_by(2) {
             let hex = &text[j..j + 2];
             let u8 = double_hex_to_u8(hex) - i;
             email.push(u8 as char);
@@ -74,7 +73,7 @@ pub fn parse_logistic_info(dom: &VDom) -> Result<LogisticInformation> {
             }
             _ if h5.contains("institut") || h5.contains("department") => {
                 for li in lis {
-                    departments.push(parser::Department::from_str(&li)?);
+                    departments.push(parser::Department::from_str(li)?);
                 }
             }
 
@@ -83,7 +82,7 @@ pub fn parse_logistic_info(dom: &VDom) -> Result<LogisticInformation> {
     }
     // ensure we have
     ensure!(
-        departments.len() > 0,
+        !departments.is_empty(),
         format!("No departments found in logistic information: {:?}", info)
     );
 
@@ -102,7 +101,7 @@ pub fn extract_h5_li_pairs(dom: &VDom) -> Result<Vec<(String, Vec<String>)>> {
         raw_panel_bodies.map(|panel_body| panel_body.get(parser).unwrap().as_tag().unwrap());
 
     let mut pairs: Vec<(String, Vec<String>)> = vec![];
-    for (i, panel_body) in panel_bodies.enumerate() {
+    for panel_body in panel_bodies {
         let h5s = panel_body.query_selector(parser, "h5").unwrap();
         // if it contains h5s, we have found the right body
         if h5s.clone().count() > 0 {

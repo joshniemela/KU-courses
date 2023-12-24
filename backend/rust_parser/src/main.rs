@@ -1,5 +1,3 @@
-use crate::parser::Course;
-use serde::{Deserialize, Serialize};
 use std::env;
 
 #[cfg(test)]
@@ -8,15 +6,11 @@ use pretty_assertions::{assert_eq, assert_ne};
 use std::time;
 pub mod parser;
 
-const DEFAULT_DATA_DIR: &str = "../../data";
-
-const HTMLS_DIR: &str = "../../data/pages";
-
-const TEST_DIR: &str = "./test_data";
-
-const TEST_HTMLS_DIR: &str = "./test_data/pages";
-
-const JSON_DIR: &str = "../../data/new_json";
+//const DEFAULT_DATA_DIR: &str = "../../data";
+//const HTMLS_DIR: &str = "../../data/pages";
+//const TEST_DIR: &str = "./test_data";
+//const TEST_HTMLS_DIR: &str = "./test_data/pages";
+//const JSON_DIR: &str = "../../data/new_json";
 
 // make a function that takes a path and returns the number of fails and the total number of courses
 fn count_fails(htmls_dir: &str, json_dir: &str) -> (usize, usize) {
