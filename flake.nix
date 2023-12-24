@@ -1,34 +1,31 @@
+
+
 {
-  description = "astrid.tech site";
+  description = "A basic Rust devshell for NixOS users developing Leptos";
 
   inputs = {
-    flake-compat = {
-      url = "github:edolstra/flake-compat";
-      flake = false;
-    };
-    flake-utils.url = "github:numtide/flake-utils";
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
+    flake-utils.url = "github:numtide/flake-utils";
+    rust-overlay.url = "github:oxalica/rust-overlay";
   };
 
-  outputs = { self, flake-utils, nixpkgs, ... }@inputs:
-    {
-      overlay = (final: prev: { });
-    } // (flake-utils.lib.eachSystem [
-      "x86_64-linux"
-      "x86_64-darwin"
-      "aarch64-linux"
-    ] (system:
-      let
+  outputs = {
+    self,
+    nixpkgs,
+    flake-utils,
+    rust-overlay,
+    ...
+  }:
+    flake-utils.lib.eachDefaultSystem (
+      system: let
+        overlays = [(import rust-overlay) ];
         pkgs = import nixpkgs {
-          inherit system;
-          overlays = [ self.overlay ];
+          inherit system overlays;
         };
-        lib = pkgs.lib;
-      in rec {
-        devShells.default = with pkgs;
-          mkShell {
-            nativeBuildInputs = [
-              # development tools
+      in
+        with pkgs; {
+          devShells.default = mkShell {
+            buildInputs = [
               docker
               docker-compose
               git
@@ -40,15 +37,10 @@
               # browsers for testing
               firefox
               chromium
-              pre-commit
+              pkg-config
+              rust-bin.stable.latest.default 
             ];
-
-            LD_LIBRARY_PATH = lib.makeLibraryPath [ stdenv.cc.cc
-            glibc libpng mlib zlib ];
           };
-
-        devShells.content = pkgs.mkShell {
-          nativeBuildInputs = with pkgs; [ code ];
-        };
-      }));
+        }
+    );
 }
