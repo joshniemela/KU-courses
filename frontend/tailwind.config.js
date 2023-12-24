@@ -1,14 +1,15 @@
 /** @type {import('tailwindcss').Config} */
 export default {
   content: [
-    './src/**/*.{html,js,svelte,ts}',
-    './node_modules/flowbite-svelte/**/*.{html,js,svelte,ts}'],
+    "./src/**/*.{html,js,svelte,ts}",
+    "./node_modules/flowbite-svelte/**/*.{html,js,svelte,ts}",
+  ],
   theme: {
     extend: {
       spacing: {
         text: "clamp(45ch,50%,75ch)",
       },
-      listStyleType: {square: "square",},
+      listStyleType: { square: "square" },
       colors: {
         kuRed: "#901A1E",
         kuGray: "#333333",
@@ -85,15 +86,13 @@ export default {
     },
     keyframes: {
       fadeIn: {
-        '0%': { opacity: '0' },
-        '100%': { opacity: '1' }
-      }
+        "0%": { opacity: "0" },
+        "100%": { opacity: "1" },
+      },
     },
     animation: {
-      fadeIn: 'fadeIn 0.5s ease-in-out'
-    }
+      fadeIn: "fadeIn 0.5s ease-in-out",
+    },
   },
-  plugins: [
-    require('flowbite/plugin'),
-  ]
-}
+  plugins: [require("flowbite/plugin")],
+};

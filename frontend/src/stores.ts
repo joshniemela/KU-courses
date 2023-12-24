@@ -18,7 +18,7 @@ export function writableSession<T>(key: string, value: T): Writable<T> {
   if (!sessionValue) setSessionStore(key, value);
 
   const store = writable(sessionValue || value);
-  store.subscribe(value => {
+  store.subscribe((value) => {
     setSessionStore(key, value);
   });
 
@@ -35,7 +35,6 @@ const emptyQuery = {
   departments: [],
   search: null,
 };
-
 
 export const queryStore = writableSession("filters", emptyQuery);
 
@@ -70,12 +69,16 @@ export function apiUrl() {
 }
 
 function xorString(str: string, key: number): string {
-  return str.split("").map(char => String.fromCharCode(char.charCodeAt(0) ^ key)).join("");
+  return str
+    .split("")
+    .map((char) => String.fromCharCode(char.charCodeAt(0) ^ key))
+    .join("");
 }
 // mail obfuscator/deobfuscator using XOR, this should return a function with no arguments that returns a string
 export function obfuscateEmail(email: string): () => string {
   // generate the key by summing the char codes of the email and mod 256
-  const key = email.split("").reduce((acc, char) => acc + char.charCodeAt(0), 0) % 256;
+  const key =
+    email.split("").reduce((acc, char) => acc + char.charCodeAt(0), 0) % 256;
   const obfuscated = xorString(email, key);
   return () => xorString(obfuscated, key);
 }

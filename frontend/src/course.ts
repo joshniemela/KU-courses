@@ -57,7 +57,6 @@ export const empty_course: Course = {
   departments: [],
 };
 
-
 export function total_hours(course: Course): number {
   let total = 0;
   course.workload.forEach((workload) => {

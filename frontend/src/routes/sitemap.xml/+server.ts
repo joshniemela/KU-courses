@@ -1,6 +1,5 @@
 import { dev } from "$app/environment";
 
-
 const url = dev ? "http://localhost:3000" : "https://disku.jniemela.dk";
 
 function today_yyyy_mm_dd(): string {
@@ -16,9 +15,8 @@ function generate_xml(course_id: string): string {
         <priority>0.8</priority>
         <lastmod>${today_yyyy_mm_dd()}</lastmod>
     </url>
-    `
+    `;
 }
-
 
 export async function GET() {
   // grab all course-ids from the get-course-ids endpoint which gives a list of json objects
@@ -59,5 +57,5 @@ export async function GET() {
         "Content-Type": "application/xml",
       },
     }
-  )
+  );
 }
