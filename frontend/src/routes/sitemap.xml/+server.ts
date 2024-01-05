@@ -22,7 +22,7 @@ export async function GET() {
   // grab all course-ids from the get-course-ids endpoint which gives a list of json objects
   // [{course_id: "course1"}, {course_id: "course2"}]
   //
-  const res = await fetch(`${url}/api/get-course-ids`);
+  const res = await fetch(`${url}/api/get-all-course-ids`);
   const json = await res.json();
   const today = today_yyyy_mm_dd();
 
