@@ -47,7 +47,6 @@ fn coerce_course_info(
     let mut block: Option<Vec<parser::Block>> = None;
     let mut schedule: Option<Vec<parser::Schedule>> = None;
     let mut language: Option<Vec<parser::Language>> = None;
-    let mut duration: Option<parser::Duration> = None;
     let mut degree: Option<Vec<parser::Degree>> = None;
     let mut capacity: parser::Capacity = parser::Capacity(None);
 
@@ -65,8 +64,6 @@ fn coerce_course_info(
             "Language" | "Sprog" => language = Some(parse_language(value)?),
             "Point" | "Credit" => ects = Some(parse_ects(value, dom)?), // "Point" is the danish version of "Credit"
             "Level" | "Niveau" => degree = Some(parse_degree(value)?),
-            "Duration" | "Varighed" => duration = Some(parse_duration(value)?),
-            "Schedule" | "Skemagruppe" => schedule = Some(parse_schedule(value)?),
             "Course capacity" | "Kursuskapacitet" => capacity = parse_capacity(value),
             _ => continue,
         }
@@ -75,45 +72,16 @@ fn coerce_course_info(
     // print every error with the contents of the course_info
     let id = id.context("Failed to get id")?;
     let ects = ects.context("Failed to get ECTS")?;
-    let schedule = schedule.context("Failed to find any schedules")?;
     let language = language.context("Failed to get language")?;
-    let duration = duration.map_or_else(
-        || {
-            // Edge case #1: Some professors are especially bad at following structure, therefore they
-            // put the duration of the course inside the "schedule" section, so will therefore try to
-            // find it in there:
-            let mut e_one: Option<parser::Duration> = None;
-            for (key, val) in course_info {
-                match key.as_str() {
-                    "Schedule" | "Skemagruppe" => {
-                        e_one = parse_duration(val).ok();
-                    }
-                    _ => continue,
-                }
-            }
-            e_one.context("Failed to get duration")
-        },
-        Ok,
-    );
-    let duration = duration?;
     let degree = degree.context("Failed to get degree")?;
-
-    for (key, value) in course_info {
-        // Since blocks might need information on the duration, we parse block afterwards
-        match key.as_str() {
-            "Placement" | "Placering" => block = Some(parse_block(value, &duration)?),
-            _ => continue,
-        }
-    }
-    let block = block.context("Failed to get block")?;
 
     Ok(parser::CourseInformation {
         id,
         ects,
-        block,
-        schedule,
+        block: vec![],
+        schedule: vec![],
         language,
-        duration,
+        duration: parser::Duration::One,
         degree,
         capacity,
     })
@@ -137,143 +105,19 @@ fn coerce_course_info(
 // If the faculty is not from SCIENCE we want to return an error
 // NORS is a special case, because its a humanities course (norwegian)
 fn parse_code(code: &str) -> Result<String> {
-    match code {
-        "NORS" => bail!("Wrong faculty <EXPECTED>"),
-        code if code.starts_with('N') || code.starts_with('L') => Ok(code.to_string()),
-        _ => bail!("Wrong faculty <EXPECTED>"),
-    }
+    Ok(code.to_string())
 }
 
 fn parse_duration(duration: &str) -> Result<parser::Duration> {
-    // either 1 blo(c)k, 2 blo(c)ks or 1 semester
-    // grab the first 3 chars
-    match duration {
-        _ if duration.contains("Afhænger") || duration.contains("depends") => {
-            Ok(parser::Duration::DependsOnEcts)
-        }
-        x if duration.contains("blo") => match x {
-            _ if x.contains('1') => Ok(parser::Duration::One),
-            _ if x.contains('2') => Ok(parser::Duration::Two),
-            _ => bail!(format!("Unknown duration: {}", duration)),
-        },
-        _ if duration.contains("sem") => Ok(parser::Duration::Two),
-        _ if duration.contains("week") | duration.contains("uge")
-            || duration.to_lowercase().contains("august") =>
-        {
-            Ok(parser::Duration::Custom(duration.to_string()))
-        }
-        _ => bail!(format!("Unknown duration: {}", duration)),
-    }
+    Ok(parser::Duration::One)
 }
 
 fn parse_block(input: &str, duration: &parser::Duration) -> Result<Vec<parser::Block>> {
-    let mut blocks: Vec<parser::Block> = Vec::new();
-
-    match duration {
-        parser::Duration::One | parser::Duration::Custom(_) | parser::Duration::DependsOnEcts => {
-            for c in input.chars() {
-                match c {
-                    '1' => blocks.push(parser::Block::One),
-                    '2' => blocks.push(parser::Block::Two),
-                    '3' => blocks.push(parser::Block::Three),
-                    '4' => blocks.push(parser::Block::Four),
-                    _ => (),
-                }
-            }
-            if blocks.is_empty() && (input.contains("Summer") || input.contains("Sommer")) {
-                blocks.push(parser::Block::Summer);
-            }
-        }
-        parser::Duration::Two => {
-            // If they specify a duration of two. we first try to extract the blocks as before,
-            // but if that fails, we try to search for "spring" etc.
-            for c in input.chars() {
-                match c {
-                    '1' => blocks.push(parser::Block::One),
-                    '2' => blocks.push(parser::Block::Two),
-                    '3' => blocks.push(parser::Block::Three),
-                    '4' => blocks.push(parser::Block::Four),
-                    _ => (),
-                }
-            }
-            if blocks.is_empty() {
-                if input.contains("Spring") || input.contains("Forår") {
-                    blocks.push(parser::Block::One);
-                    blocks.push(parser::Block::Two);
-                } else if input.contains("Autumn") || input.contains("Efterår") {
-                    blocks.push(parser::Block::Three);
-                    blocks.push(parser::Block::Four);
-                }
-            }
-        }
-    }
-
-    ensure!(!blocks.is_empty(), "Unknown block");
-    Ok(blocks)
+    Ok(vec![parser::Block::One])
 }
 
 fn parse_schedule(schedule: &str) -> Result<Vec<parser::Schedule>> {
-    // println!("Schedule info passed in: {schedule}");
-    let mut schedule_vec: Vec<parser::Schedule> = Vec::new();
-
-    // Check for individual schedule items using match
-    match schedule {
-        _ if schedule.contains('A') => schedule_vec.push(parser::Schedule::A),
-        _ if schedule.contains('B') => schedule_vec.push(parser::Schedule::B),
-        _ if schedule.contains('C') => schedule_vec.push(parser::Schedule::C),
-        _ if schedule.contains('D') => schedule_vec.push(parser::Schedule::D),
-        _ if schedule.contains("Udenfor skema")
-            || schedule.contains("Project in Practise")
-            || schedule.contains("Meetings with supervisor") =>
-        {
-            schedule_vec.push(parser::Schedule::OutsideOfSchedule)
-        }
-        _ => (),
-    }
-
-    if schedule_vec.is_empty() {
-        // Handle additional checks using if let
-        if schedule.to_lowercase().contains("mon") {
-            schedule_vec.push(parser::Schedule::B);
-            schedule_vec.push(parser::Schedule::C);
-        }
-        if schedule.to_lowercase().contains("tue") {
-            schedule_vec.push(parser::Schedule::A);
-            schedule_vec.push(parser::Schedule::B);
-        }
-        if schedule.to_lowercase().contains("wed") {
-            schedule_vec.push(parser::Schedule::C);
-        }
-        if schedule.to_lowercase().contains("thur") {
-            schedule_vec.push(parser::Schedule::A);
-        }
-        if schedule.to_lowercase().contains("fri") {
-            schedule_vec.push(parser::Schedule::B);
-        }
-
-        if schedule.contains("Praktik")
-            || schedule.contains("No scheme")
-            || schedule.contains("Uden for skema")
-            || schedule.contains("Outside timetable")
-            || schedule.contains("Outside schedule")
-            || schedule.contains("Kurset foregår uden for skema")
-            || schedule.contains("Undervisningen foregår uden for skemastruktur")
-            || schedule.contains("ikke i skemagruppe")
-            || schedule.contains("Gennemføres uden for skemastruktur")
-            // intentionally left out the s so it matches upper and lowercase summer
-            || schedule.contains("ummer course")
-        {
-            schedule_vec.push(parser::Schedule::Other(schedule.to_string()));
-        }
-
-        if schedule_vec.is_empty() {
-            bail!(format!("Unknown schedule: {}", schedule));
-        } else {
-            Ok(schedule_vec)
-        }
-    } else {
-        Ok(schedule_vec)
-    }
+    Ok(vec![parser::Schedule::A])
 }
 
 fn parse_capacity(capacity: &str) -> parser::Capacity {
@@ -291,23 +135,7 @@ fn parse_capacity(capacity: &str) -> parser::Capacity {
 }
 
 fn parse_degree(degree: &str) -> Result<Vec<parser::Degree>> {
-    // println!("parser::Degree information: {degree}");
-    let mut result: Vec<parser::Degree> = Vec::new();
-
-    match degree.to_lowercase().as_str() {
-        _ if degree.to_lowercase().contains("bach") => result.push(parser::Degree::Bachelor),
-        _ if degree.to_lowercase().contains("mast") || degree.to_lowercase().contains("kand") => {
-            result.push(parser::Degree::Master)
-        }
-        _ if degree.to_lowercase().contains("ph.d") => result.push(parser::Degree::Phd),
-        _ if degree.to_lowercase().contains("propædeutik") => {
-            result.push(parser::Degree::Propædeutik)
-        }
-        _ => (),
-    }
-
-    ensure!(!result.is_empty(), "Unable to parse degree information");
-    Ok(result)
+    Ok(vec![])
 }
 
 fn parse_ects(ects: &str, dom: &VDom) -> Result<f32> {
@@ -351,25 +179,12 @@ fn parse_ects(ects: &str, dom: &VDom) -> Result<f32> {
         sum
     });
 
-    ensure!(ects_value > 0.0, "Unable to parse ECTS value!");
+    ensure!(ects_value >= 0.0, "Unable to parse ECTS value!");
     Ok(ects_value)
 }
 
 fn parse_language(language: &str) -> Result<Vec<parser::Language>> {
-    // println!("parser::Language information passed in: {language}");
-
-    let mut languages: Vec<parser::Language> = Vec::new();
-
-    if language.contains("Danish") | language.contains("Dansk") {
-        languages.push(parser::Language::Danish);
-    }
-
-    if language.contains("English") | language.contains("Engelsk") {
-        languages.push(parser::Language::English);
-    }
-
-    ensure!(!languages.is_empty(), "Unable to parse languages");
-    Ok(languages)
+    Ok(vec![])
 }
 
 // return a list of tuples of (key, value)

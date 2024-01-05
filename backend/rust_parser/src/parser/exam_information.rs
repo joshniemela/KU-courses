@@ -4,58 +4,7 @@ use anyhow::{bail, ensure, Context, Result};
 use tl::{NodeHandle, VDom};
 
 pub fn parse_course_exams(dom: &VDom) -> Result<Vec<Exam>> {
-    let parser = dom.parser();
-    let exam_table = dom
-        .get_element_by_id("course-exams1")
-        .context("Unable to find exam table, this should never happen??? i think?")?
-        .get(parser)
-        .unwrap()
-        .as_tag()
-        .unwrap();
-
-    let dts = exam_table
-        .query_selector(parser, "dt")
-        .context("Unable to find any dts, this should be impossible")?;
-    let dds = exam_table
-        .query_selector(parser, "dd")
-        .context("Unable to find any dds, this should be impossible")?;
-
-    ensure!(
-        dds.clone().count() == dts.clone().count(),
-        "Number of dds and dts in exam table does not match"
-    );
-
-    let mut exams = Vec::<Exam>::new();
-    for (dt, dd) in dts.zip(dds) {
-        let dt_text = dt.get(parser).unwrap().inner_text(parser).to_string();
-        match dt_text.as_str() {
-            "Type of assessment" | "Prøveform" => {
-                let exam_boundary = dd
-                    .get(parser)
-                    .unwrap()
-                    .children()
-                    .unwrap()
-                    .boundaries(parser)
-                    .unwrap();
-                for j in exam_boundary.0..exam_boundary.1 {
-                    let text = NodeHandle::new(j).get(parser).unwrap().inner_text(parser);
-                    exams.push(parse_text_to_exam(&text)?);
-                }
-                ensure!(
-                    !exams.is_empty(),
-                    format!(
-                        "No exams found in exam table: {}",
-                        dd.get(parser).unwrap().inner_text(parser)
-                    )
-                );
-            }
-            _ => continue,
-        }
-    }
-    if exams.len() > 1 && exams[0] == exams[1] {
-        exams.remove(0);
-    }
-    Ok(exams)
+    Ok(Vec::new())
 }
 
 fn parse_text_to_exam(text: &str) -> Result<Exam> {

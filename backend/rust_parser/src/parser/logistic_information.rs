@@ -51,24 +51,29 @@ pub fn parse_logistic_info(dom: &VDom) -> Result<LogisticInformation> {
 
     for (h5, lis) in &info {
         match h5.as_str() {
-            "Kursusansvarlige" | "Course Coordinators" => {
-                for li in lis {
-                    // the email should be removed from the name, it is enclosed in parenthesis
-                    let mut split = li.split('(');
-                    let name = split.next().unwrap().trim().to_string();
-                    let obfuscated_email =
-                        split.next().unwrap().split(')').next().unwrap().to_string();
-                    let email = deobfuscate_email(&obfuscated_email)?;
-                    coordinators.push(parser::Coordinator { name, email });
-                }
-            }
             "Udbydende fakultet" | "Contracting faculty" => {
                 let faculty_str = lis.first().unwrap();
                 match faculty_str.as_str() {
                     "Det Natur- og Biovidenskabelige Fakultet" | "Faculty of Science" => {
                         faculty = Some(parser::Faculty::Science)
                     }
-                    _ => bail!("Unknown faculty: {} <EXPECTED>", faculty_str),
+                    "Det Humanistiske Fakultet" | "Faculty of Humanities" => {
+                        faculty = Some(parser::Faculty::Humanities)
+                    }
+                    "Det Samfundsvidenskabelige Fakultet" | "Faculty of Social Sciences" => {
+                        faculty = Some(parser::Faculty::SocialSciences)
+                    }
+                    "Det Sundhedsvidenskabelige Fakultet"
+                    | "Faculty of Health and Medical Sciences" => {
+                        faculty = Some(parser::Faculty::HealthSciences)
+                    }
+                    "Faculty of Theology" | "Det Teologiske Fakultet" => {
+                        faculty = Some(parser::Faculty::Theology)
+                    }
+                    "Det Juridiske Fakultet" | "Faculty of Law" => {
+                        faculty = Some(parser::Faculty::Law)
+                    }
+                    _ => bail!("Unknown faculty: {}", faculty_str),
                 }
             }
             _ if h5.contains("institut") || h5.contains("department") => {

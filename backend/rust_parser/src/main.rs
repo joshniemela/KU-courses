@@ -1,5 +1,7 @@
+use csv::WriterBuilder;
 use std::env;
 
+use anyhow::Result;
 #[cfg(test)]
 use pretty_assertions::{assert_eq, assert_ne};
 
@@ -17,6 +19,7 @@ fn count_fails(htmls_dir: &str, json_dir: &str) -> (usize, usize) {
     let mut fails = 0;
     let mut passes = 0;
     let dir = std::fs::read_dir(htmls_dir).unwrap();
+    let mut courses: Vec<parser::Course> = vec![];
     for entry in dir {
         let entry = entry.unwrap();
         // read the string from the file
@@ -30,22 +33,44 @@ fn count_fails(htmls_dir: &str, json_dir: &str) -> (usize, usize) {
                 let json = serde_json::to_string(&c).unwrap();
                 let path = format!("{}/{}.json", json_dir, c.info.id);
                 std::fs::write(path, json).unwrap();
+                courses.push(c);
                 passes += 1;
             }
 
             Err(e) => {
-                // if any of the causes contain <EXPECTED>, then we ignore it and continue
-                if e.chain().any(|c| c.to_string().contains("<EXPECTED>")) {
-                    continue;
-                } else {
-                    fails += 1;
-                    println!("Error: {:?}\n\n", e);
-                }
+                println!("Error: {}", e);
+                fails += 1;
             }
         }
     }
+    write_courses_to_csv(courses).unwrap();
     (fails, passes)
 }
+
+fn reduce_workload_hours(workloads: Vec<parser::Workload>) -> f32 {
+    let mut hours: Vec<f32> = vec![];
+    for workload in workloads {
+        hours.push(workload.hours);
+    }
+    hours.iter().sum()
+}
+
+fn write_courses_to_csv(courses: Vec<parser::Course>) -> Result<()> {
+    let mut wtr = WriterBuilder::new().delimiter(b'\t').from_path("foo.tsv")?;
+    wtr.write_record(&["title", "id", "ects", "hours", "faculty"])?;
+    for course in courses {
+        let hours = reduce_workload_hours(course.workloads);
+        wtr.write_record(&[
+            course.title,
+            course.info.id,
+            course.info.ects.to_string(),
+            hours.to_string(),
+            course.logistics.faculty.to_string(),
+        ])?;
+    }
+    Ok(())
+}
+
 // take an in and out path as arguments
 fn main() {
     let args: Vec<String> = env::args().collect();

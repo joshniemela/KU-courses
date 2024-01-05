@@ -1,5 +1,6 @@
 use anyhow::{bail, ensure, Context, Result};
 use serde::Serialize;
+use std::fmt;
 use tl::VDom;
 
 use crate::parser::course_information::parse_course_info;
@@ -36,7 +37,7 @@ pub enum CourseLanguage {
 #[derive(Debug, PartialEq, Serialize)]
 pub struct CourseInformation {
     pub id: String,
-    ects: f32,
+    pub ects: f32,
     block: Vec<Block>,
     schedule: Vec<Schedule>,
     language: Vec<Language>,
@@ -70,69 +71,32 @@ enum Department {
 }
 impl Department {
     fn from_str(s: &str) -> Result<Self> {
-        match s.replace('\n', " ").as_str() {
-            "Department of Computer Science" | "Datalogisk Institut" => {
-                Ok(Department::ComputerScience)
-            }
-            "Institut for Idræt og Ernæring" | "Department of Nutrition, Exercise and Sports" => {
-                Ok(Department::NutritionExerciseAndSports)
-            }
-            "Statens Naturhistoriske Museum" | "The Natural History Museum of Denmark" => {
-                Ok(Department::NaturalHistoryMuseumOfDenmark)
-            }
-            "Institut for Plante- og Miljøvidenskab"
-            | "Department of Plant and Environmental Sciences" => {
-                Ok(Department::PlantAndEnvironmentalScience)
-            }
-            "Institut for Matematiske Fag" | "Department of Mathematical Sciences" => {
-                Ok(Department::Mathematics)
-            }
-            "Niels Bohr Institutet" | "The Niels Bohr Institute" => {
-                Ok(Department::NielsBohrInstitute)
-            }
-            "Institut for Geovidenskab og Naturforvaltning"
-            | "Department of Geoscience and Natural Resource Management" => {
-                Ok(Department::GeosciencesAndNaturalResourceManagement)
-            }
-            "Institut for Naturfagenes Didaktik" | "Department of Science Education" => {
-                Ok(Department::ScienceEducation)
-            }
-            "Institut for Fødevare- og Ressourceøkonomi"
-            | "Department of Food and Resource Economics" => {
-                Ok(Department::FoodAndResourceEconomics)
-            }
-            "Institut for Fødevarevidenskab" | "Department of Food Science" => {
-                Ok(Department::FoodScience)
-            }
-            "Kemisk Institut" | "Department of Chemistry" => Ok(Department::Chemistry),
-            "Biologisk Institut" | "Department of Biology" => Ok(Department::Biology),
-            "Department of Veterinary and Animal Sciences"
-            | "Institut for Veterinær- og Husdyrvidenskab (IVH)" => {
-                Ok(Department::VeterinaryAndAnimalSciences)
-            }
-            "Department of Biomedical Sciences" => Ok(Department::BiomedicalSciences),
-            "Department of Pharmacy" => Ok(Department::Pharmacy),
-            "Institut for Lægemiddeldesign og Farmakologi"
-            | "Department of Drug Design and Pharmacology" => {
-                Ok(Department::DrugDesignAndPharmacology)
-            }
-            "Department of Cellular and Molecular Medicine" => {
-                Ok(Department::CellularAndMolecularMedicine)
-            }
-            "Department of Public Health" => Ok(Department::PublicHealth),
-            "Institut for Nordiske Studier og Sprogvidenskab" => {
-                bail!("Nordic studies not supported <EXPECTED>")
-            }
-            _ => bail!("Unknown department: {}", s),
-        }
+        Ok(Department::ComputerScience)
     }
 }
 
 #[derive(Debug, PartialEq, Serialize)]
-enum Faculty {
+pub enum Faculty {
     Science,
+    Humanities,
+    Law,
+    HealthSciences,
+    Theology,
+    SocialSciences,
 }
-
+impl fmt::Display for Faculty {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        match self {
+            Faculty::Science => write!(f, "Faculty of Science"),
+            Faculty::Humanities => write!(f, "Faculty of Humanities"),
+            Faculty::Law => write!(f, "Faculty of Law"),
+            Faculty::HealthSciences => write!(f, "Faculty of Health Sciences"),
+            Faculty::Theology => write!(f, "Faculty of Theology"),
+            Faculty::SocialSciences => write!(f, "Faculty of Social Sciences"),
+        }
+    }
+}
+// Implement display
 #[derive(Debug, PartialEq, Serialize)]
 pub struct Coordinator {
     name: String,
@@ -142,7 +106,7 @@ pub struct Coordinator {
 #[derive(Debug, PartialEq, Serialize)]
 pub struct LogisticInformation {
     departments: Vec<Department>,
-    faculty: Faculty,
+    pub faculty: Faculty,
     coordinators: Vec<Coordinator>,
 }
 
@@ -244,6 +208,7 @@ enum WorkloadType {
     ClassInstruction,
     PracticalTraining,
     Seminar,
+    Other,
 }
 impl WorkloadType {
     fn from_str(s: &str) -> Result<Self> {
@@ -266,7 +231,7 @@ impl WorkloadType {
             "Praktik" | "Practical Training" => Ok(WorkloadType::PracticalTraining),
 
             "Guidance" | "Vejledning" => Ok(WorkloadType::Guidance),
-            _ => bail!("Unknown workload type: {}", s),
+            _ => Ok(WorkloadType::Other),
         }
     }
 }
@@ -274,7 +239,7 @@ impl WorkloadType {
 #[derive(Debug, PartialEq, Serialize)]
 pub struct Workload {
     workload_type: WorkloadType,
-    hours: f32,
+    pub hours: f32,
 }
 
 #[derive(Debug, PartialEq, Serialize)]
