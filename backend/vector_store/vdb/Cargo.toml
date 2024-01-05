@@ -1,0 +1,20 @@
+[package]
+name = "vdb"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+acap = "0.3.0"
+anyhow = "1.0.77"
+axum = "0.7.3"
+fastembed = "1.10.0"
+nanohtml2text = "0.1.4"
+ndarray = "0.15.6"
+ort = "1.16.3"
+rayon = "1.8.0"
+serde = "1.0.193"
+serde_json = "1.0.108"
+tokenizers = "0.15.0"
+tokio = {version = "1.32.0", features = ["full"]}
