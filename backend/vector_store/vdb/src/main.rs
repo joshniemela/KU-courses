@@ -3,6 +3,7 @@ use axum::http::{Request, StatusCode};
 use axum::extract::Query;
 use axum::response::{Response, IntoResponse};
 use axum::routing::get;
+use axum::extract::{State, FromRef};
 use axum::{Json, Router};
 use fastembed::{Embedding, EmbeddingBase, EmbeddingModel, FlagEmbedding, InitOptions};
 use nanohtml2text::html2text;
@@ -11,7 +12,7 @@ use serde::Serialize;
 use std::fs::File;
 use std::io::BufReader;
 use std::path::Path;
-
+use rayon::prelude::*;
 const DATA_DIR: &str = "../../../data/new_json";
 
 #[derive(Debug, Deserialize, Clone)]
@@ -31,7 +32,7 @@ struct Info {
     id: String,
 }
 
-#[derive(Debug, Deserialize, Clone)]
+#[derive(Debug, Deserialize, Clone, Serialize)]
 struct EmbeddedDocument {
     id: String,
     title: String,
@@ -68,10 +69,10 @@ fn embed_documents(
     documents: Vec<Document>,
     model: &FlagEmbedding,
 ) -> Result<Vec<EmbeddedDocument>> {
-    let ids: Vec<String> = documents.iter().map(|x| x.info.id.clone()).collect();
-    let titles: Vec<String> = documents.iter().map(|x| x.title.clone()).collect();
+    let ids: Vec<String> = documents.par_iter().map(|x| x.info.id.clone()).collect();
+    let titles: Vec<String> = documents.par_iter().map(|x| x.title.clone()).collect();
     let descriptions: Vec<String> = documents
-        .iter()
+        .par_iter()
         .map(|x| x.description.content.clone())
         .collect();
     let batch_size = Some(32);
@@ -99,6 +100,13 @@ struct SearchQuery {
     query: String,
 }
 
+
+#[derive(Clone)]
+struct AppState {
+    embedded_documents: Vec<EmbeddedDocument>,
+    model_ref: &'static FlagEmbedding,
+}
+
 #[tokio::main]
 async fn main() {
     let path = Path::new(DATA_DIR);
@@ -114,21 +122,27 @@ async fn main() {
     }).unwrap();
     // Embed the documents
     let start = std::time::Instant::now();
-    let embedded_documents = embed_documents(documents, &model).unwrap();
+    //let embedded_documents = embed_documents(documents, &model).unwrap();
+    // save all this to a file
+    //let mut file = File::create("embedded_documents.json").unwrap();
+    // read from the file
+    let file = File::open("embedded_documents.json").unwrap();
+    let embedded_documents: Vec<EmbeddedDocument> =
+        serde_json::from_reader(file).unwrap();
+    //serde_json::to_writer(&mut file, &embedded_documents).unwrap();
     let duration = start.elapsed();
     println!("Time elapsed in embedding documents: {:?}", duration);
+
+    let state = AppState {
+        embedded_documents: embedded_documents.clone(),
+        model_ref: Box::leak(Box::new(model)),
+    };
 
     let app = Router::new()
         .route("/health", get(|| async { "healthy" }))
         // search takes a query param "query" and returns a list of the 150 most similar documents
-        .route("/search", get(
-            |Query(query): Query<SearchQuery>| async move {
-                let titles = titles_by_similarity(&query.query, &embedded_documents);
-                let response = Json(titles);
-                (StatusCode::OK, response)
-            },
-        )
-        );
+        .route("/search", get(search))
+        .with_state(state);
     let addr = "localhost";
     let port = 4000;
     let listener = tokio::net::TcpListener::bind(&format!("{}:{}", addr, port))
@@ -139,16 +153,14 @@ async fn main() {
 fn titles_by_similarity(
     query: &str,
     embedded_documents: &Vec<EmbeddedDocument>,
+    model: &FlagEmbedding,
 ) -> Vec<String> {
-    let model: FlagEmbedding = FlagEmbedding::try_new(InitOptions {
-        //model_name: EmbeddingModel::MLE5Large,
-        model_name: EmbeddingModel::AllMiniLML6V2,
-        show_download_message: true,
-        ..Default::default()
-    }).unwrap();
+    // time
+    let now = std::time::Instant::now();
     let query_embedding = model.query_embed(query).unwrap();
+    println!("Time elapsed in embedding query: {:?}", now.elapsed());
     let mut similarities: Vec<(String, f32)> = embedded_documents
-        .iter()
+        .par_iter()
         .map(|x| {
             (
                 x.title.clone(),
@@ -158,8 +170,18 @@ fn titles_by_similarity(
         .collect();
     similarities.sort_by(|a, b| b.1.partial_cmp(&a.1).unwrap());
     similarities[0..150]
-        .iter()
+        .par_iter()
         .map(|x| x.0.clone())
         .collect()
 }
 
+
+async fn search(
+    Query(query): Query<SearchQuery>,
+    State(state): State<AppState>,
+) -> Json<Vec<String>> {
+    let query = query.query;
+    let model = state.model_ref;
+    let titles = titles_by_similarity(&query, &state.embedded_documents, model);
+    Json(titles)
+}
