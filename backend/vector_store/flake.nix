@@ -11,18 +11,21 @@
     };
   };
 
+  inputs.rust-overlay.url = "github:oxalica/rust-overlay";
+
   outputs =
     { self
     , nixpkgs
     , flake-utils
     , poetry2nix
+    , rust-overlay
     ,
     }: (flake-utils.lib.eachDefaultSystem (system:
     let
       pkgs = import nixpkgs {
         inherit system;
         config.allowUnfree = true;
-        overlays = [ poetry2nix.overlays.default ];
+        overlays = [ poetry2nix.overlays.default (import rust-overlay) ];
       };
 
       customOverrides = self: super: {
@@ -121,6 +124,9 @@
         in {
         devShell = pkgs.mkShell {
           buildInputs = with pkgs; [
+            nodejs
+            rust-bin.stable.latest.default
+            perf-tools
             poetry
             my_env
             gtk3

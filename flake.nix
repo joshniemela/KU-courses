@@ -31,6 +31,8 @@
               git
               nodejs
               leiningen
+              pipenv
+              python311
 
               # browsers for testing
               firefox
@@ -39,7 +41,6 @@
               rust-bin.stable.latest.default 
             ];
           };
-
         }
     );
 }
