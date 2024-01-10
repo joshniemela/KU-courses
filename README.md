@@ -26,3 +26,9 @@ This service is the parser that takes the scraped course pages and parses them i
 
 ## frontend
 Frontend is built in Svelte/Typescript. This is a highly responsible SPA that shows the courses in the form of cards which can be clicked into to get a more detailed view of the course.
+
+
+# Credits
+* Thanks to [Jákup Lützen](https://github.com/BinFlush) for creating the original course parser in Python.
+* Thanks to [Kristian Pedersen](https://github.com/KristianDamPedersen) for creating the original frontend, and help in designing the architecture and first database schema.
+* Thanks to [Zander Bournonville](https://github.com/DrZder) for creating the statistics parser.
