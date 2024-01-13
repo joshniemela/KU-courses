@@ -1,4 +1,4 @@
-(defproject db-manager "1.0.0"
+(defproject db-manager "1.1.0"
   :description ""
   :url "https://github.com/joshniemela/disproject"
   :license {:name ""
