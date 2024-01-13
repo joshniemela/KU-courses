@@ -12,7 +12,6 @@ use std::fs::File;
 use std::io::BufReader;
 use std::path::Path;
 use rayon::prelude::*;
-use std::io::BufWriter;
 
 #[derive(Debug, Deserialize, Clone)]
 struct Coordinator {
