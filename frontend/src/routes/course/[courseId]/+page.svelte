@@ -27,10 +27,6 @@
         }
     }
 
-    function goBack() {
-        goto("/browse");
-    }
-
     function zero_if_null(value) {
         if (value == null) {
             return 0;
@@ -161,7 +157,7 @@
             <button
                 class="fixed top-0 mx-auto bg-kuRed text-white font-bold py-1 px-6"
                 on:click={() => {
-                    window.history.back();
+                    window.location.href = "/";
                 }}
             >
                 Back
