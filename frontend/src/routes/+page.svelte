@@ -159,7 +159,7 @@
             firstDebounce = false;
         } else {
             clearTimeout(debounceTimeout);
-            debounceTimeout = setTimeout(() => {
+            debounceTimeout = window.setTimeout(() => {
                 $queryStore.search = search;
             }, 500);
         }

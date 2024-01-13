@@ -5,7 +5,6 @@
     import Loader from "../../../components/Loader/Loader.svelte";
     import SideCard from "../../../components/SideCard.svelte";
     import Footer from "../../../components/Footer/Footer.svelte";
-    import { goto } from "$app/navigation";
 
     import GradeGraph from "../../../components/GradeGraph/GradeGraph.svelte";
 
@@ -27,14 +26,6 @@
         }
     }
 
-    function zero_if_null(value) {
-        if (value == null) {
-            return 0;
-        } else {
-            return value;
-        }
-    }
-
     // SEO
     const title = `${course.title} - DISKU`;
 
@@ -47,7 +38,7 @@
     if (content != null) {
         content = content.replaceAll(
             "<li>",
-            '<li class="list-square list-inside ml-4">'
+            '<li class="list-square list-inside ml-4">',
         );
     }
 
@@ -55,7 +46,7 @@
     if (learning_outcome != null) {
         learning_outcome = learning_outcome.replaceAll(
             "<li>",
-            '<li class="list-square list-inside ml-4">'
+            '<li class="list-square list-inside ml-4">',
         );
     }
 
@@ -93,15 +84,15 @@
         }
         return block_vector;
     }
-    function separate_capitals_letters(sentence) {
+    function separate_capitals_letters(sentence: string) {
         return sentence.replace(/([A-Z])/g, " $1").trim();
     }
 
-    function remove_repeated_br_tags(dom) {
+    function remove_repeated_br_tags(dom: Document) {
         let brs = dom.getElementsByTagName("br");
         for (let i = 0; i < brs.length; i++) {
             if (brs[i].nextSibling != null) {
-                brs[i].nextSibling.remove();
+                brs[i].nextSibling!.remove();
             }
         }
     }
@@ -189,8 +180,8 @@
                         {#each course.exam as exam}
                             <p class="">
                                 {separate_capitals_letters(exam.type)}
-                                {#if exam.minutes}
-                                    - ({formatExamDuration(exam.minutes)})
+                                {#if exam.duration}
+                                    - ({formatExamDuration(exam.duration)})
                                 {/if}
                             </p>
                         {/each}
@@ -203,7 +194,7 @@
 
                         <p class="">
                             Block(s): {coerce_blocks_to_int(
-                                denest_type_maps(course.block)
+                                denest_type_maps(course.block),
                             )
                                 .sort()
                                 .join(", ")}

@@ -3,8 +3,8 @@
     import { browser } from "$app/environment";
     import { page } from "$app/stores";
 
-    $: if (browser && window.goatcounter) {
-        window.goatcounter.count({
+    $: if (browser && (window as any).goatcounter) {
+        (window as any).goatcounter.count({
             path: $page.url.pathname,
         });
         console.log("counting", $page.url.pathname);
@@ -12,9 +12,6 @@
 </script>
 
 <svelte:head>
-    <!-- analtyics -->
-    <!-- analtyics -->
-    <!-- analtyics -->
     <script
         data-goatcounter-settings={'{"allow-local":true, "no_onload": true}'}
         data-goatcounter="https://disku.goatcounter.com/count"

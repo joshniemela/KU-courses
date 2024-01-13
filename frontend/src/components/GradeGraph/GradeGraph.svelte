@@ -4,18 +4,13 @@
         type ChartItem,
         type DatasetChartOptions,
     } from "chart.js/auto";
+    import type { Grade } from "../../course";
     import { onMount } from "svelte";
     import jsonData from "./sample.json";
     console.log(jsonData);
 
-    // Types
-    type GradeObject = {
-        grade: string;
-        count: number;
-    };
-
     // Props
-    export let data: GradeObject[] = jsonData;
+    export let data: Grade[] = jsonData;
     export let legend: string = "Explainer";
     export let title: string = "Title";
 
@@ -53,11 +48,12 @@
                             callbacks: {
                                 // Add percentage and count to tooltips (value is in percent)
                                 label: (context) => {
-                                    const value =
-                                        context.dataset.data[context.dataIndex];
+                                    const value = context.dataset.data[
+                                        context.dataIndex
+                                    ] as number;
                                     // round to whole numbers
                                     return `${(value * 100).toFixed(
-                                        2
+                                        2,
                                     )}% (${Math.round(value * total)})`;
                                 },
                             },

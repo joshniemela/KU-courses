@@ -1,8 +1,9 @@
 import { apiUrl } from "../../../stores";
 import { total_hours } from "../../../course";
+import type { Course, Statistics, Grade } from "../../../course";
 
 // ungraded returns absent, total, fail and pass
-function transform_ungraded_stats(stats) {
+function transform_ungraded_stats(stats: Statistics) {
   return [
     { grade: "Fail", count: stats.fail },
     { grade: "Pass", count: stats.pass },
@@ -10,13 +11,13 @@ function transform_ungraded_stats(stats) {
   ];
 }
 
-function transform_graded_stats(stats) {
+function transform_graded_stats(stats: Statistics) {
   return stats.grades.map((grade) => {
     return { grade: grade.grade, count: grade.count };
   });
 }
 
-function transform_stats(stats) {
+function transform_stats(stats: Statistics | null) {
   if (stats == null) {
     return null;
   } else {
@@ -28,12 +29,12 @@ function transform_stats(stats) {
   }
 }
 
-function null_to_zero(grades) {
+function null_to_zero(grades: Grade[] | null) {
   // in each grade, count pair, if count is null, set it to 0
   if (grades == null) {
-    return null;
+    return undefined;
   }
-  return grades.map((grade) => {
+  return grades.map((grade: Grade) => {
     if (grade.count == null) {
       return { grade: grade.grade, count: 0 };
     } else {
@@ -57,7 +58,7 @@ export async function load({ fetch, params }) {
     }
   );
 
-  const course = await res.json();
+  const course: Course = await res.json();
   return {
     courseId: courseId,
     course: course,

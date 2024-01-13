@@ -2,14 +2,22 @@
 // TODO: make workload an enum
 export type Workload = {
   hours: number;
-  workload_type: string;
+  type: string;
 };
 export type Employee = {
   full_name: string;
   email: string;
 };
 export type Schedule = {
-  schedule_type: string;
+  type: string;
+};
+
+export type Block = {
+  type: string;
+};
+
+export type Language = {
+  name: string;
 };
 
 export type Description = {
@@ -19,42 +27,81 @@ export type Description = {
 };
 
 export type Exam = {
-  minutes: number;
-  exam_type: string;
+  duration: number;
+  type: string;
+};
+
+export type Degree = {
+  type: string;
+};
+
+export type Department = {
+  name: string;
+};
+
+export type Faculty = {
+  name: string;
+};
+
+export type Coordinator = {
+  name: string;
+  email: string;
+};
+
+export type Grade = {
+  grade: string;
+  count: number;
+};
+
+export type Statistics = {
+  grades: Grade[];
+  fail: number;
+  mean: number;
+  median: number;
+  pass: number;
+  absent: number;
+  "pass-rate": number;
+  total: number;
 };
 
 export type Course = {
-  course: string;
+  department: Department[];
+  schedule: Schedule[];
+  block: Block[];
+  content: string;
+  "learning-outcome": string;
+  duration: string;
+  faculty: Faculty[];
   title: string;
-  start_block: number;
-  study_level: string;
-  duration: number;
-  course_language: string;
-  credits: number;
-
-  employees: Employee[];
-  schedules: Schedule[];
-  workloads: Workload[];
-  exams: Exam[];
-  description: Description[];
-  departments: string[];
+  statistics: Statistics | null;
+  ects: number;
+  coordinator: Coordinator[];
+  language: Language[];
+  exam: Exam[];
+  id: string;
+  degree: Degree[];
+  "recommended-qualifications": string;
+  workload: Workload[];
 };
 
 export const empty_course: Course = {
-  course: "",
+  department: [],
+  schedule: [],
+  block: [],
+  content: "",
+  "learning-outcome": "",
+  duration: "",
+  faculty: [],
   title: "",
-  start_block: 0,
-  study_level: "",
-  duration: 0,
-  course_language: "",
-  credits: 0,
-
-  employees: [],
-  schedules: [],
-  workloads: [],
-  exams: [],
-  description: [],
-  departments: [],
+  statistics: null,
+  ects: 0,
+  coordinator: [],
+  language: [],
+  exam: [],
+  id: "",
+  degree: [],
+  "recommended-qualifications": "",
+  workload: [],
 };
 
 export function total_hours(course: Course): number {
@@ -67,41 +114,33 @@ export function total_hours(course: Course): number {
 
 // Same as course but removed the employees and workloads and desc is just a string
 export type Overview = {
-  course: string;
+  schedule: Schedule[];
+  block: Block[];
   title: string;
-  start_block: number;
-  study_level: string;
-  duration: number;
-  course_language: string;
-  credits: number;
-
-  schedules: Schedule[];
-  exams: Exam[];
+  statistics: StatisticsOverview | null;
   summary: string;
-  statistics: Statistics;
+  ects: number;
+  language: Language[];
+  exam: Exam[];
+  id: string;
+  degree: Degree[];
 };
 
-export type Statistics = {
+export type StatisticsOverview = {
   mean: number;
   median: number;
   "pass-rate": number;
 };
 
 export const empty_overview: Overview = {
-  course: "",
+  schedule: [],
+  block: [],
   title: "",
-  start_block: 0,
-  study_level: "",
-  duration: 0,
-  course_language: "",
-  credits: 0,
-
-  schedules: [],
-  exams: [],
+  statistics: null,
   summary: "",
-  statistics: {
-    mean: 0,
-    median: 0,
-    "pass-rate": 0,
-  },
+  ects: 0,
+  language: [],
+  exam: [],
+  id: "",
+  degree: [],
 };
