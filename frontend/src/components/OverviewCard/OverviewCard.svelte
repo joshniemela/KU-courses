@@ -7,14 +7,6 @@
     export let course: Overview = structuredClone(empty_overview);
 
     /**
-     * Function to navigate to the course corresponding with the course_id
-     * @function navigateToCourse
-     */
-    function navigateToCourse() {
-        goto(`/course/${course.id}`);
-    }
-
-    /**
      * This function takes an exam duration and changes the unit depending on the duration, e.g. 120 minutes -> 2 hours
      */
     function formatExamDuration(duration: number) {
@@ -65,9 +57,9 @@
     }
 </script>
 
-<button
+<a
     class="w-full border-2 border-black animate-fadeIn flex flex-col justify-between hover:bg-gray-100 relative"
-    on:click={navigateToCourse}
+    href="course/{course.id}"
 >
     <div class="p-2">
         <div class="flex flex-row justify-between">
@@ -91,7 +83,7 @@
                 <tr>
                     <td class="border-e border-black px-1">
                         Block(s): {coerce_blocks_to_int(
-                            denest_type_maps(course.block)
+                            denest_type_maps(course.block),
                         )
                             .sort()
                             .join(", ")}
@@ -138,7 +130,7 @@
                             ? "N/A"
                             : `${
                                   Math.round(
-                                      course.statistics["pass-rate"] * 10000
+                                      course.statistics["pass-rate"] * 10000,
                                   ) / 100
                               }%`}
                     </td>
@@ -190,4 +182,4 @@
             <Gb />
         {/if}
     </div>
-</button>
+</a>
