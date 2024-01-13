@@ -1,9 +1,9 @@
 <script lang="ts">
     import CheckboxMenu from "../components/CheckboxMenu.svelte";
     import BigCheckbox from "../components/BigCheckbox.svelte";
-    import TextSearch from "../components/TextSearch.svelte";
+    import Changelog from "../components/Changelog.svelte";
     import Footer from "../components/Footer/Footer.svelte";
-    import { queryStore, clearAll} from "../stores";
+    import { queryStore, clearAll } from "../stores";
 
     // browse route content
     import Loader from "../components/Loader/Loader.svelte";
@@ -79,12 +79,14 @@
             ...filters,
             blocks: filters.blocks.map((block) => blockMap[block]),
             departments: filters.departments.map(
-                (department) => departmentMap[department]
+                (department) => departmentMap[department],
             ),
 
             // Convert Continous Assessment to ContinuousAssessment
             exams: filters.exams.map((exam) =>
-                exam === "Continuous Assessment" ? "ContinuousAssessment" : exam
+                exam === "Continuous Assessment"
+                    ? "ContinuousAssessment"
+                    : exam,
             ),
         };
 
@@ -156,10 +158,10 @@
         if (firstDebounce) {
             firstDebounce = false;
         } else {
-        clearTimeout(debounceTimeout);
-        debounceTimeout = setTimeout(() => {
-            $queryStore.search = search;
-        }, 500);
+            clearTimeout(debounceTimeout);
+            debounceTimeout = setTimeout(() => {
+                $queryStore.search = search;
+            }, 500);
         }
     }
 </script>
@@ -190,6 +192,7 @@
 </svelte:head>
 
 <div class="flex flex-col min-h-screen justify-between relative">
+    <Changelog />
     <main class="flex flex-col items-center space-y-4 mt-10">
         <h1 class="text-brand-500 text-4xl font-bold">KU Courses 2.0</h1>
         <div>
