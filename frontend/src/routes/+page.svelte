@@ -13,6 +13,7 @@
     import type { Overview } from "../course";
     import { browser } from "$app/environment";
     let loading = true;
+    let error: string | null = null;
     let API_URL = apiUrl();
     let courses: Overview[] = [];
     let visibleCourses: Overview[] = [];
@@ -99,6 +100,11 @@
             body: JSON.stringify(coerced_filters),
         });
 
+        if (!res.ok) {
+            error = "Something went wrong";
+            loading = false;
+            return;
+        }
         const json = await res.json();
         loading = false;
         courses = json.courses;
@@ -261,6 +267,9 @@
                 </p>
             </div>
         </div>
+        {#if error}
+            <h1 class="text-3xl text-center mt-10">{error}</h1>
+        {/if}
 
         {#if loading}
             <!--put the loader in the centre of the screen always----------------->
