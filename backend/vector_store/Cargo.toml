@@ -15,6 +15,7 @@ nanohtml2text = "0.1.4"
 ndarray = "0.15.6"
 ort = "2.0.0-alpha.4"
 rayon = "1.8.0"
+rusqlite = { version = "0.30.0", features = ["bundled", "serde_json"] }
 serde = "1.0.193"
 serde_json = "1.0.108"
 tokenizers = "0.15.0"
