@@ -213,6 +213,15 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "c79fed4cdb43e993fcdadc7e58a09fd0e3e649c4436fa11da71c9f1f3ee7feb9"
 
 [[package]]
+name = "bincode"
+version = "1.3.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "b1f45e9417d87227c7a56d22e471c6206462cba514c7590c09aff4cf6d1ddcad"
+dependencies = [
+ "serde",
+]
+
+[[package]]
 name = "bitflags"
 version = "1.3.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2051,6 +2060,7 @@ dependencies = [
  "acap",
  "anyhow",
  "axum",
+ "bincode",
  "criterion",
  "fastembed",
  "nanohtml2text",

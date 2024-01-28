@@ -1,7 +1,7 @@
-use super::{Coordinator, Document, EmbeddedDocument, Embedding};
+use super::{Coordinator, Document, EmbeddedDocument};
 use anyhow::Result;
+use bincode::{deserialize, serialize};
 use rusqlite::{params, Connection};
-use serde_json::json;
 
 pub fn initialise_db(conn: &mut Connection) -> Result<()> {
     let tx = conn.transaction()?;
@@ -160,9 +160,9 @@ pub fn insert_embeddings(conn: &mut Connection, embeddings: &EmbeddedDocument) -
     conn.execute(
         "INSERT INTO embeddings (id, title_embedding, content_embedding, coordinator_embeddings) VALUES (?1, ?2, ?3, ?4)",
         params![embeddings.id,
-                json![embeddings.title_embedding],
-                json![embeddings.content_embedding],
-                json![embeddings.coordinator_embeddings]],
+                serialize(&embeddings.title_embedding)?,
+                serialize(&embeddings.content_embedding)?,
+                serialize(&embeddings.coordinator_embeddings)?]
     )?;
     Ok(())
 }
@@ -174,27 +174,18 @@ pub fn get_all_embeddings(conn: &Connection) -> Result<Vec<EmbeddedDocument>> {
     let mut embedded_documents = Vec::new();
     let embedded_documents_iter = stmt.query_map(params![], |row| {
         let id: String = row.get(0)?;
-        let title_embedding: String = row.get(1)?;
-        let content_embedding: String = row.get(2)?;
-        let coordinator_embeddings: String = row.get(3)?;
-        Ok((
+        let title_embedding: Vec<u8> = row.get(1)?;
+        let content_embedding: Vec<u8> = row.get(2)?;
+        let coordinator_embeddings: Vec<u8> = row.get(3)?;
+        Ok(EmbeddedDocument {
             id,
-            title_embedding,
-            content_embedding,
-            coordinator_embeddings,
-        ))
+            title_embedding: deserialize(&title_embedding).unwrap(),
+            content_embedding: deserialize(&content_embedding).unwrap(),
+            coordinator_embeddings: deserialize(&coordinator_embeddings).unwrap(),
+        })
     })?;
     for embedded_document in embedded_documents_iter {
         let embedded_document = embedded_document?;
-        let title_embedding: Embedding = serde_json::from_str(&embedded_document.1)?;
-        let content_embedding: Embedding = serde_json::from_str(&embedded_document.2)?;
-        let coordinator_embeddings: Vec<Embedding> = serde_json::from_str(&embedded_document.3)?;
-        let embedded_document = EmbeddedDocument {
-            id: embedded_document.0,
-            title_embedding,
-            content_embedding,
-            coordinator_embeddings,
-        };
         embedded_documents.push(embedded_document);
     }
     Ok(embedded_documents)
