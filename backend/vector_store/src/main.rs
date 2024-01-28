@@ -12,12 +12,16 @@ use std::fs::{File, metadata};
 use std::io::BufReader;
 use std::path::Path;
 use rayon::prelude::*;
-use serde_json::json;
 
 mod db;
-use db::initialise_db;
-use db::get_documents_by_ids;
-use rusqlite::{params, Connection};
+use db::{initialise_db,
+         get_documents_by_ids,
+         upsert_document,
+         insert_embeddings,
+         documents_wo_embeddings,
+         get_document_mod_times,
+         get_all_embeddings};
+
 #[derive(Debug, Deserialize, Clone)]
 struct Coordinator {
     name: String,
@@ -156,55 +160,6 @@ fn make_embedding_model() -> Result<FlagEmbedding> {
     Ok(model)
 }
 
-// db stuff
-fn upsert_document(conn: &mut Connection, document: &Document) -> Result<()> {
-    let tx = conn.transaction()?;
-    tx.execute(
-        "INSERT INTO documents (id, title, content) VALUES (?1, ?2, ?3)
-        ON CONFLICT(id) DO UPDATE SET title = ?2, content = ?3, lastmodified = strftime('%s', 'now')",
-        params![document.info.id, document.title, document.description.content],
-    )?;
-
-    // Modifying a document means the embeddings are no longer valid
-    tx.execute(
-        "DELETE FROM embeddings WHERE id = ?1",
-        params![document.info.id],
-    )?;
-    // A coordinator may have been removed, so we need to delete all coordinators for this course
-    tx.execute(
-        "DELETE FROM course_coordinators WHERE course_id = ?1",
-        params![document.info.id],
-    )?;
-
-    // no conflict, if the coordinator exists do nothing
-    for coordinator in document.logistics.coordinators.iter() {
-        tx.execute(
-            "INSERT INTO coordinators (email, name) VALUES (?1, ?2)
-            ON CONFLICT(email) DO NOTHING",
-            params![coordinator.name, coordinator.name],
-        )?;
-
-        tx.execute(
-            "INSERT INTO course_coordinators (course_id, coordinator_email) VALUES (?1, ?2)
-            ON CONFLICT(course_id, coordinator_email) DO NOTHING",
-            params![document.info.id, coordinator.name],
-        )?;
-    }
-    tx.commit()?;
-    Ok(())
-}
-
-
-fn insert_embeddings(conn: &mut Connection, embeddings: &EmbeddedDocument) -> Result<()> {
-    conn.execute(
-        "INSERT INTO embeddings (id, title_embedding, content_embedding, coordinator_embeddings) VALUES (?1, ?2, ?3, ?4)",
-        params![embeddings.id,
-                json![embeddings.title_embedding],
-                json![embeddings.content_embedding],
-                json![embeddings.coordinator_embeddings]],
-    )?;
-    Ok(())
-}
 
 #[tokio::main]
 async fn main() {
@@ -220,19 +175,12 @@ async fn main() {
     let documents = read_jsons(path).unwrap();
 
     // get the modification times and title of all documents in the db
-    let mut stmt = conn.prepare("SELECT id, lastmodified FROM documents").unwrap();
     let mut db_documents_map = std::collections::HashMap::new();
-    let db_documents_iter = stmt.query_map(params![], |row| {
-        let id: String = row.get(0)?;
-        let lastmodified: i64 = row.get(1)?;
-        Ok((id, lastmodified))
-    }).unwrap();
+    let mod_times = get_document_mod_times(&conn).unwrap();
 
-    for db_document in db_documents_iter {
-        let db_document = db_document.unwrap();
-        db_documents_map.insert(db_document.0, db_document.1);
+    for mod_time in mod_times.iter() {
+        db_documents_map.insert(mod_time.0.clone(), mod_time.1);
     }
-    drop(stmt);
 
     // for each json document, check if it exists in the db, if it does, check if the json is newer than the db
     // if it is, update the db, if it isn't, do nothing
@@ -264,17 +212,8 @@ async fn main() {
     let model = make_embedding_model().unwrap();
 
     // find all the courses that don't have an embedding
-    let mut stmt = conn.prepare("SELECT id FROM documents WHERE id NOT IN (SELECT id FROM embeddings)").unwrap();
-    let mut missing_embeddings = Vec::new();
-    let missing_embeddings_iter = stmt.query_map(params![], |row| {
-        let id: String = row.get(0)?;
-        Ok(id)
-    }).unwrap();
-    for missing_embedding in missing_embeddings_iter {
-        let missing_embedding = missing_embedding.unwrap();
-        missing_embeddings.push(missing_embedding);
-    }
-    drop(stmt);
+    let missing_embeddings = documents_wo_embeddings(&conn).unwrap();
+
     // grab all the missing documents
     // pub fn get_documents_by_ids(conn: &Connection, ids: &[String]) -> Result<Vec<Document>> {
     let missing_documents: Vec<Document> = get_documents_by_ids(&conn, &missing_embeddings).unwrap();
@@ -291,28 +230,7 @@ async fn main() {
 
 
     println!("grabbing embedded documents");
-    let mut stmt = conn.prepare("SELECT id, title_embedding, content_embedding, coordinator_embeddings FROM embeddings").unwrap();
-    let mut embedded_documents = Vec::new();
-    let embedded_documents_iter = stmt.query_map(params![], |row| {
-        let id: String = row.get(0)?;
-        let title_embedding: String = row.get(1)?;
-        let content_embedding: String = row.get(2)?;
-        let coordinator_embeddings: String = row.get(3)?;
-        Ok((id, title_embedding, content_embedding, coordinator_embeddings))
-    }).unwrap();
-    for embedded_document in embedded_documents_iter {
-        let embedded_document = embedded_document.unwrap();
-        let title_embedding: Embedding = serde_json::from_str(&embedded_document.1).unwrap();
-        let content_embedding: Embedding = serde_json::from_str(&embedded_document.2).unwrap();
-        let coordinator_embeddings: Vec<Embedding> = serde_json::from_str(&embedded_document.3).unwrap();
-        let embedded_document = EmbeddedDocument {
-            id: embedded_document.0,
-            title_embedding,
-            content_embedding,
-            coordinator_embeddings,
-        };
-        embedded_documents.push(embedded_document);
-    }
+    let embedded_documents = get_all_embeddings(&conn).unwrap();
 
 
     // Recreate the model since we just killed it
