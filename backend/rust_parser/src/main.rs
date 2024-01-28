@@ -46,7 +46,7 @@ fn count_fails(htmls_dir: &str, json_dir: &str) -> (usize, usize) {
     }
     (fails, passes)
 }
-// take an in and out path as arguments
+
 fn main() {
     let args: Vec<String> = env::args().collect();
     let timer = time::Instant::now();
