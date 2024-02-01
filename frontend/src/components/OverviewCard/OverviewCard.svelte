@@ -121,7 +121,7 @@
         </div>
         <!--stats table, contains pass_rate, median_grade, and avg_grade-->
         {#if course.statistics}
-            <table class="text-xs">
+            <table class="text-xs whitespace-nowrap">
                 <tr>
                     <td class="border-e border-b border-white px-1"> Pass</td>
 
@@ -155,7 +155,7 @@
                 </tr>
             </table>
         {:else}
-            <table class="text-xs">
+            <table class="text-xs whitespace-nowrap">
                 <tr>
                     <td class="border-e border-b border-white px-1"> Pass</td>
 
