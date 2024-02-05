@@ -82,15 +82,15 @@
       true)))
 ; find all jsons
 ; TODO: refactor this since we arent using the start block anymore
-;(def course-infos-init (for [file (file-seq (io/file json-dir))
-;                             :when (.endsWith (.getName file) ".json")]
-;                         (let [course (read-json (.getName file))
-;                               course-id (:course-id course)
-;                               start-block (:start-block course)]
-;                           ; FIXME: this can be simplified
-;                           {:course-id course-id
-;                            :start-block start-block})))
-(def course-infos-init [{:course-id "NNEB19009U"}])
+(def course-infos-init (for [file (file-seq (io/file json-dir))
+                             :when (.endsWith (.getName file) ".json")]
+                         (let [course (read-json (.getName file))
+                               course-id (:course-id course)
+                               start-block (:start-block course)]
+                           ; FIXME: this can be simplified
+                           {:course-id course-id
+                            :start-block start-block})))
+;(def course-infos-init [{:course-id "NNEB19009U"}])
 
 (println "number of courses: " (count course-infos-init))
 
@@ -147,18 +147,18 @@
 (defn parse-to-tables [html]
   (build-stats-json (fetch-html (:html html))))
 
-(defn spit-all-to-json [html-seq]
-  (doseq [html html-seq]
-    (when (some? html)
-      (let [course-id (:course-id html)
-            year (:year html)
-            tables (parse-to-tables html)]
+(defn spit-all-to-json [exam-data-seq]
+  (doseq [exam-data exam-data-seq]
+    (when (some? exam-data)
+      (let [course-id (:course-id exam-data)
+            year (:year exam-data)
+            tables (select-keys exam-data [:exam :re-exam])]
         (save-exam tables course-id year)))))
 
 
 
-(defn get-statistics-html
-  "Takes a map with the course-id, year and url and associates the html with it if it exists,
+(defn get-statistics-data
+  "Takes a map with the course-id, year and url it if it exists,
   otherwise it returns nil"
   [course]
   (let [course-id (:course-id course)
@@ -178,16 +178,16 @@
                 (recur (rest combinations)))
             (do
               (println "[statistics] Found exam for: " course-id)
-              (assoc combination :html html))))))))
+              (merge combination exam-data))))))))
 
-(def html-seq (for [course course-infos]
-                (get-statistics-html course)))
+(def exam-data-seq (for [course course-infos]
+                (get-statistics-data course)))
 
 
 
 (defn stats-watcher
   []
   (io/make-parents (str out-dir "anything here"))
-  (spit-all-to-json html-seq)
+  (spit-all-to-json exam-data-seq)
   (Thread/sleep (* 1000 60 60 24))
   (recur))
