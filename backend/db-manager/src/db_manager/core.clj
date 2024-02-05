@@ -136,7 +136,11 @@
 (defn -main [& args]
 ; concurrently run sitemap-watcher scrape-course and stats-watcher so that they don't block the server
   (future (sitemap-watcher scrape-course))
-  (future (stats-watcher))
+  ; catch any potential errors and print teh mfrom the stats-watcher
+  (future (try
+            (stats-watcher)
+            (catch Exception e
+              (println e))))
   ;(shell/sh "rust_parser" pages-dir json-dir)
 
   (println "Populating database...")

@@ -72,25 +72,6 @@
                (println "[statistics] Status code: " status)
                (throw e)))))))
 
-(defn get-statistics-html
-  "Takes a map with the course-id, year and url and associates the html with it if it exists,
-  otherwise it returns nil"
-  [course]
-  (let [course-id (:course-id course)
-        combinations (generate-url-combinations course-id)]
-    (loop [combinations combinations]
-      (when-not (empty? combinations)
-        (let [combination (first combinations)
-              url (:url combination)
-              html (try-scraping url)]
-          (if (nil? html)
-            ; Sleep 200ms to be nice to the server
-            (do (Thread/sleep 200)
-                (recur (rest combinations)))
-            (do
-              (println "[statistics] Found exam for: " course-id)
-              (assoc combination :html html))))))))
-
 (defn existing-json? [course-info]
   (let [file (io/file (str out-dir (:course-id course-info) ".json"))]
     (if (.exists file)
@@ -116,9 +97,6 @@
 ; The exams  don't ever change, so we only need to fetch them once
 ; TODO: this should not be filtering out courses that haven't had their re-exam yet
 (def course-infos (filter existing-json? course-infos-init))
-
-(def html-seq (for [course course-infos]
-                (get-statistics-html course)))
 
 ; Checks for colspan tag in html, which indicates that the table contains the exam data
 (defn contains-colspan? [elem]
@@ -169,7 +147,7 @@
 (defn parse-to-tables [html]
   (build-stats-json (fetch-html (:html html))))
 
-(defn spit-all-to-json []
+(defn spit-all-to-json [html-seq]
   (doseq [html html-seq]
     (when (some? html)
       (let [course-id (:course-id html)
@@ -179,9 +157,37 @@
 
 
 
+(defn get-statistics-html
+  "Takes a map with the course-id, year and url and associates the html with it if it exists,
+  otherwise it returns nil"
+  [course]
+  (let [course-id (:course-id course)
+        combinations (generate-url-combinations course-id)]
+    (loop [combinations combinations]
+      (when-not (empty? combinations)
+        (let [combination (first combinations)
+              url (:url combination)
+              html (try-scraping url)
+              exam-data (try (parse-to-tables {:html html})
+                                   (catch Exception e
+                                     (println "[statistics] Error parsing: " url)
+                                     nil))]
+          (if (nil? (:exam exam-data))
+            ; Sleep 200ms to be nice to the server
+            (do (Thread/sleep 200)
+                (recur (rest combinations)))
+            (do
+              (println "[statistics] Found exam for: " course-id)
+              (assoc combination :html html))))))))
+
+(def html-seq (for [course course-infos]
+                (get-statistics-html course)))
+
+
+
 (defn stats-watcher
   []
   (io/make-parents (str out-dir "anything here"))
-  (spit-all-to-json)
+  (spit-all-to-json html-seq)
   (Thread/sleep (* 1000 60 60 24))
   (recur))
