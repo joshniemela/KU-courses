@@ -8,13 +8,29 @@
   (:gen-class))
 
 (def data-dir "../../data/")
-(def json-dir (str data-dir "json/"))
+(def json-dir (str data-dir "new_json/"))
 (def out-dir (str data-dir "statistics/"))
+
+
+(defn parse-block [block]
+  (case block
+    "One" 1
+    "Two" 2
+    "Three" 3
+    "Four" 4))
+
+; take a list of blocks in strings "One", "Two", "Three", "Four" and find the smallest
+(defn get-first-block [blocks]
+  (->> blocks
+       (map parse-block)
+       (apply min)))
 
 (defn read-json
   "Read a json file and return the data as a map"
   [file]
-  (json/read-str (slurp (str json-dir file)) :key-fn keyword))
+  (let [old-course (json/read-str (slurp (str json-dir file)) :key-fn keyword)]
+    (let [temp (assoc old-course :course-id (get-in old-course [:info :id]))]
+    (assoc temp :start-block (get-first-block (get-in old-course [:info :block]))))))
 
 ; HOW TO GENERATE THE COURSE STATISTICS PAGE URL:
 ; start with base https://karakterstatistik.stads.ku.dk/Histogram/
@@ -86,8 +102,9 @@
 (def course-infos-init (for [file (file-seq (io/file json-dir))
                              :when (.endsWith (.getName file) ".json")]
                          (let [course (read-json (.getName file))
-                               course-id (:course_id course)
-                               start-block (:start_block course)]
+                               course-id (:course-id course)
+                               start-block (:start-block course)]
+                           ; FIXME: this can be simplified
                            {:course-id course-id
                             :start-block start-block})))
 
