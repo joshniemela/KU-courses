@@ -17,7 +17,9 @@
     "One" 1
     "Two" 2
     "Three" 3
-    "Four" 4))
+    "Four" 4
+    "Summer" 5
+    0))
 
 ; take a list of blocks in strings "One", "Two", "Three", "Four" and find the smallest
 (defn get-first-block [blocks]
@@ -107,6 +109,8 @@
                            ; FIXME: this can be simplified
                            {:course-id course-id
                             :start-block start-block})))
+
+(println "number of courses: " (count course-infos-init))
 
 ; The exams  don't ever change, so we only need to fetch them once
 ; TODO: this should not be filtering out courses that haven't had their re-exam yet
