@@ -296,7 +296,7 @@ fn ids_by_similarity(
         })
         .collect();
     similarities.sort_by(|a, b| b.1.partial_cmp(&a.1).unwrap());
-    similarities[0..150]
+    similarities
         .par_iter()
         .map(|x| x.0.clone())
         .collect()

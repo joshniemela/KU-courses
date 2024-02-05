@@ -17,6 +17,12 @@
                 "Fixed back button when coming from an external page",
             ],
         },
+        {
+            date: "2024-02-05",
+            changes: [
+                "Fixed that performing a vector search and a normal filter will destroy results that should appear.",
+            ],
+        },
     ];
 </script>
 
