@@ -101,14 +101,15 @@
       true)))
 ; find all jsons
 ; TODO: refactor this since we arent using the start block anymore
-(def course-infos-init (for [file (file-seq (io/file json-dir))
-                             :when (.endsWith (.getName file) ".json")]
-                         (let [course (read-json (.getName file))
-                               course-id (:course-id course)
-                               start-block (:start-block course)]
-                           ; FIXME: this can be simplified
-                           {:course-id course-id
-                            :start-block start-block})))
+;(def course-infos-init (for [file (file-seq (io/file json-dir))
+;                             :when (.endsWith (.getName file) ".json")]
+;                         (let [course (read-json (.getName file))
+;                               course-id (:course-id course)
+;                               start-block (:start-block course)]
+;                           ; FIXME: this can be simplified
+;                           {:course-id course-id
+;                            :start-block start-block})))
+(def course-infos-init [{:course-id "NNEB19009U"}])
 
 (println "number of courses: " (count course-infos-init))
 
@@ -162,16 +163,21 @@
     {:exam (add-stats (fetch-data exam-table))
      :re-exam (add-stats (fetch-data re-exam-table))}))
 
-(defn to-json [tables course-id year]
+(defn save-exam [tables course-id year]
   (spit (str out-dir course-id ".json") (json/write-str (assoc tables :course_id course-id :year year))))
 
-(defn parse-html [html]
-  (when (some? html)
-    (to-json (build-stats-json (fetch-html (:html html))) (:course-id html) (:year html))))
+(defn parse-to-tables [html]
+  (build-stats-json (fetch-html (:html html))))
 
 (defn spit-all-to-json []
   (doseq [html html-seq]
-    (parse-html html)))
+    (when (some? html)
+      (let [course-id (:course-id html)
+            year (:year html)
+            tables (parse-to-tables html)]
+        (save-exam tables course-id year)))))
+
+
 
 (defn stats-watcher
   []
