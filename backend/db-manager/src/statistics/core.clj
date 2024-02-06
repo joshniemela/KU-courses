@@ -71,6 +71,30 @@
 
 (println (grab-urls (query-stads {:title "Dyrs livsformer og funktion"})))
       
+
+; HOW TO GENERATE THE COURSE STATISTICS PAGE URL:
+; start with base https://karakterstatistik.stads.ku.dk/Histogram/
+; add the course-id which also exists in each course map
+; the course ID has a "U" at the end, this has to be changed to an "E" for exams
+; add semester which is "Winter" or "Summer"
+; add year which is the year of the exam
+; EXAMPLE: Advanced Algorithms and Data Structures (AADS)
+; NDAA09023U - SCIENCE
+; =>
+; https://karakterstatistik.stads.ku.dk/Histogram/NDAA09023E/Winter-2022
+(defn generate-url-combinations [course-id]
+  (let [base-url "https://karakterstatistik.stads.ku.dk/Histogram/"
+        ; The courses end with a U, but the exams end with an E
+        exam-name (if (= \U (last course-id))
+                    (str/replace course-id "U" "E")
+                    course-id)]
+    ; Generate all combinations of year from now to 2020 and semester (summer, winter)
+    (for [year (range (.getYear (java.time.LocalDate/now)) 2020 -1)
+          semester ["Summer" "Winter"]]
+      {:url (str base-url exam-name "/" semester "-" year)
+       :course-id course-id
+       :year year})))
+
 (defn try-scraping
   "Tries to scrape the given url and returns nil if it fails,
   if the error code is 500 it returns nil, otherwise it throws an exception"
@@ -174,7 +198,10 @@
         ;combinations (generate-url-combinations course-id)]
         urls (grab-urls (query-stads course))
         ;FIXME: year is no longer being passed to the combinations
-        combinations (map (fn [url] {:url url :course-id course-id}) urls)]
+        combinations (map (fn [url] {:url url :course-id course-id}) urls)
+        ; merge with combinations from (generate-url-combinations course-id)
+        combinations (concat combinations (generate-url-combinations course-id))]
+    (println "[statistics] Trying to find exam for: " course-id)
     (loop [combinations combinations]
       (when-not (empty? combinations)
         (let [combination (first combinations)
