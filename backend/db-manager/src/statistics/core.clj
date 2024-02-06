@@ -4,7 +4,8 @@
    [clojure.data.json :as json]
    [clojure.java.io :as io]
    [clojure.string :as str]
-   [statistics.utils :refer [stats]])
+   [statistics.utils :refer [stats]]
+   [clj-http.client :as client])
   (:gen-class))
 
 (def data-dir "../../data/")
@@ -30,38 +31,51 @@
 (defn read-json
   "Read a json file and return the data as a map"
   [file]
-  (let [old-course (json/read-str (slurp (str json-dir file)) :key-fn keyword)]
-    (let [temp (assoc old-course :course-id (get-in old-course [:info :id]))]
-    (assoc temp :start-block (get-first-block (get-in old-course [:info :block]))))))
+  (let [old-course (json/read-str (slurp (str json-dir file)) :key-fn keyword)
+        temp (assoc old-course :course-id (get-in old-course [:info :id]))]
+    (assoc temp :start-block (get-first-block (get-in old-course [:info :block])))))
 
-; HOW TO GENERATE THE COURSE STATISTICS PAGE URL:
-; start with base https://karakterstatistik.stads.ku.dk/Histogram/
-; add the course-id which also exists in each course map
-; the course ID has a "U" at the end, this has to be changed to an "E" for exams
-; add semester which is "Winter" or "Summer"
-; add year which is the year of the exam
-; EXAMPLE: Advanced Algorithms and Data Structures (AADS)
-; NDAA09023U - SCIENCE
-; =>
-; https://karakterstatistik.stads.ku.dk/Histogram/NDAA09023E/Winter-2022
-(defn generate-url-combinations [course-id]
-  (let [base-url "https://karakterstatistik.stads.ku.dk/Histogram/"
-        ; The courses end with a U, but the exams end with an E
-        exam-name (if (= \U (last course-id))
-                    (str/replace course-id "U" "E")
-                    course-id)]
-    ; Generate all combinations of year from now to 2020 and semester (summer, winter)
-    (for [year (range (.getYear (java.time.LocalDate/now)) 2020 -1)
-          semester ["Summer" "Winter"]]
-      {:url (str base-url exam-name "/" semester "-" year)
-       :course-id course-id
-       :year year})))
 
+(defn query-stads
+    "This should make a POST request with a form to the stats website, this returns a html table or nil"
+    [course-info]
+    (let [searchText (str/trim (str/replace (:title course-info) #"\(.*\)" ""))
+          block (str "B" (:start-block course-info))
+          url "https://karakterstatistik.stads.ku.dk/Search/Courses"
+          response (client/post url {:form-params
+                                     {:searchText searchText
+                                      :block block
+                                      ; This number corresponds to the faculty of science
+                                      :faculty "1868"}
+                                     })]
+           (if (= 200 (:status response))
+                (:body response)
+                (do
+                  (println "[statistics] Error fetching: " url)
+                  (println "[statistics] Status code: " (:status response))
+                  nil))))
+
+
+(defn grab-urls [query-html] ; we get a table, the second row contains two tds, the second contains several a tags)
+    (let [table (-> (str query-html)
+                    Jsoup/parse
+                    (.getElementsByClass "searchResultTable")
+                    first
+                    (.getElementsByTag "tr"))]
+        ; check the number of trs, if there is less than 2, we return nil
+        (if (= 1 (count table))
+            nil
+            (let [second-row (second table)
+                  tds (.getElementsByTag second-row "td")]
+              (map (fn [a] (.attr a "href")) (.getElementsByTag (second tds) "a"))))))
+
+(println (grab-urls (query-stads {:title "Dyrs livsformer og funktion"})))
+      
 (defn try-scraping
   "Tries to scrape the given url and returns nil if it fails,
   if the error code is 500 it returns nil, otherwise it throws an exception"
   [url]
-  (println "[statistics] Trying: " (subs url (inc (.lastIndexOf url "/")) (count url)))
+  (println "[statistics] Trying: " url)
   (try (.get (Jsoup/connect url))
        (catch Exception e
          (let [status (.getStatusCode e)]
@@ -84,12 +98,7 @@
 ; TODO: refactor this since we arent using the start block anymore
 (def course-infos-init (for [file (file-seq (io/file json-dir))
                              :when (.endsWith (.getName file) ".json")]
-                         (let [course (read-json (.getName file))
-                               course-id (:course-id course)
-                               start-block (:start-block course)]
-                           ; FIXME: this can be simplified
-                           {:course-id course-id
-                            :start-block start-block})))
+                         (read-json (.getName file))))
 ;(def course-infos-init [{:course-id "NNEB19009U"}])
 
 (println "number of courses: " (count course-infos-init))
@@ -162,7 +171,10 @@
   otherwise it returns nil"
   [course]
   (let [course-id (:course-id course)
-        combinations (generate-url-combinations course-id)]
+        ;combinations (generate-url-combinations course-id)]
+        urls (grab-urls (query-stads course))
+        ;FIXME: year is no longer being passed to the combinations
+        combinations (map (fn [url] {:url url :course-id course-id}) urls)]
     (loop [combinations combinations]
       (when-not (empty? combinations)
         (let [combination (first combinations)
