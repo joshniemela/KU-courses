@@ -168,7 +168,7 @@ struct AppState {
 fn make_embedding_model() -> Result<TextEmbedding> {
     let model: TextEmbedding = TextEmbedding::try_new(InitOptions {
         //model_name: EmbeddingModel::MLE5Large,
-        model_name: EmbeddingModel::AllMiniLML6V2,
+        model_name: EmbeddingModel::ParaphraseMLMiniLML12V2,
         show_download_progress: true,
         ..Default::default()
     })?;

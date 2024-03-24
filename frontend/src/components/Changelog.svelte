@@ -24,6 +24,12 @@
                 "Fixed that statistics weren't being updated",
             ],
         },
+        {
+            date: "2024-03-24",
+            changes: [
+                "Switched to a multilingual search so that results are more accurate and work with all languages",
+            ],
+        },
     ];
 </script>
 

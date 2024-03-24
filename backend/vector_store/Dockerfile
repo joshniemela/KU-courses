@@ -1,5 +1,5 @@
 # BUILDER
-FROM rust:slim as builder
+FROM rust:slim-bookworm as builder
 
 WORKDIR /app
 COPY . .
@@ -14,6 +14,9 @@ RUN cargo build --release
 FROM debian:bookworm-slim
 WORKDIR /app
 COPY --from=builder /app/target/release/vector_store ./
+
+RUN apt-get update 
+RUN apt-get install -y libssl3 
 
 ENV SERVER_ADDRESS=0.0.0.0
 ENV SERVER_PORT=4000
