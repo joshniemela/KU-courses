@@ -4,7 +4,7 @@ use axum::extract::Query;
 use axum::routing::get;
 use axum::extract::State;
 use axum::{Json, Router};
-use fastembed::{Embedding, EmbeddingBase, EmbeddingModel, FlagEmbedding, InitOptions};
+use fastembed::{Embedding, EmbeddingModel, TextEmbedding, InitOptions};
 use nanohtml2text::html2text;
 use serde::Deserialize;
 use serde::Serialize;
@@ -97,9 +97,24 @@ fn read_jsons(path: &Path) -> Result<Vec<Document>> {
     Ok(documents)
 }
 
+fn passage_embed(
+    passages: Vec<String>, model: &TextEmbedding, batch_size: Option<usize>) -> Result<Vec<Embedding>> {
+    // for each passage, add passage: to the front of it
+    let passages: Vec<String> = passages
+        .par_iter()
+        .map(|x| format!("passage: {}", x))
+        .collect();
+    model.embed(passages, batch_size)
+}
+
+fn query_embed(query: &str, model: &TextEmbedding) -> Result<Embedding> {
+    // add query: to the front of the query
+    model.embed(vec![format!("query: {}", query)], None).map(|x| x[0].clone())
+}
+
 fn embed_documents(
     documents: Vec<Document>,
-    model: &FlagEmbedding,
+    model: &TextEmbedding,
 ) -> Result<Vec<EmbeddedDocument>> {
     let ids: Vec<String> = documents.par_iter().map(|x| x.info.id.clone()).collect();
     let titles: Vec<String> = documents.par_iter().map(|x| x.title.clone()).collect();
@@ -112,13 +127,13 @@ fn embed_documents(
         .map(|x| x.logistics.coordinators.clone())
         .collect();
     let batch_size = Some(32);
-    let embdded_titles = model.passage_embed(titles.clone(), batch_size)?;
-    let embdded_descriptions = model.passage_embed(descriptions, batch_size)?;
+    let embdded_titles = passage_embed(titles.clone(), &model, batch_size)?;
+    let embdded_descriptions = passage_embed(descriptions, &model, batch_size)?;
     let embedded_coordinators: Vec<Vec<Embedding>> = coordinators
         .par_iter()
         .map(|x| {
             let coordinator_names: Vec<String> = x.par_iter().map(|x| x.name.clone()).collect();
-            model.passage_embed(coordinator_names, batch_size).unwrap()
+            passage_embed(coordinator_names, &model, batch_size).unwrap()
         })
         .collect();
     let mut embedded_documents: Vec<EmbeddedDocument> = Vec::new();
@@ -147,14 +162,14 @@ struct SearchQuery {
 #[derive(Clone)]
 struct AppState {
     embedded_documents: Vec<EmbeddedDocument>,
-    model_ref: &'static FlagEmbedding,
+    model_ref: &'static TextEmbedding,
 }
 
-fn make_embedding_model() -> Result<FlagEmbedding> {
-    let model: FlagEmbedding = FlagEmbedding::try_new(InitOptions {
+fn make_embedding_model() -> Result<TextEmbedding> {
+    let model: TextEmbedding = TextEmbedding::try_new(InitOptions {
         //model_name: EmbeddingModel::MLE5Large,
         model_name: EmbeddingModel::AllMiniLML6V2,
-        show_download_message: true,
+        show_download_progress: true,
         ..Default::default()
     })?;
     Ok(model)
@@ -283,9 +298,9 @@ fn document_similarity(
 fn ids_by_similarity(
     query: &str,
     embedded_documents: &Vec<EmbeddedDocument>,
-    model: &FlagEmbedding,
+    model: &TextEmbedding,
 ) -> Vec<String> {
-    let query_embedding = model.query_embed(query).unwrap();
+    let query_embedding = query_embed(query, &model).unwrap();
     let mut similarities: Vec<(String, f32)> = embedded_documents
         .par_iter()
         .map(|x| {
