@@ -84,12 +84,12 @@
 
       (println "[course parser] No new courses, not running parser"))
 
-      (println "[course scraper]: Updating database")
-      (let [stats-finder #(try-finding-stats stats-dir %)
-            ; FIXME: we already know whihc courses to take, this does extra work
-            courses (map read-json-file (drop 1 (file-seq (clojure.java.io/file json-dir))))]
-        (d/transact! conn (transactions-w-stats stats-finder courses)))
-      (println "[course scraper]: Finished updating database")
+    (println "[course scraper]: Updating database")
+    (let [stats-finder #(try-finding-stats stats-dir %)
+          ; FIXME: we already know whihc courses to take, this does extra work
+          courses (map read-json-file (drop 1 (file-seq (clojure.java.io/file json-dir))))]
+      (d/transact! conn (transactions-w-stats stats-finder courses)))
+    (println "[course scraper]: Finished updating database")
 
     (reset! newly-scraped [])
     (Thread/sleep (* 1000 60 60)) ;; 1 hour, unit is ms
