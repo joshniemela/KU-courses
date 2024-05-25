@@ -38,6 +38,7 @@
   "Watches the course sitemap for last-mod newer than time"
   [callback]
   (let [newly-scraped (atom [])
+        sitemap-course-ids (atom [])
         sitemap-url "https://kurser.ku.dk/sitemap.xml"
         sitemap-zipper (zip/xml-zip (xml/parse sitemap-url))
         courses (-> sitemap-zipper
@@ -54,8 +55,17 @@
             course-id (:id course-info)
             course-mod-date (grab-mod-date course-id)
             course-lastmod (:timestamp course-info)]
+        (swap! sitemap-course-ids conj course-id)
         (when (> course-lastmod course-mod-date)
           (callback course-info newly-scraped))))
+
+    ; check if the sitemap lacks courses that are in the pages directory, if so, delete them
+    (let [files (.list (io/file pages-dir))]
+      (doseq [file files]
+        (when-not (some #(= file (str % ".html")) @sitemap-course-ids)
+          (println "[course scraper]: Deleting" file)
+          (io/delete-file (io/file pages-dir file)))))
+
     ; go to sleep for 30 minutes and then do it again
     (println "[course scraper]: Finished scraping, going to sleep")
     (println "[course scraper]: Modified" (count @newly-scraped) "courses")
