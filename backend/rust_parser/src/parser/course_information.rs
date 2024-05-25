@@ -260,6 +260,7 @@ fn parse_schedule(schedule: &str) -> Result<Vec<parser::Schedule>> {
             || schedule.contains("Undervisningen foregår uden for skemastruktur")
             || schedule.contains("ikke i skemagruppe")
             || schedule.contains("Gennemføres uden for skemastruktur")
+            || schedule.contains("Se Undervisningsform")
             // intentionally left out the s so it matches upper and lowercase summer
             || schedule.contains("ummer course")
         {
