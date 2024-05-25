@@ -3,14 +3,19 @@
             [clojure.xml :as xml]
             [clojure.java.io :as io]
             [org.httpkit.client :as http]
-            [clojure.java.shell :as shell])
+            [clojure.java.shell :as shell]
+            [datascript.core :as d]
+            [course-scraper.upsert :refer [try-finding-stats transactions-w-stats read-json-file]])
   (:import (javax.net.ssl SSLEngine SSLParameters SNIHostName)
            (java.net URI))
 
   (:gen-class))
 
+(def data-dir "../../data/")
 (def pages-dir "../../data/pages")
-(def new-json-dir "../../data/new_json")
+(def json-dir "../../data/new_json")
+(def stats-dir (str data-dir "statistics/"))
+
 
 (defn grab-info-from-course [course]
   (let [content (:content course)
@@ -34,9 +39,10 @@
       (.lastModified file)
       0)))
 
+
 (defn sitemap-watcher
   "Watches the course sitemap for last-mod newer than time"
-  [callback]
+  [callback conn]
   (let [newly-scraped (atom [])
         sitemap-course-ids (atom [])
         sitemap-url "https://kurser.ku.dk/sitemap.xml"
@@ -71,15 +77,23 @@
     (println "[course scraper]: Modified" (count @newly-scraped) "courses")
 
     (if-not (zero? (count @newly-scraped))
-      (let [result (future (shell/sh "rust_parser" pages-dir new-json-dir))]
+      (let [result (future (shell/sh "rust_parser" pages-dir json-dir))]
         (println "[course parser] Running rust parser...")
         (println "[course parser] Parser stderr: " (:err @result))
         (println "[course parser] Finished parsing courses"))
+
       (println "[course parser] No new courses, not running parser"))
+
+      (println "[course scraper]: Updating database")
+      (let [stats-finder #(try-finding-stats stats-dir %)
+            ; FIXME: we already know whihc courses to take, this does extra work
+            courses (map read-json-file (drop 1 (file-seq (clojure.java.io/file json-dir))))]
+        (d/transact! conn (transactions-w-stats stats-finder courses)))
+      (println "[course scraper]: Finished updating database")
 
     (reset! newly-scraped [])
     (Thread/sleep (* 1000 60 60)) ;; 1 hour, unit is ms
-    (recur callback)))
+    (recur callback conn)))
 
 ; Magical snippet of code that allows us to use SNI with http-kit
 ; https://kumarshantanu.medium.com/using-server-name-indication-sni-with-http-kit-client-f7d92954e165

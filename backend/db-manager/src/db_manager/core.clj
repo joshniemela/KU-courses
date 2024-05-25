@@ -1,7 +1,5 @@
 (ns db-manager.core
   (:require [clojure.core :as c]
-            [clojure.data.json :as json]
-            [clojure.java.io :as io]
             [muuntaja.core :as m]
             [reitit.ring :as ring]
             [reitit.coercion.spec]
@@ -12,13 +10,12 @@
             [reitit.swagger :as swagger]
             [org.httpkit.server :refer [run-server]]
             [db-manager.routes :refer [ping-route api-routes]]
-            [db-manager.db :refer [course-to-transaction schema remove-nils]]
+            [db-manager.db :refer [schema]]
             [course-scraper.watcher :refer [sitemap-watcher scrape-course]]
             [statistics.core :refer [stats-watcher]]
             [ring.middleware.cors :refer [wrap-cors]]
             [io.staticweb.rate-limit.storage :as storage]
             [io.staticweb.rate-limit.middleware :refer [wrap-rate-limit ip-rate-limit]]
-            [clojure.java.shell :as shell]
             [datascript.core :as d])
   (:gen-class))
 
@@ -32,7 +29,6 @@
 
 (def data-dir "../../data/")
 (def json-dir (str data-dir "new_json/"))
-(def stats-dir (str data-dir "statistics/"))
 (def pages-dir "../../data/pages")
 
 ; https://andersmurphy.com/2022/03/27/clojure-removing-namespace-from-keywords-in-response-middleware.html
@@ -83,69 +79,15 @@
                                            :url "/api/swagger.json"})
     (ring/create-default-handler))))
 
-(defn try-finding-stats [course-id]
-  (try
-    ; stats file is in stats-dir
-    (let [stats-file (str stats-dir course-id ".json")]
-      (json/read-str (slurp stats-file)))
-    (catch Exception e
-      nil)))
-
-(defn transform-stats [stats]
-  (when-not (nil? (stats "exam"))
-    (let [exam (stats "exam")
-          pass-rate (exam "pass-rate")
-          mean (exam "mean")
-          median (exam "median")
-          graded? (exam "graded")
-          grades (exam "grades")
-          absent (exam "absent")
-          fail (exam "fail")
-          pass (exam "pass")
-          total (exam "total")]
-      (if graded?
-        {:statistics/pass-rate pass-rate
-         :statistics/absent absent
-         :statistics/fail fail
-         :statistics/pass pass
-         :statistics/total total
-         :statistics/mean mean
-         :statistics/median median
-         :statistics/grades grades}
-        {:statistics/pass-rate pass-rate
-         :statistics/pass pass
-         :statistics/absent absent
-         :statistics/fail fail
-         :statistics/total total}))))
-
-(defn read-json-file [file-name]
-  (let [file (slurp file-name)]
-    (json/read-str file)))
-(def courses (map read-json-file (drop 1 (file-seq (clojure.java.io/file json-dir)))))
-
-(def transactions-w-stats (map (fn [course]
-                                 (let [course-id (get-in course ["info" "id"])
-                                       stats (try-finding-stats course-id)
-                                       transacted-course (course-to-transaction course)]
-                                   (remove-nils (if stats
-                                                  (assoc transacted-course :course/statistics (transform-stats stats))
-                                                  transacted-course))))
-                               courses))
-
 (def main-config {:port 3000})
 (defn -main [& args]
 ; concurrently run sitemap-watcher scrape-course and stats-watcher so that they don't block the server
-  (future (sitemap-watcher scrape-course))
-  ; catch any potential errors and print teh mfrom the stats-watcher
+  (future (sitemap-watcher scrape-course conn))
+  ; catch any potential errors and print them from the stats-watcher
   (future (try
             (stats-watcher)
             (catch Exception e
               (println e))))
-  ;(shell/sh "rust_parser" pages-dir json-dir)
-
-  (println "Populating database...")
-  (d/transact! conn transactions-w-stats)
-  (println "Done!")
 
   (println "Starting server on port " (:port main-config))
   (run-server (app) main-config))

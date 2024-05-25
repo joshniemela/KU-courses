@@ -107,7 +107,8 @@
         learning-outcome (get-in course-map ["description" "learning_outcome"])
         recommended-qualifications (get-in course-map ["description" "recommended_qualifications"])
         summary (get-in course-map ["description" "summary"])]
-    (if (empty? departments)
+    ; FIXME: Why is this here
+    (when (empty? departments)
       (println "Course " title " has no departments"))
     {:course/id id
      :course/title title
