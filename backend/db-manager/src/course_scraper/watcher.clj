@@ -91,7 +91,7 @@
           ; this currently takes all courses instead of updating the ones that are new
           courses (map read-json-file (drop 1 (file-seq (clojure.java.io/file json-dir))))]
       ; FIXME: this is a hack and we should just drop the workflows and exams
-      (d/reset-conn! conn schema)
+      (d/reset-conn! conn (d/empty-db schema))
       (d/transact! conn (transactions-w-stats stats-finder courses)))
     (println "[course scraper]: Finished updating database")
 
