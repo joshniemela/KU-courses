@@ -37,6 +37,12 @@ services:
     volumes:
       - ./data:/data
 
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password123
+      POSTGRES_HOST: postgres
+      POSTGRES_DB: disku
+
     networks:
       - dis-network
 
@@ -49,10 +55,15 @@ services:
     ports:
       - "5432:5432"
     volumes:
-      - ./data:/var/lib/postgresql/data
+      - ./data/postgres:/var/lib/postgresql/data
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: password123
+      POSTGRES_HOST: postgres
       POSTGRES_DB: disku
+
+    networks:
+      - dis-network
+
 networks:
   dis-network:

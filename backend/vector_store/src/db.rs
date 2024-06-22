@@ -1,192 +1,265 @@
 use super::{Coordinator, Document, EmbeddedDocument};
 use anyhow::Result;
-use bincode::{deserialize, serialize};
-use rusqlite::{params, Connection};
+use sqlx::postgres::{PgPoolOptions, Postgres, PgPool};
+use sqlx::{Transaction, query};
+use sqlx::Row;
+use pgvector::Vector;
 
-pub fn initialise_db(conn: &mut Connection) -> Result<()> {
-    let tx = conn.transaction()?;
-    // This is the raw table responsible for storing the documents
-    tx.execute(
-        "CREATE TABLE IF NOT EXISTS documents (
-            id TEXT PRIMARY KEY,
-            title TEXT,
-            content TEXT,
-            lastmodified INTEGER DEFAULT (strftime('%s', 'now'))
-        )",
-        params![],
-    )?;
+type PgTransaction<'a> = Transaction<'a, Postgres>;
 
-    // This table stores the coordinators, this is needed since we have a many-to-many relationship
-    tx.execute(
-        "CREATE TABLE IF NOT EXISTS coordinators (
-            email TEXT PRIMARY KEY,
-            name TEXT
-        )",
-        params![],
-    )?;
-
-    // This is the link between course coordinator's email and the course id
-    tx.execute(
-        "CREATE TABLE IF NOT EXISTS course_coordinators (
-            course_id TEXT,
-            coordinator_email TEXT,
-            PRIMARY KEY (course_id, coordinator_email),
-            FOREIGN KEY (course_id) REFERENCES documents(id),
-            FOREIGN KEY (coordinator_email) REFERENCES coordinators(email)
-        )",
-        params![],
-    )?;
-
-    // This stores the coordinators as binary objects since they're vector embeddings
-    tx.execute(
-        "CREATE TABLE IF NOT EXISTS embeddings (
-            id TEXT PRIMARY KEY UNIQUE,
-            title_embedding BLOB,
-            content_embedding BLOB,
-            coordinator_embeddings BLOB
-        )",
-        params![],
-    )?;
-    tx.commit()?;
-    Ok(())
+pub struct PostgresDB {
+    pub pool: PgPool,
 }
-
-pub fn get_documents_by_ids(conn: &Connection, ids: &[String]) -> Result<Vec<Document>> {
-    let mut stmt = conn.prepare("SELECT id, title, content FROM documents WHERE id = ?")?;
-    // first create a bunch of empty documents
-    let mut documents: Vec<Document> = ids.iter().map(|_| Document::default()).collect();
-    for (i, id) in ids.iter().enumerate() {
-        let mut rows = stmt.query(params![id])?;
-        let row = rows.next()?.unwrap();
-        let title: String = row.get(1)?;
-        let content: String = row.get(2)?;
-        documents[i].info.id = id.clone();
-        documents[i].title = title;
-        documents[i].description.content = content;
+impl PostgresDB {
+    pub async fn new(db_url: &str) -> Result<Self> {
+        let pool = PgPoolOptions::new()
+            .max_connections(3)
+            .connect(db_url)
+            .await?;
+        Ok(Self { pool })
     }
-    for document in &mut documents {
-        // Find all the coordinators that are associated with this course,
-        // we want the name, the emails are stored in the course_coordinators table and need ot be joined with
-        // the coordinators table and documents table
-        let mut stmt = conn.prepare(
-            "SELECT name FROM coordinators INNER JOIN course_coordinators ON coordinators.email = course_coordinators.coordinator_email WHERE course_coordinators.course_id = ?")?;
-        let mut rows = stmt.query(params![document.info.id])?;
-        while let Some(row) = rows.next()? {
-            let coordinator_name: String = row.get(0)?;
-            document.logistics.coordinators.push(Coordinator {
-                name: coordinator_name,
-            });
+
+
+    pub async fn insert_course(&self, document: &Document) -> Result<()> {
+        // grab the coordinators
+        let coordinators = &document.logistics.coordinators;
+
+        let mut tx = self.pool.begin().await?;
+
+        // export DATABASE_URL=postgres://postgres:password123@localhost:5432/disku
+        query!(
+            "INSERT INTO course (id, title, content) VALUES ($1, $2, $3)
+            ON CONFLICT(id) DO UPDATE SET title = $2, content = $3, last_modified = CURRENT_TIMESTAMP",
+            document.info.id,
+            document.title,
+            document.description.content
+        ).execute(&mut *tx).await?;
+
+        // We add coordinators, these are immutable and we just insert if conflict do nothing
+        for coordinator in coordinators {
+            query!(
+                "INSERT INTO coordinator (email, full_name) VALUES ($1, $2)
+                ON CONFLICT(email) DO NOTHING",
+                coordinator.email,
+                coordinator.name
+            ).execute(&mut *tx).await?;
+
+            query!(
+                "INSERT INTO course_coordinator (id, email) VALUES ($1, $2)
+                ON CONFLICT(id, email) DO NOTHING",
+                document.info.id,
+                coordinator.email
+            ).execute(&mut *tx).await?;
         }
+
+        tx.commit().await?;
+        Ok(())
     }
 
-    Ok(documents)
-}
+    pub async fn get_documents_by_ids(&self, ids: &[String]) -> Result<Vec<Document>> {
+        let mut documents = Vec::new();
 
-pub fn upsert_document(conn: &mut Connection, document: &Document) -> Result<()> {
-    let tx = conn.transaction()?;
-    tx.execute(
-        "INSERT INTO documents (id, title, content) VALUES (?1, ?2, ?3)
-        ON CONFLICT(id) DO UPDATE SET title = ?2, content = ?3, lastmodified = strftime('%s', 'now')",
-        params![document.info.id, document.title, document.description.content],
-    )?;
+        let result = query!(
+            "SELECT id, title, content FROM course WHERE id = ANY($1)",
+            &ids
+        ).fetch_all(&self.pool).await?;
 
-    // Modifying a document means the embeddings are no longer valid
-    tx.execute(
-        "DELETE FROM embeddings WHERE id = ?1",
-        params![document.info.id],
-    )?;
-    // A coordinator may have been removed, so we need to delete all coordinators for this course
-    tx.execute(
-        "DELETE FROM course_coordinators WHERE course_id = ?1",
-        params![document.info.id],
-    )?;
+        // We make one document and then we reuse it
+        let mut document = Document::default();
 
-    // no conflict, if the coordinator exists do nothing
-    for coordinator in document.logistics.coordinators.iter() {
-        tx.execute(
-            "INSERT INTO coordinators (email, name) VALUES (?1, ?2)
-            ON CONFLICT(email) DO NOTHING",
-            params![coordinator.name, coordinator.name],
-        )?;
+        for row in result {
+            // We find the coordinators for this course
+            let coordinators: Vec<Coordinator> = query!(
+                "SELECT full_name, coordinator.email FROM coordinator INNER JOIN course_coordinator
+                ON coordinator.email = course_coordinator.email
+                WHERE course_coordinator.id = $1",
+                row.id
+            ).fetch_all(&self.pool).await?
+                .into_iter()
+                .map(|row| {
+                    Coordinator {
+                        name: row.full_name,
+                        email: row.email,
+                    }
+                })
+                .collect();
 
-        tx.execute(
-            "INSERT INTO course_coordinators (course_id, coordinator_email) VALUES (?1, ?2)
-            ON CONFLICT(course_id, coordinator_email) DO NOTHING",
-            params![document.info.id, coordinator.name],
-        )?;
+
+            document.info.id = row.id;
+            document.title = row.title;
+            document.description.content = row.content;
+            document.logistics.coordinators = coordinators;
+
+            documents.push(document.clone());
+        }
+
+
+        Ok(documents)
+
     }
-    tx.commit()?;
-    Ok(())
-}
 
-pub fn get_document_mod_times(conn: &Connection) -> Result<Vec<(String, i64)>> {
-    let mut stmt = conn
-        .prepare("SELECT id, lastmodified FROM documents")
-        .unwrap();
-    let mut documents = Vec::new();
-    let documents_iter = stmt
-        .query_map(params![], |row| {
-            let id: String = row.get(0)?;
-            let lastmodified: i64 = row.get(1)?;
-            Ok((id, lastmodified))
-        })
-        .unwrap();
-    for document in documents_iter {
-        let document = document.unwrap();
-        documents.push(document);
+
+    pub async fn upsert_document(&self, document: &Document) -> Result<()> {
+        let mut tx = self.pool.begin().await?;
+
+        query!(
+            "INSERT INTO course (id, title, content) VALUES ($1, $2, $3)
+            ON CONFLICT(id) DO UPDATE SET title = $2, content = $3, last_modified = CURRENT_TIMESTAMP",
+            document.info.id,
+            document.title,
+            document.description.content
+        ).execute(&mut *tx).await?;
+
+        // A coordinator may have been removed, so we need to delete all coordinators for this course
+        query!(
+            "DELETE FROM course_coordinator WHERE id = $1",
+            document.info.id
+        ).execute(&mut *tx).await?;
+
+        // no conflict, if the coordinator exists do nothing
+        for coordinator in document.logistics.coordinators.iter() {
+            query!(
+                "INSERT INTO coordinator (email, full_name) VALUES ($1, $2)
+                ON CONFLICT(email) DO NOTHING",
+                coordinator.email,
+                coordinator.name
+            ).execute(&mut *tx).await?;
+
+            query!(
+                "INSERT INTO course_coordinator (id, email) VALUES ($1, $2)
+                ON CONFLICT(id, email) DO NOTHING",
+                document.info.id,
+                coordinator.email
+            ).execute(&mut *tx).await?;
+        }
+
+        tx.commit().await?;
+        Ok(())
+
     }
-    Ok(documents)
-}
 
-pub fn documents_wo_embeddings(conn: &Connection) -> Result<Vec<String>> {
-    let mut stmt = conn
-        .prepare("SELECT id FROM documents WHERE id NOT IN (SELECT id FROM embeddings)")
-        .unwrap();
-    let mut documents = Vec::new();
-    let documents_iter = stmt
-        .query_map(params![], |row| {
-            let id: String = row.get(0)?;
-            Ok(id)
-        })
-        .unwrap();
-    for document in documents_iter {
-        let document = document.unwrap();
-        documents.push(document);
+    pub async fn get_document_mod_times(&self) -> Result<Vec<(String, i64)>> {
+        let mut stamps: Vec<(String, i64)> = Vec::new();
+        let result = query!(
+            "SELECT id, last_modified FROM course"
+        ).fetch_all(&self.pool).await?;
+
+        for row in result {
+            stamps.push((row.id, row.last_modified.assume_utc().unix_timestamp()));
+        }
+
+        Ok(stamps)
     }
-    Ok(documents)
-}
 
-pub fn insert_embeddings(conn: &mut Connection, embeddings: &EmbeddedDocument) -> Result<()> {
-    conn.execute(
-        "INSERT INTO embeddings (id, title_embedding, content_embedding, coordinator_embeddings) VALUES (?1, ?2, ?3, ?4)",
-        params![embeddings.id,
-                serialize(&embeddings.title_embedding)?,
-                serialize(&embeddings.content_embedding)?,
-                serialize(&embeddings.coordinator_embeddings)?]
-    )?;
-    Ok(())
-}
+    pub async fn get_all_courses_wo_embeddings(&self) -> Result<Vec<String>> {
+        // The courses should have a title_embedding and more than 0 content_embeddings
+        // the embeddings are two separate tables
+        let result = query!(
+            "SELECT course.id
+             FROM course
+             LEFT JOIN title_embedding ON course.id = title_embedding.course_id
+             LEFT JOIN content_embedding ON course.id = content_embedding.course_id
+             WHERE title_embedding.course_id IS NULL OR content_embedding.course_id IS NULL"
+        ).fetch_all(&self.pool).await?;
 
-pub fn get_all_embeddings(conn: &Connection) -> Result<Vec<EmbeddedDocument>> {
-    let mut stmt = conn.prepare(
-        "SELECT id, title_embedding, content_embedding, coordinator_embeddings FROM embeddings",
-    )?;
-    let mut embedded_documents = Vec::new();
-    let embedded_documents_iter = stmt.query_map(params![], |row| {
-        let id: String = row.get(0)?;
-        let title_embedding: Vec<u8> = row.get(1)?;
-        let content_embedding: Vec<u8> = row.get(2)?;
-        let coordinator_embeddings: Vec<u8> = row.get(3)?;
-        Ok(EmbeddedDocument {
-            id,
-            title_embedding: deserialize(&title_embedding).unwrap(),
-            content_embedding: deserialize(&content_embedding).unwrap(),
-            coordinator_embeddings: deserialize(&coordinator_embeddings).unwrap(),
-        })
-    })?;
-    for embedded_document in embedded_documents_iter {
-        let embedded_document = embedded_document?;
-        embedded_documents.push(embedded_document);
+        let mut ids: Vec<String> = Vec::new();
+        for row in result {
+            ids.push(row.id.expect("id should be present"));
+        }
+
+        Ok(ids)
     }
-    Ok(embedded_documents)
+
+
+    pub async fn insert_embeddings(&self, embeddings: &EmbeddedDocument) -> Result<()> {
+        let mut tx = self.pool.begin().await?;
+
+
+        query(
+            "INSERT INTO title_embedding (course_id, embedding) VALUES ($1, $2)
+            ON CONFLICT(course_id) DO UPDATE SET embedding = $2")
+            .bind(&embeddings.id)
+            .bind(Vector::from(embeddings.title_embedding.clone()))
+            .execute(&mut *tx).await?;
+
+        query(
+            "INSERT INTO content_embedding (course_id, embedding) VALUES ($1, $2)")
+            .bind(&embeddings.id)
+            .bind(Vector::from(embeddings.content_embedding.clone()))
+            .execute(&mut *tx).await?;
+
+        for coordinator in &embeddings.coordinator_embeddings {
+            query(
+                "INSERT INTO name_embedding (email, embedding) VALUES ($1, $2)
+                ON CONFLICT(email) DO UPDATE SET embedding = $2")
+                .bind(&coordinator.0)
+                .bind(Vector::from(coordinator.1.clone()))
+                .execute(&mut *tx).await?;
+        }
+
+
+        tx.commit().await?;
+        Ok(())
+    }
+
+
+    pub async fn get_most_relevant_course_ids(&self, query_embedding: &Vec<f32>) -> Result<Vec<String>> {
+        let result = query(
+            "SELECT course_id, title_embedding.embedding <-> $1 AS distance
+            FROM title_embedding
+            ORDER BY distance ASC
+            LIMIT 100"
+        )
+            .bind(Vector::from(query_embedding.clone()))
+            .fetch_all(&self.pool).await?;
+        let mut ids: Vec<String> = Vec::new();
+        for row in result {
+            ids.push(row.try_get("course_id")?);
+        }
+
+        Ok(ids)
+    }
 }
+
+/*
+    // We will use reciprocal rank fusion to combine the title, name and content embeddings
+    pub async fn get_most_relevant_course_ids(&self, query_embedding: &Vec<f32>) -> Result<Vec<String>> {
+        let result = query(
+            "WITH title_search AS (
+                SELECT id, RANK () OVER (ORDER BY embedding <=> %(query_embedding)s) AS rank
+                FROM title_embedding
+                ORDER BY embedding <=> %(query_embedding)s
+            ),
+            content_search AS (
+                SELECT id, RANK () OVER (ORDER BY embedding <=> %(query_embedding)s) AS rank
+                FROM content_embedding
+                ORDER BY embedding <=> %(query_embedding)s
+            )
+            SELECT
+COALESCE(title_search.id, content_search.id) AS id.
+COALESCE(1.0 / (%(k)s + title_search.rank), 0) +
+COALESCE(1.0 / (%(k)s + content_search.rank), 0) AS score
+FROM title_search
+FULL OUTER JOIN content_search ON title_search.id = content_search.id
+ORDER BY score DESC
+LIMIT 100"
+        )
+            .bind(query_embedding)
+            .bind(50)
+            .fetch_all(&self.pool).await?;
+
+        let mut ids: Vec<String> = Vec::new();
+        for row in result {
+            ids.push(row.id.expect("id should be present"));
+        }
+
+        Ok(ids)
+    }
+}
+*/
+
+
+
+// Find the most relevant courses compared to the course ID NDAK22000U only using title similarity, do this in raw SQL
+// SELECT title, RANK() OVER (ORDER BY embedding <=> (SELECT embedding FROM title_embedding WHERE course_id = 'NDAK22000U')) AS rank
+// FROM title_embedding INNER JOIN course ON title_embedding.course_id = course.id

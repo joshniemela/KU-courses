@@ -5,26 +5,25 @@ use axum::routing::get;
 use axum::extract::State;
 use axum::{Json, Router};
 use fastembed::{Embedding, EmbeddingModel, TextEmbedding, InitOptions};
-use nanohtml2text::html2text;
 use serde::Deserialize;
 use serde::Serialize;
-use std::fs::{File, metadata};
-use std::io::BufReader;
+use std::fs::metadata;
 use std::path::Path;
 use rayon::prelude::*;
+use std::sync::Arc;
+
+use sqlx::migrate;
 
 mod db;
-use db::{initialise_db,
-         get_documents_by_ids,
-         upsert_document,
-         insert_embeddings,
-         documents_wo_embeddings,
-         get_document_mod_times,
-         get_all_embeddings};
+use db::PostgresDB;
+
+mod populate;
+use populate::read_jsons;
 
 #[derive(Debug, Deserialize, Clone)]
 struct Coordinator {
     name: String,
+    email: String,
 }
 
 #[derive(Debug, Deserialize, Clone)]
@@ -69,32 +68,7 @@ struct EmbeddedDocument {
     id: String,
     title_embedding: Embedding,
     content_embedding: Embedding,
-    coordinator_embeddings: Vec<Embedding>,
-}
-
-fn read_json(path: &Path) -> Result<Document> {
-    // TODO: this entire thing is awful, please rewrite
-    let file = File::open(path)?;
-    let reader = BufReader::new(file);
-    let mut doc: Document = serde_json::from_reader(reader)?;
-    doc.description.content = html2text(&doc.description.content);
-    doc.description.content = doc.description.content.replace('\n', " ");
-    doc.description.content = doc.description.content.replace('\t', " ");
-    doc.description.content = doc.description.content.replace('\r', " ");
-    Ok(doc)
-}
-
-fn read_jsons(path: &Path) -> Result<Vec<Document>> {
-    // this should read all the jsons in the directory
-    let file_names = std::fs::read_dir(path)?;
-    let mut documents = Vec::new();
-    for file_name in file_names {
-        let file_name = file_name?;
-        let path = file_name.path();
-        let document = read_json(&path)?;
-        documents.push(document);
-    }
-    Ok(documents)
+    coordinator_embeddings: Vec<(String, Embedding)>,
 }
 
 fn passage_embed(
@@ -129,11 +103,15 @@ fn embed_documents(
     let batch_size = Some(32);
     let embdded_titles = passage_embed(titles.clone(), &model, batch_size)?;
     let embdded_descriptions = passage_embed(descriptions, &model, batch_size)?;
-    let embedded_coordinators: Vec<Vec<Embedding>> = coordinators
+    let embedded_coordinators: Vec<Vec<(String, Embedding)>> = coordinators
         .par_iter()
         .map(|x| {
             let coordinator_names: Vec<String> = x.par_iter().map(|x| x.name.clone()).collect();
-            passage_embed(coordinator_names, &model, batch_size).unwrap()
+            let coordinator_embeddings = passage_embed(coordinator_names, &model, batch_size).unwrap();
+            x.par_iter()
+                .zip(coordinator_embeddings)
+                .map(|(x, y)| (x.email.clone(), y))
+                .collect()
         })
         .collect();
     let mut embedded_documents: Vec<EmbeddedDocument> = Vec::new();
@@ -149,10 +127,6 @@ fn embed_documents(
     Ok(embedded_documents)
 }
 
-fn dot_product(a: &Embedding, b: &Embedding) -> f32 {
-    a.iter().zip(b.iter()).map(|(x, y)| x * y).sum()
-}
-
 #[derive(Debug, Serialize, Deserialize)]
 struct SearchQuery {
     query: String,
@@ -161,7 +135,7 @@ struct SearchQuery {
 
 #[derive(Clone)]
 struct AppState {
-    embedded_documents: Vec<EmbeddedDocument>,
+    db: Arc<PostgresDB>,
     model_ref: &'static TextEmbedding,
 }
 
@@ -178,20 +152,31 @@ fn make_embedding_model() -> Result<TextEmbedding> {
 
 #[tokio::main]
 async fn main() {
+    let psql_pass = env::var("POSTGRES_PASSWORD").expect("POSTGRES_PASSWORD not set");
+    let psql_user = env::var("POSTGRES_USER").expect("POSTGRES_USER not set");
+    let psql_host = env::var("POSTGRES_HOST").expect("POSTGRES_HOST not set");
+    let psql_db = env::var("POSTGRES_DB").expect("POSTGRES_DB not set");
+
+    let conn_string = format!("postgres://{}:{}@{}/{}", psql_user, psql_pass, psql_host, psql_db);
+
+    let db = PostgresDB::new(&conn_string).await.expect("Failed to create database");
+    migrate!("./migrations")
+        .run(&db.pool)
+        .await
+        .expect("Failed to run migrations");
+
+
+
     let data_dir = env::var("DATA_DIR").expect("DATA_DIR not set");
     let new_json_dir = data_dir.to_owned() + "new_json/";
-    let sql_path = data_dir.to_owned() + "documents.db";
     let path = Path::new(&new_json_dir);
-
-    let mut conn = rusqlite::Connection::open(&sql_path).unwrap();
-    initialise_db(&mut conn).unwrap();
 
 
     let documents = read_jsons(path).unwrap();
 
     // get the modification times and title of all documents in the db
     let mut db_documents_map = std::collections::HashMap::new();
-    let mod_times = get_document_mod_times(&conn).unwrap();
+    let mod_times = db.get_document_mod_times().await.unwrap();
 
     for mod_time in mod_times.iter() {
         db_documents_map.insert(mod_time.0.clone(), mod_time.1);
@@ -221,38 +206,34 @@ async fn main() {
 
     println!("pending documents: {}", pending_documents.len());
     for document in pending_documents.iter() {
-        upsert_document(&mut conn, document).unwrap();
+        db.upsert_document(document).await.unwrap();
     }
 
     let model = make_embedding_model().unwrap();
 
     // find all the courses that don't have an embedding
-    let missing_embeddings = documents_wo_embeddings(&conn).unwrap();
+    let missing_embeddings = db.get_all_courses_wo_embeddings().await.unwrap();
 
     // grab all the missing documents
     // pub fn get_documents_by_ids(conn: &Connection, ids: &[String]) -> Result<Vec<Document>> {
-    let missing_documents: Vec<Document> = get_documents_by_ids(&conn, &missing_embeddings).unwrap();
+    let missing_documents: Vec<Document> = db.get_documents_by_ids(&missing_embeddings).await.unwrap();
     println!("missing documents: {}", missing_documents.len());
     const BATCH_SIZE: usize = 32;
     // in batches of BATCH_SIZE, embed the documents and insert them into the db
     for batch in missing_documents.chunks(BATCH_SIZE) {
         let embedded_documents = embed_documents(batch.to_vec(), &model).unwrap();
         for embedded_document in embedded_documents.iter() {
-            insert_embeddings(&mut conn, embedded_document).unwrap();
+            db.insert_embeddings(embedded_document).await.unwrap();
         }
         println!("inserted batch of {}", batch.len());
     }
-
-
-    println!("grabbing embedded documents");
-    let embedded_documents = get_all_embeddings(&conn).unwrap();
 
 
     // Recreate the model since we just killed it
     let model = make_embedding_model().unwrap();
 
     let state = AppState {
-        embedded_documents: embedded_documents.clone(),
+        db: Arc::new(db),
         model_ref: Box::leak(Box::new(model)),
     };
 
@@ -270,6 +251,7 @@ async fn main() {
     axum::serve(listener, app).await.unwrap();
 }
 
+/*
 fn document_similarity(
     query_embedding: &Embedding,
     embedded_document: &EmbeddedDocument,
@@ -281,7 +263,7 @@ fn document_similarity(
     let best_coordinator_similarity = embedded_document
         .coordinator_embeddings
         .iter()
-        .map(|x| dot_product(query_embedding, x))
+        .map(|x| dot_product(query_embedding, &x.1))
         .max_by(|a, b| a.partial_cmp(b).unwrap())
         .unwrap();
         // if coordinator_similarity is less than 0.5, we set it to 0
@@ -294,29 +276,17 @@ fn document_similarity(
     // grab the highest of the three similarities
     content_similarity.max(title_similarity).max(coordinator_similarity)
 }
-
-fn ids_by_similarity(
+*/
+async fn ids_by_similarity(
     query: &str,
-    embedded_documents: &Vec<EmbeddedDocument>,
+    db: &PostgresDB,
     model: &TextEmbedding,
 ) -> Vec<String> {
     let query_embedding = query_embed(query, &model).unwrap();
-    let mut similarities: Vec<(String, f32)> = embedded_documents
-        .par_iter()
-        .map(|x| {
-            (
-                x.id.clone(),
-                document_similarity(&query_embedding, x),
-            )
-        })
-        .collect();
-    similarities.sort_by(|a, b| b.1.partial_cmp(&a.1).unwrap());
-    similarities
-        .par_iter()
-        .map(|x| x.0.clone())
-        .collect()
-}
 
+    let ids = db.get_most_relevant_course_ids(&query_embedding).await.unwrap();
+    ids
+}
 
 async fn search(
     Query(query): Query<SearchQuery>,
@@ -324,6 +294,6 @@ async fn search(
 ) -> Json<Vec<String>> {
     let query = query.query;
     let model = state.model_ref;
-    let ids = ids_by_similarity(&query, &state.embedded_documents, model);
-    Json(ids)
+    let ids = ids_by_similarity(&query, &state.db, model);
+    Json(ids.await)
 }
