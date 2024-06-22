@@ -1,5 +1,3 @@
-version: "3.8"
-
 services:
   frontend:
     build: 
@@ -45,5 +43,16 @@ services:
   rust_builder:
     build: ./backend/rust_parser
     image: rust_parser
+
+  postgres:
+    image: postgres:16-alpine
+    ports:
+      - "5432:5432"
+    volumes:
+      - ./data:/var/lib/postgresql/data
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password123
+      POSTGRES_DB: disku
 networks:
   dis-network:
