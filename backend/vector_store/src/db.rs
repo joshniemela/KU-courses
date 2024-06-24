@@ -5,6 +5,7 @@ use sqlx::{Transaction, query};
 use sqlx::Row;
 use pgvector::Vector;
 
+#[allow(dead_code)]
 type PgTransaction<'a> = Transaction<'a, Postgres>;
 
 pub struct PostgresDB {
@@ -20,6 +21,7 @@ impl PostgresDB {
     }
 
 
+    #[allow(dead_code)]
     pub async fn insert_course(&self, document: &Document) -> Result<()> {
         // grab the coordinators
         let coordinators = &document.logistics.coordinators;
@@ -203,14 +205,14 @@ impl PostgresDB {
     }
 
 
-    pub async fn get_most_relevant_course_ids(&self, query_embedding: &Vec<f32>) -> Result<Vec<String>> {
+    pub async fn get_most_relevant_course_ids(&self, query_embedding: &[f32]) -> Result<Vec<String>> {
         let result = query(
             "SELECT course_id, title_embedding.embedding <-> $1 AS distance
             FROM title_embedding
             ORDER BY distance ASC
             LIMIT 100"
         )
-            .bind(Vector::from(query_embedding.clone()))
+            .bind(Vector::from(query_embedding.to_owned()))
             .fetch_all(&self.pool).await?;
         let mut ids: Vec<String> = Vec::new();
         for row in result {

@@ -101,13 +101,13 @@ fn embed_documents(
         .map(|x| x.logistics.coordinators.clone())
         .collect();
     let batch_size = Some(32);
-    let embdded_titles = passage_embed(titles.clone(), &model, batch_size)?;
-    let embdded_descriptions = passage_embed(descriptions, &model, batch_size)?;
+    let embdded_titles = passage_embed(titles.clone(), model, batch_size)?;
+    let embdded_descriptions = passage_embed(descriptions, model, batch_size)?;
     let embedded_coordinators: Vec<Vec<(String, Embedding)>> = coordinators
         .par_iter()
         .map(|x| {
             let coordinator_names: Vec<String> = x.par_iter().map(|x| x.name.clone()).collect();
-            let coordinator_embeddings = passage_embed(coordinator_names, &model, batch_size).unwrap();
+            let coordinator_embeddings = passage_embed(coordinator_names, model, batch_size).unwrap();
             x.par_iter()
                 .zip(coordinator_embeddings)
                 .map(|(x, y)| (x.email.clone(), y))
@@ -251,41 +251,14 @@ async fn main() {
     axum::serve(listener, app).await.unwrap();
 }
 
-/*
-fn document_similarity(
-    query_embedding: &Embedding,
-    embedded_document: &EmbeddedDocument,
-) -> f32 {
-    let content_similarity = dot_product(query_embedding, &embedded_document.content_embedding);
-
-    // We weigh by 1.25 because we want the title to be more important than the content
-    let title_similarity = dot_product(query_embedding, &embedded_document.title_embedding);
-    let best_coordinator_similarity = embedded_document
-        .coordinator_embeddings
-        .iter()
-        .map(|x| dot_product(query_embedding, &x.1))
-        .max_by(|a, b| a.partial_cmp(b).unwrap())
-        .unwrap();
-        // if coordinator_similarity is less than 0.5, we set it to 0
-    let coordinator_similarity = if best_coordinator_similarity < 0.5 {
-        0.0
-    } else {
-        best_coordinator_similarity
-    };
-
-    // grab the highest of the three similarities
-    content_similarity.max(title_similarity).max(coordinator_similarity)
-}
-*/
 async fn ids_by_similarity(
     query: &str,
     db: &PostgresDB,
     model: &TextEmbedding,
 ) -> Vec<String> {
-    let query_embedding = query_embed(query, &model).unwrap();
+    let query_embedding = query_embed(query, model).unwrap();
 
-    let ids = db.get_most_relevant_course_ids(&query_embedding).await.unwrap();
-    ids
+    db.get_most_relevant_course_ids(&query_embedding).await.unwrap()
 }
 
 async fn search(
