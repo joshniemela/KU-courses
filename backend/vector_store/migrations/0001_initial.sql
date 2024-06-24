@@ -14,10 +14,10 @@ CREATE TABLE IF NOT EXISTS coordinator (
 );
 
 CREATE TABLE IF NOT EXISTS course_coordinator (
-    id text,
+    course_id text,
     email text,
-    PRIMARY KEY (id, email),
-    FOREIGN KEY (id) REFERENCES course(id),
+    PRIMARY KEY (course_id, email),
+    FOREIGN KEY (course_id) REFERENCES course(id),
     FOREIGN KEY (email) REFERENCES coordinator(email)
 );
 
@@ -37,8 +37,7 @@ CREATE TABLE IF NOT EXISTS title_embedding (
 );
 
 CREATE TABLE IF NOT EXISTS content_embedding (
-    id serial PRIMARY KEY,
-    course_id text NOT NULL,
+    course_id text PRIMARY KEY,
     embedding vector(384) NOT NULL,
     last_modified timestamp DEFAULT CURRENT_TIMESTAMP NOT NULL,
     FOREIGN KEY (course_id) REFERENCES course(id)
