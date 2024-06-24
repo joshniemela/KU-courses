@@ -221,6 +221,24 @@ impl PostgresDB {
 
         Ok(ids)
     }
+
+
+    pub async fn get_name_similarities(&self, query_embedding: &[f32]) -> Result<Vec<(String, f64)>> {
+        let result = query(
+            "SELECT full_name, embedding <-> $1 AS distance
+            FROM name_embedding NATURAL JOIN coordinator
+            ORDER BY distance ASC
+            LIMIT 100"
+        )
+            .bind(Vector::from(query_embedding.to_owned()))
+            .fetch_all(&self.pool).await?;
+        let mut names: Vec<(String, f64)> = Vec::new();
+        for row in result {
+            names.push((row.try_get("full_name")?, row.try_get("distance")?));
+        }
+
+        Ok(names)
+    }
 }
 
 /*

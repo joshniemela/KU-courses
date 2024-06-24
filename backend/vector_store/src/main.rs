@@ -141,8 +141,7 @@ struct AppState {
 
 fn make_embedding_model() -> Result<TextEmbedding> {
     let model: TextEmbedding = TextEmbedding::try_new(InitOptions {
-        //model_name: EmbeddingModel::MLE5Large,
-        model_name: EmbeddingModel::ParaphraseMLMiniLML12V2,
+        model_name: EmbeddingModel::AllMiniLML12V2Q,
         show_download_progress: true,
         ..Default::default()
     })?;
@@ -241,6 +240,7 @@ async fn main() {
         .route("/health", get(|| async { "healthy" }))
         // search takes a query param "query" and returns a list of the 150 most similar documents
         .route("/search", get(search))
+        .route("/title_similarities", get(title_search))
         .with_state(state);
     let addr = env::var("SERVER_ADDRESS").expect("SERVER_ADDRESS must be set");
     let port = env::var("SERVER_PORT").expect("SERVER_PORT must be set");
@@ -259,6 +259,27 @@ async fn ids_by_similarity(
     let query_embedding = query_embed(query, model).unwrap();
 
     db.get_most_relevant_course_ids(&query_embedding).await.unwrap()
+}
+
+
+async fn title_similarities(
+    query: &str,
+    db: &PostgresDB,
+    model: &TextEmbedding,
+) -> Vec<(String, f64)> {
+    let query_embedding = query_embed(query, model).unwrap();
+
+    db.get_name_similarities(&query_embedding).await.unwrap()
+}
+
+async fn title_search(
+    Query(query): Query<SearchQuery>,
+    State(state): State<AppState>,
+) -> Json<Vec<(String, f64)>> {
+    let query = query.query;
+    let model = state.model_ref;
+    let ids = title_similarities(&query, &state.db, model);
+    Json(ids.await)
 }
 
 async fn search(
