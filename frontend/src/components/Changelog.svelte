@@ -25,9 +25,9 @@
             ],
         },
         {
-            date: "2024-03-24",
+            date: "2024-06-24",
             changes: [
-                "Switched to a multilingual search so that results are more accurate and work with all languages",
+                "Switched to a quantised multilingual search so that results are more accurate, faster and work with all languages",
             ],
         },
     ];

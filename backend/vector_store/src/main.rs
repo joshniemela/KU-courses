@@ -44,8 +44,6 @@ struct SearchQuery {
     query: String,
 }
 
-
-
 #[tokio::main]
 async fn main() {
     let psql_pass = env::var("POSTGRES_PASSWORD").expect("POSTGRES_PASSWORD not set");
