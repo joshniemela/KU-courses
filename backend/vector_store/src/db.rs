@@ -33,7 +33,7 @@ impl PostgresDB {
 
         let mut ids: Vec<String> = Vec::new();
         for row in result {
-            ids.push(row.id.expect("id should be present"));
+            ids.push(row.id.expect("id"));
         }
 
         Ok(ids)
@@ -49,7 +49,7 @@ impl PostgresDB {
 
         let mut coordinators = Vec::new();
         for row in result {
-            coordinators.push((row.email, row.full_name));
+            coordinators.push((row.email.expect("email"), row.full_name.expect("full_name")));
         }
 
         Ok(coordinators)
@@ -184,66 +184,6 @@ impl PostgresDB {
         Ok(())
     }
 
-    pub async fn get_name_similarities(
-        &self,
-        query_embedding: &[f32],
-    ) -> Result<Vec<(String, f64)>> {
-        let result = query(
-            "SELECT full_name, embedding <-> $1 AS distance
-             FROM name_embedding NATURAL JOIN coordinator
-             ORDER BY distance ASC
-             LIMIT 100",
-        )
-        .bind(Vector::from(query_embedding.to_owned()))
-        .fetch_all(&self.pool)
-        .await?;
-        let mut names: Vec<(String, f64)> = Vec::new();
-        for row in result {
-            names.push((row.try_get("full_name")?, row.try_get("distance")?));
-        }
-
-        Ok(names)
-    }
-
-    pub async fn get_title_similarities(
-        &self,
-        query_embedding: &[f32],
-    ) -> Result<Vec<(String, f64)>> {
-        let result = query(
-            "SELECT title, embedding <-> $1 AS distance
-            FROM title_embedding INNER JOIN course ON title_embedding.course_id = course.id
-            ORDER BY distance ASC
-            LIMIT 100",
-        )
-        .bind(Vector::from(query_embedding.to_owned()))
-        .fetch_all(&self.pool)
-        .await?;
-        let mut ids: Vec<(String, f64)> = Vec::new();
-        for row in result {
-            ids.push((row.try_get("title")?, row.try_get("distance")?));
-        }
-
-        Ok(ids)
-    }
-
-    pub async fn get_content_similarities(&self, query_embedding: &[f32]) -> Result<Vec<f64>> {
-        let result = query(
-            "SELECT embedding <-> $1 AS distance
-            FROM content_embedding
-            ORDER BY distance ASC
-            LIMIT 100",
-        )
-        .bind(Vector::from(query_embedding.to_owned()))
-        .fetch_all(&self.pool)
-        .await?;
-        let mut ids: Vec<f64> = Vec::new();
-        for row in result {
-            ids.push(row.try_get("distance")?);
-        }
-
-        Ok(ids)
-    }
-
     pub async fn get_most_relevant_course_ids(
         &self,
         query_embedding: &[f32],
@@ -268,28 +208,54 @@ FROM
 
 coordinator_search AS (
 SELECT
-    course_id, COALESCE(MIN(embedding <-> $1), 1000) AS distance
+    course_id, MIN(
+        CASE
+            WHEN embedding <-> $1 > 0.8 THEN 0.9
+            ELSE (embedding <-> $1) / 2
+        END) AS distance
 FROM
     course_coordinator
     INNER JOIN
         name_embedding
     ON
         course_coordinator.email = name_embedding.email
-GROUP BY course_id)
+GROUP BY course_id),
+
+
+
+combined_search AS (
+    SELECT
+        course.title,
+        title_search.distance + content_search.distance + coordinator_search.distance AS total_distance
+    FROM
+        title_search
+    INNER JOIN
+        content_search ON title_search.course_id = content_search.course_id
+    INNER JOIN
+        coordinator_search ON title_search.course_id = coordinator_search.course_id
+    INNER JOIN
+        course ON title_search.course_id = course.id
+),
+
+ranked_courses AS (
+    SELECT
+        title,
+        total_distance,
+        ROW_NUMBER() OVER (PARTITION BY title ORDER BY total_distance) AS rn
+    FROM
+        combined_search
+)
 
 SELECT
     title
 FROM
-    title_search
-    INNER JOIN
-        content_search
-    ON title_search.course_id = content_search.course_id
-    INNER JOIN coordinator_search
-        ON title_search.course_id = coordinator_search.course_id
-    INNER JOIN course
-        ON title_search.course_id = course.id
-ORDER BY title_search.distance^2 + content_search.distance^2 + coordinator_search.distance^2 ASC
-LIMIT 200")
+    ranked_courses
+WHERE
+    rn = 1
+ORDER BY
+    total_distance
+LIMIT 200;
+")
         .bind(Vector::from(query_embedding.to_owned()))
         .fetch_all(&self.pool)
         .await?;

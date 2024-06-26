@@ -2922,6 +2922,7 @@ dependencies = [
  "bincode",
  "criterion",
  "fastembed",
+ "lazy_static",
  "nanohtml2text",
  "ndarray",
  "openssl",
