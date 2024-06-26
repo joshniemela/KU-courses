@@ -1,0 +1,20 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT c.id\n            FROM course c\n            LEFT JOIN title_embedding te ON c.id = te.course_id\n            LEFT JOIN content_embedding ce ON c.id = ce.course_id\n            WHERE\n                c.last_modified > COALESCE(te.last_modified, to_timestamp(0)) OR\n                c.last_modified > COALESCE(ce.last_modified, to_timestamp(0))",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "id",
+        "type_info": "Text"
+      }
+    ],
+    "parameters": {
+      "Left": []
+    },
+    "nullable": [
+      true
+    ]
+  },
+  "hash": "07ff355f2f2a14bf0a163f3cb6450f57baa285962f0e9fefe0c8d6a5084e7d0a"
+}

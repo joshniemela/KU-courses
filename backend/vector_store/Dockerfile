@@ -1,5 +1,5 @@
 # BUILDER
-FROM rust:slim-bookworm as builder
+FROM rust:bookworm as builder
 
 WORKDIR /app
 COPY . .

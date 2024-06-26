@@ -1,0 +1,15 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "INSERT INTO coordinator (email, full_name) VALUES ($1, $2)\n                 ON CONFLICT(email) DO NOTHING",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Text",
+        "Text"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "65f1c255cf0c5df5476c730aea2a9448783ca002a83452a3f245a82b79371652"
+}
