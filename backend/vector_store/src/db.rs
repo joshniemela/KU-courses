@@ -211,7 +211,7 @@ GROUP BY course_id),
 
 combined_search AS (
     SELECT
-        course.title,
+        course.id,
         title_search.distance + content_search.distance + coordinator_search.distance AS total_distance
     FROM
         title_search
@@ -225,15 +225,15 @@ combined_search AS (
 
 ranked_courses AS (
     SELECT
-        title,
+        id,
         total_distance,
-        ROW_NUMBER() OVER (PARTITION BY title ORDER BY total_distance) AS rn
+        ROW_NUMBER() OVER (PARTITION BY id ORDER BY total_distance) AS rn
     FROM
         combined_search
 )
 
 SELECT
-    title
+    id
 FROM
     ranked_courses
 WHERE
@@ -247,7 +247,7 @@ LIMIT 200;
         .await?;
         let mut ids: Vec<String> = Vec::new();
         for row in result {
-            ids.push(row.try_get("title")?);
+            ids.push(row.try_get("id")?);
         }
 
         Ok(ids)
