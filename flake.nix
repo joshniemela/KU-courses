@@ -28,18 +28,21 @@
             buildInputs = [
               docker
               docker-compose
-              git
-              nodejs
-              leiningen
-              pipenv
-              python311
+              #git
+              #nodejs
+              #leiningen
+              #pipenv
+              #python311
 
-              # browsers for testing
-              firefox
-              chromium
-              pkg-config
-              rust-bin.stable.latest.default 
+              ## browsers for testing
+              #firefox
+              #chromium
+              #pkg-config
+              #rust-bin.stable.latest.default 
             ];
+
+            DATABASE_URL="postgres://postgres:password123@localhost:5432/disku";
+
           };
         }
     );

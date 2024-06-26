@@ -1,9 +1,11 @@
-use super::{Coordinator, Document, EmbeddedDocument};
+use super::{Coordinator, Course};
+use crate::populate::Document;
 use anyhow::Result;
 use pgvector::Vector;
 use sqlx::postgres::{PgPool, PgPoolOptions, Postgres};
 use sqlx::Row;
 use sqlx::{query, Transaction};
+use crate::embedding::{CoordinatorEmbedding, CourseEmbedding};
 
 #[allow(dead_code)]
 type PgTransaction<'a> = Transaction<'a, Postgres>;
@@ -33,14 +35,15 @@ impl PostgresDB {
 
         let mut ids: Vec<String> = Vec::new();
         for row in result {
-            ids.push(row.id.expect("id"));
+            ids.push(row.id.expect("id"))
         }
 
         Ok(ids)
     }
 
-    pub async fn get_missing_embedding_email_names(&self) -> Result<Vec<(String, String)>> {
-        let result = query!(
+    pub async fn get_missing_embedding_email_names(&self) -> Result<Vec<Coordinator>> {
+        // Due to a weird bug, this has to not be a macroo query
+        let result = query(
             "SELECT coordinator.email, coordinator.full_name
             FROM coordinator
             LEFT JOIN name_embedding ne ON coordinator.email = ne.email
@@ -49,14 +52,17 @@ impl PostgresDB {
 
         let mut coordinators = Vec::new();
         for row in result {
-            coordinators.push((row.email.expect("email"), row.full_name.expect("full_name")));
+            coordinators.push(Coordinator {
+                email: row.try_get("email")?,
+                name: row.try_get("full_name")?,
+            });
         }
 
         Ok(coordinators)
     }
 
-    pub async fn get_documents_by_ids(&self, ids: &[String]) -> Result<Vec<Document>> {
-        let mut documents = Vec::new();
+    pub async fn get_courses_by_ids(&self, ids: &[String]) -> Result<Vec<Course>> {
+        let mut courses = Vec::new();
 
         let result = query!(
             "SELECT id, title, content FROM course WHERE id = ANY($1)",
@@ -65,41 +71,21 @@ impl PostgresDB {
         .fetch_all(&self.pool)
         .await?;
 
-        // We make one document and then we reuse it
-        let mut document = Document::default();
-
         for row in result {
-            // We find the coordinators for this course
-            let coordinators: Vec<Coordinator> = query!(
-                "SELECT full_name, coordinator.email FROM coordinator INNER JOIN course_coordinator
-                 ON coordinator.email = course_coordinator.email
-                 WHERE course_coordinator.course_id = $1",
-                row.id
-            )
-            .fetch_all(&self.pool)
-            .await?
-            .into_iter()
-            .map(|row| Coordinator {
-                name: row.full_name,
-                email: row.email,
-            })
-            .collect();
-
-            document.info.id = row.id;
-            document.title = row.title;
-            document.description.content = row.content;
-            document.logistics.coordinators = coordinators;
-
-            documents.push(document.clone());
+            let course = Course {
+                id: row.id,
+                title: row.title,
+                content: row.content,
+            };
+            courses.push(course);
         }
 
-        Ok(documents)
+        Ok(courses)
     }
 
    pub async fn upsert_document(&self, document: &Document) -> Result<()> {
         // start by checking if the Document is the same as the one in the database
         // if it is, do nothing
-
         let result = query!(
             "SELECT title, content FROM course WHERE id = $1",
             document.info.id
@@ -154,30 +140,30 @@ impl PostgresDB {
         Ok(())
     }
 
-    pub async fn insert_coordinator_embedding(&self, email: &str, embedding: &[f32]) -> Result<()> {
+    pub async fn insert_coordinator_embedding(&self, coordinator: CoordinatorEmbedding) -> Result<()> {
         query(
             "INSERT INTO name_embedding (email, embedding) VALUES ($1, $2)
             ON CONFLICT(email) DO NOTHING")
-            .bind(email)
-            .bind(Vector::from(embedding.to_owned()))
+            .bind(coordinator.email)
+            .bind(Vector::from(coordinator.name.to_owned()))
             .execute(&self.pool).await?;
         Ok(())
     }
 
-    pub async fn insert_course_embeddings(&self, course_id: &str, title_embedding: &[f32], content_embedding: &[f32]) -> Result<()> {
+    pub async fn insert_course_embedding(&self, course_embedding: CourseEmbedding) -> Result<()> {
         let mut tx = self.pool.begin().await?;
         query(
             "INSERT INTO title_embedding (course_id, embedding) VALUES ($1, $2)
             ON CONFLICT(course_id) DO UPDATE SET embedding = $2, last_modified = CURRENT_TIMESTAMP")
-            .bind(course_id)
-            .bind(Vector::from(title_embedding.to_owned()))
+            .bind(&course_embedding.id)
+            .bind(Vector::from(course_embedding.title.to_owned()))
             .execute(&mut *tx).await?;
 
         query(
             "INSERT INTO content_embedding (course_id, embedding) VALUES ($1, $2)
             ON CONFLICT(course_id) DO UPDATE SET embedding = $2, last_modified = CURRENT_TIMESTAMP")
-            .bind(course_id)
-            .bind(Vector::from(content_embedding.to_owned()))
+            .bind(course_embedding.id)
+            .bind(Vector::from(course_embedding.content.to_owned()))
             .execute(&mut *tx).await?;
 
         tx.commit().await?;

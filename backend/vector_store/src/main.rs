@@ -1,17 +1,13 @@
-use anyhow::Result;
 use axum::extract::Query;
 use axum::extract::State;
 use axum::routing::get;
 use axum::{Json, Router};
-use fastembed::{Embedding, EmbeddingModel, InitOptions, TextEmbedding};
-use rayon::prelude::*;
 use serde::Deserialize;
-use serde::Serialize;
 use std::env;
 use std::path::Path;
 use std::sync::Arc;
-use tokio::sync::Mutex;
-use lazy_static::lazy_static;
+use futures_util::pin_mut;
+use futures_util::stream::StreamExt;
 
 use sqlx::migrate;
 
@@ -19,7 +15,16 @@ mod db;
 use db::PostgresDB;
 
 mod populate;
-use populate::read_jsons;
+use populate::upsert_documents_from_path;
+
+mod embedding;
+use embedding::Embedder;
+#[derive(Clone)]
+struct Course {
+    id: String,
+    title: String,
+    content: String,
+}
 
 #[derive(Debug, Deserialize, Clone)]
 struct Coordinator {
@@ -27,113 +32,6 @@ struct Coordinator {
     email: String,
 }
 
-#[derive(Debug, Deserialize, Clone)]
-struct Logistics {
-    coordinators: Vec<Coordinator>,
-}
-
-#[derive(Debug, Deserialize, Clone)]
-struct Description {
-    content: String,
-}
-
-#[derive(Debug, Deserialize, Clone)]
-struct Document {
-    title: String,
-    info: Info,
-    description: Description,
-    logistics: Logistics,
-}
-impl Document {
-    fn default() -> Self {
-        Document {
-            title: String::new(),
-            info: Info { id: String::new() },
-            description: Description {
-                content: String::new(),
-            },
-            logistics: Logistics {
-                coordinators: Vec::new(),
-            },
-        }
-    }
-}
-
-#[derive(Debug, Deserialize, Clone)]
-struct Info {
-    id: String,
-}
-
-#[derive(Debug, Deserialize, Clone, Serialize)]
-struct EmbeddedDocument {
-    id: String,
-    title_embedding: Embedding,
-    content_embedding: Embedding,
-}
-
-fn passage_embed(
-    passages: Vec<String>,
-    model: &TextEmbedding,
-    batch_size: Option<usize>,
-) -> Result<Vec<Embedding>> {
-    // for each passage, add passage: to the front of it
-    let passages: Vec<String> = passages
-        .par_iter()
-        .map(|x| format!("passage: {}", x))
-        .collect();
-    model.embed(passages, batch_size)
-}
-
-fn query_embed(query: &str, model: &TextEmbedding) -> Result<Embedding> {
-    // add query: to the front of the query
-    model
-        .embed(vec![format!("query: {}", query)], None)
-        .map(|x| x[0].clone())
-}
-
-fn embed_documents(
-    documents: Vec<Document>,
-    model: &TextEmbedding,
-) -> Result<Vec<EmbeddedDocument>> {
-    let ids: Vec<String> = documents.par_iter().map(|x| x.info.id.clone()).collect();
-    let titles: Vec<String> = documents.par_iter().map(|x| x.title.clone()).collect();
-    let descriptions: Vec<String> = documents
-        .par_iter()
-        .map(|x| x.description.content.clone())
-        .collect();
-    let batch_size = Some(32);
-    let embdded_titles = passage_embed(titles.clone(), model, batch_size)?;
-    let embdded_descriptions = passage_embed(descriptions, model, batch_size)?;
-
-    let mut embedded_documents: Vec<EmbeddedDocument> = Vec::new();
-    for i in 0..documents.len() {
-        let embedded_document = EmbeddedDocument {
-            id: ids[i].clone(),
-            title_embedding: embdded_titles[i].clone(),
-            content_embedding: embdded_descriptions[i].clone(),
-        };
-        embedded_documents.push(embedded_document);
-    }
-    Ok(embedded_documents)
-}
-
-fn embed_coordinator_names(
-    emails: Vec<String>,
-    names: Vec<String>,
-    model: &TextEmbedding
-) -> Result<Vec<(String, Embedding)>> {
-    let embeddings = passage_embed(names, model, Some(32)).unwrap();
-    let mut result = Vec::new();
-    for i in 0..emails.len() {
-        result.push((emails[i].clone(), embeddings[i].clone()));
-    }
-    Ok(result)
-}
-
-#[derive(Debug, Serialize, Deserialize)]
-struct SearchQuery {
-    query: String,
-}
 
 #[derive(Clone)]
 struct AppState {
@@ -141,21 +39,12 @@ struct AppState {
     embedder: Arc<Embedder>,
 }
 
-struct Embedder {
-    model: TextEmbedding
+#[derive(Debug, Deserialize)]
+struct SearchQuery {
+    query: String,
 }
-impl Embedder {
-    pub fn new() -> Self {
-        let model: TextEmbedding = TextEmbedding::try_new(InitOptions {
-            model_name: EmbeddingModel::AllMiniLML12V2Q,
-            show_download_progress: true,
-            ..Default::default()
-        })
-        // unwrap is safe here because we know the model exists
-        .unwrap();
-        Self { model }
-    }
-}
+
+
 
 #[tokio::main]
 async fn main() {
@@ -180,32 +69,31 @@ async fn main() {
     let data_dir = env::var("DATA_DIR").expect("DATA_DIR not set");
     let new_json_dir = data_dir.to_owned() + "new_json/";
     let path = Path::new(&new_json_dir);
-
-    let documents = read_jsons(path).unwrap();
-    for document in documents.iter() {
-        db.upsert_document(document).await.unwrap();
-    }
-
-    let embedder = Arc::new(Embedder::new());
-
-
-
-
+    upsert_documents_from_path(&db, path).await.unwrap();
 
     let state = AppState {
         db: Arc::new(db),
-        embedder: embedder.clone(),
+        embedder: Arc::new(Embedder::new())
     };
 
+    const SYNC_INTERVAL: u64 = 60 * 60 * 6;
 
     let coordinator_state = state.clone();
     tokio::spawn(async move {
-        populate_coordinator_embeddings(&coordinator_state.db, &coordinator_state.embedder).await;
+        loop {
+            populate_coordinator_embeddings(&coordinator_state.db, &coordinator_state.embedder).await;
+            println!("done populating coordinator embeddings");
+            tokio::time::sleep(tokio::time::Duration::from_secs(SYNC_INTERVAL)).await;
+        }
     });
 
     let course_state = state.clone();
     tokio::spawn(async move {
-        populate_course_embeddings(&course_state.db, &course_state.embedder).await;
+        loop {
+            populate_course_embeddings(&course_state.db, &course_state.embedder).await;
+            println!("done populating course embeddings");
+            tokio::time::sleep(tokio::time::Duration::from_secs(SYNC_INTERVAL)).await;
+        }
     });
 
     let app = Router::new()
@@ -222,21 +110,15 @@ async fn main() {
     axum::serve(listener, app).await.unwrap();
 }
 
-async fn ids_by_similarity(query: &str, db: &PostgresDB, model: &TextEmbedding) -> Vec<String> {
-    let query_embedding = query_embed(query, model).unwrap();
-
-    db.get_most_relevant_course_ids(&query_embedding)
-        .await
-        .unwrap()
-}
-
 async fn search(
     Query(query): Query<SearchQuery>,
     State(state): State<AppState>,
 ) -> Json<Vec<String>> {
-    let model = &state.embedder.model;
-    let query = query.query;
-    let ids = ids_by_similarity(&query, &state.db, model).await;
+    let query_embedding = state.embedder.embed_query(query.query);
+    let db = &state.db;
+    let ids = db.get_most_relevant_course_ids(&query_embedding)
+        .await
+        .unwrap();
     Json(ids)
 }
 
@@ -245,24 +127,17 @@ async fn populate_coordinator_embeddings(
     db: &PostgresDB,
     embedder: &Embedder,
 ) {
-    let missing_coordinator_names = db.get_missing_embedding_email_names().await.unwrap();
-    println!("missing coordinators: {}", missing_coordinator_names.len());
-    const BATCH_SIZE: usize = 32;
+    let missing_coordinators = db.get_missing_embedding_email_names().await.unwrap();
 
-    for batch in missing_coordinator_names.chunks(BATCH_SIZE) {
-        let model = &embedder.model;
-        let name_embedding_pairs = embed_coordinator_names(
-            batch.iter().map(|x| x.0.clone()).collect(),
-            batch.iter().map(|x| x.1.clone()).collect(),
-            &model
-        ).unwrap();
-        for (email, embedding) in name_embedding_pairs.iter() {
-            db.insert_coordinator_embedding(email, embedding)
-                .await
-                .unwrap();
-        }
+    println!("missing coordinators: {}", missing_coordinators.len());
 
-        println!("inserted batch of {}", batch.len());
+    let embedding_stream = embedder.embed_coordinators(missing_coordinators.clone());
+    pin_mut!(embedding_stream);
+
+    while let Some(embedded_coordinator) = embedding_stream.next().await {
+        db.insert_coordinator_embedding(
+            embedded_coordinator
+        ).await.unwrap();
     }
 }
 
@@ -270,34 +145,20 @@ async fn populate_course_embeddings(
     db: &PostgresDB,
     embedder: &Embedder,
 ) {
-    let missing_embeddings = db.get_outdated_embedding_course_ids().await.unwrap();
+    let outdated_embeddings = db.get_outdated_embedding_course_ids().await.unwrap();
 
-    let missing_documents: Vec<Document> =
-        db.get_documents_by_ids(&missing_embeddings).await.unwrap();
-    println!("missing documents: {}", missing_documents.len());
-    const BATCH_SIZE: usize = 32;
-    // in batches of BATCH_SIZE, embed the documents and insert them into the db
-    for batch in missing_documents.chunks(BATCH_SIZE) {
-        let model = &embedder.model;
-        let embedded_documents = embed_documents(batch.to_vec(), &model).unwrap();
-        for embedded_document in embedded_documents.iter() {
-            let title_embedding = &embedded_document.title_embedding;
-            let content_embedding = &embedded_document.content_embedding;
+    let outdated_courses: Vec<Course> =
+        db.get_courses_by_ids(&outdated_embeddings).await.unwrap();
 
-            db.insert_course_embeddings(
-                &embedded_document.id,
-                title_embedding,
-                content_embedding,
-            ).await.unwrap();
-        }
-        println!("inserted batch of {}", batch.len());
+    println!("missing documents: {}", outdated_courses.len());
+
+    let embedding_stream = embedder.embed_courses(outdated_courses.clone());
+    pin_mut!(embedding_stream);
+
+    while let Some(embedded_document) = embedding_stream.next().await {
+
+        db.insert_course_embedding(
+            embedded_document
+        ).await.unwrap();
     }
-}
-
-
-async fn update_embeddings(
-    state: AppState,
-) {
-    populate_coordinator_embeddings(&state.db, &state.embedder).await;
-    populate_course_embeddings(&state.db, &state.embedder).await;
 }
