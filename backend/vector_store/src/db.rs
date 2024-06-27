@@ -1,14 +1,10 @@
 use super::{Coordinator, Course};
 use crate::populate::Document;
+use crate::embedding::{CoordinatorEmbedding, CourseEmbedding};
 use anyhow::Result;
 use pgvector::Vector;
-use sqlx::postgres::{PgPool, PgPoolOptions, Postgres};
-use sqlx::Row;
-use sqlx::{query, Transaction};
-use crate::embedding::{CoordinatorEmbedding, CourseEmbedding};
-
-#[allow(dead_code)]
-type PgTransaction<'a> = Transaction<'a, Postgres>;
+use sqlx::postgres::{PgPool, PgPoolOptions};
+use sqlx::{Row, query};
 
 pub struct PostgresDB {
     pub pool: PgPool,
@@ -22,6 +18,9 @@ impl PostgresDB {
         Ok(Self { pool })
     }
 
+    /// Returns all the course ids that have outdated or non-existent embeddings
+    /// This is computed by checking if the course modified timestamp is greater than the last modified
+    /// timestamp of the title embedding or the content embedding
     pub async fn get_outdated_embedding_course_ids(&self) -> Result<Vec<String>> {
         let result = query!(
             "SELECT c.id
@@ -41,6 +40,7 @@ impl PostgresDB {
         Ok(ids)
     }
 
+    /// Returns all the coordinators in the Vec of coordinator emails that do not have an embedding
     pub async fn get_missing_embedding_email_names(&self) -> Result<Vec<Coordinator>> {
         // Due to a weird bug, this has to not be a macroo query
         let result = query(
@@ -61,6 +61,7 @@ impl PostgresDB {
         Ok(coordinators)
     }
 
+    /// Returns all the courses in the Vec of course ids
     pub async fn get_courses_by_ids(&self, ids: &[String]) -> Result<Vec<Course>> {
         let mut courses = Vec::new();
 
@@ -83,7 +84,13 @@ impl PostgresDB {
         Ok(courses)
     }
 
-   pub async fn upsert_document(&self, document: &Document) -> Result<()> {
+
+    /// Inserts the document into the database
+    /// If the document already exists, it updates the title, content, and last_modified timestamp
+    /// This is used by populate.rs but is not strictly required
+    /// for the search functionality
+    /// TODO: all insertion functionality should be moved out of this service
+    pub async fn upsert_document(&self, document: &Document) -> Result<()> {
         // start by checking if the Document is the same as the one in the database
         // if it is, do nothing
         let result = query!(
@@ -140,6 +147,9 @@ impl PostgresDB {
         Ok(())
     }
 
+    /// Inserts the coordinator embedding into the database
+    /// If the coordinator already exists, it does nothing,
+    /// this is because we assume the names of the coordinators are immutable
     pub async fn insert_coordinator_embedding(&self, coordinator: CoordinatorEmbedding) -> Result<()> {
         query(
             "INSERT INTO name_embedding (email, embedding) VALUES ($1, $2)
@@ -150,6 +160,8 @@ impl PostgresDB {
         Ok(())
     }
 
+    /// Inserts the course embedding into the database
+    /// If the course already exists, it updates the embedding and the last_modified timestamp
     pub async fn insert_course_embedding(&self, course_embedding: CourseEmbedding) -> Result<()> {
         let mut tx = self.pool.begin().await?;
         query(
@@ -170,12 +182,19 @@ impl PostgresDB {
         Ok(())
     }
 
+    /// Returns the most relevant course ids based on the query embedding
+    /// The title embedding is the title for that course
+    /// The content embedding is the content for that course
+    /// The coordinator embedding for each course is the most relevant coordinator for that course,
+    /// if the coordinator's distance is greater than 0.8, it is clipped to 0.9, if it is less then it is halved
+    /// to give it more importance in the total distance
+    /// The relevance is then computed as the sum of the distances between the query embedding and the
+    /// title embedding, content embedding, and coordinator embedding
+    /// and is returned in ascending order (lower is better)
     pub async fn get_most_relevant_course_ids(
         &self,
         query_embedding: &[f32],
     ) -> Result<Vec<String>> {
-        // Find the most relevant coordinator for each course, then find the title and content embedding similarities
-        // each course may have multiple coordinators
         let result = query("
 WITH
 title_search AS (

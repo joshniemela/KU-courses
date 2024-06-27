@@ -38,10 +38,7 @@ services:
       - ./data:/data
 
     environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: password123
-      POSTGRES_HOST: postgres
-      POSTGRES_DB: disku
+      POSTGRES_URL: postgres://postgres:password123@postgres/disku
 
     networks:
       - dis-network
