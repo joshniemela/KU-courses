@@ -8,19 +8,24 @@ use rayon::prelude::*;
 
 const BATCH_SIZE: usize = 32;
 
-pub struct Embedder {
-    pub model: TextEmbedding,
-}
-
+/// Embedding for a course
+#[derive(Clone)]
 pub struct CourseEmbedding {
     pub id: String,
     pub title: Embedding,
     pub content: Embedding,
 }
 
+/// Embedding for a coordinator
+#[derive(Clone)]
 pub struct CoordinatorEmbedding {
     pub email: String,
     pub name: Embedding,
+}
+
+/// Embedder for courses and coordinators
+pub struct Embedder {
+    pub model: TextEmbedding,
 }
 
 impl Embedder {
@@ -35,6 +40,8 @@ impl Embedder {
         Self { model }
     }
 
+    /// Embeds a Vec<Course> into course embeddings
+    /// This returns an asynchronous stream of CourseEmbedding
     pub fn embed_courses(
         &self,
         documents: Vec<Course>,
@@ -42,22 +49,17 @@ impl Embedder {
         stream! {
             for batch in documents.chunks(BATCH_SIZE) {
                 let model = &self.model;
-                let embedded_documents = embed_course_batch(batch.to_vec(), model).unwrap();
-                for embedded_document in embedded_documents.iter() {
-                    let title_embedding = &embedded_document.title;
-                    let content_embedding = &embedded_document.content;
-
-                    yield CourseEmbedding {
-                        id: embedded_document.id.clone(),
-                        title: title_embedding.clone(),
-                        content: content_embedding.clone(),
-                    };
+                let embedded_courses = embed_course_batch(batch.to_vec(), model).unwrap();
+                for embedded_course in embedded_courses.iter() {
+                    yield embedded_course.clone();
                 }
                 println!("Embedded batch of courses");
             }
         }
     }
 
+    /// Embeds a Vec<Coordinator> into coordinator embeddings
+    /// This returns an asynchronous stream of CoordinatorEmbedding
     pub fn embed_coordinators(
         &self,
         coordinators: Vec<Coordinator>,
@@ -65,27 +67,27 @@ impl Embedder {
         stream! {
             for batch in coordinators.chunks(BATCH_SIZE) {
                 let model = &self.model;
-                let name_embedding_pairs = embed_coordinator_batch(
-                    batch.iter().map(|x| x.email.clone()).collect(),
-                    batch.iter().map(|x| x.name.clone()).collect(),
+                let embedded_coordinators = embed_coordinator_batch(
+                    batch.to_vec(),
                     model
                 ).unwrap();
-                for (email, embedding) in name_embedding_pairs.iter() {
-                    yield CoordinatorEmbedding {
-                        email: email.clone(),
-                        name: embedding.clone(),
-                    };
+                for embedded_coordinator in embedded_coordinators.iter() {
+                    yield embedded_coordinator.clone();
                 }
                 println!("Embedded batch of coordinators");
             }
         }
     }
 
+    // Embeds a query into an embedding
+    // This returns an Embedding
     pub fn embed_query(&self, query: String) -> Embedding {
         query_embed(&query, &self.model).unwrap()
     }
 }
 
+/// Helper function to embed a batch of courses
+/// This returns a Vec<CourseEmbedding>
 fn embed_course_batch(courses: Vec<Course>, model: &TextEmbedding) -> Result<Vec<CourseEmbedding>> {
     let ids: Vec<String> = courses.par_iter().map(|x| x.id.clone()).collect();
     let titles: Vec<String> = courses.par_iter().map(|x| x.title.clone()).collect();
@@ -106,19 +108,28 @@ fn embed_course_batch(courses: Vec<Course>, model: &TextEmbedding) -> Result<Vec
     Ok(embedded_courses)
 }
 
+/// Helper function to embed a batch of coordinators
+/// This returns a Vec<CoordinatorEmbedding>
 fn embed_coordinator_batch(
-    emails: Vec<String>,
-    names: Vec<String>,
+    coordinators: Vec<Coordinator>,
     model: &TextEmbedding,
-) -> Result<Vec<(String, Embedding)>> {
+) -> Result<Vec<CoordinatorEmbedding>> {
+    let names: Vec<String> = coordinators.iter().map(|x| x.name.clone()).collect();
+    let emails: Vec<String> = coordinators.iter().map(|x| x.email.clone()).collect();
     let embeddings = passage_embed(names, model, Some(32)).unwrap();
     let mut result = Vec::new();
     for i in 0..emails.len() {
-        result.push((emails[i].clone(), embeddings[i].clone()));
+        result.push(CoordinatorEmbedding {
+            email: emails[i].clone(),
+            name: embeddings[i].clone(),
+        });
     }
     Ok(result)
 }
 
+/// Helper function to embed a list of passages
+/// Passages are prepended with "passage: " before being embedded
+/// This returns a Vec<Embedding>
 fn passage_embed(
     passages: Vec<String>,
     model: &TextEmbedding,
@@ -132,6 +143,9 @@ fn passage_embed(
     model.embed(passages, batch_size)
 }
 
+/// Helper function to embed a query
+/// The query is prepended with "query: " before being embedded
+/// This returns an Embedding
 fn query_embed(query: &str, model: &TextEmbedding) -> Result<Embedding> {
     // add query: to the front of the query
     model

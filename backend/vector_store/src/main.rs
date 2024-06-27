@@ -8,7 +8,6 @@ use std::path::Path;
 use std::sync::Arc;
 use futures_util::pin_mut;
 use futures_util::stream::StreamExt;
-
 use sqlx::migrate;
 
 mod db;
@@ -19,6 +18,7 @@ use populate::upsert_documents_from_path;
 
 mod embedding;
 use embedding::Embedder;
+
 #[derive(Clone)]
 struct Course {
     id: String,
@@ -31,7 +31,6 @@ struct Coordinator {
     name: String,
     email: String,
 }
-
 
 #[derive(Clone)]
 struct AppState {
@@ -46,15 +45,7 @@ struct SearchQuery {
 
 #[tokio::main]
 async fn main() {
-    let psql_pass = env::var("POSTGRES_PASSWORD").expect("POSTGRES_PASSWORD not set");
-    let psql_user = env::var("POSTGRES_USER").expect("POSTGRES_USER not set");
-    let psql_host = env::var("POSTGRES_HOST").expect("POSTGRES_HOST not set");
-    let psql_db = env::var("POSTGRES_DB").expect("POSTGRES_DB not set");
-
-    let conn_string = format!(
-        "postgres://{}:{}@{}/{}",
-        psql_user, psql_pass, psql_host, psql_db
-    );
+    let conn_string = env::var("POSTGRES_URL").expect("POSTGRES_URL not set, it should be in the format postgres://user:password@host/db");
 
     let db = PostgresDB::new(&conn_string)
         .await
@@ -96,7 +87,6 @@ async fn main() {
 
     let app = Router::new()
         .route("/health", get(|| async { "healthy" }))
-        // search takes a query param "query" and returns a list of the 150 most similar documents
         .route("/search", get(search))
         .with_state(state);
     let addr = env::var("SERVER_ADDRESS").expect("SERVER_ADDRESS must be set");
@@ -108,6 +98,8 @@ async fn main() {
     axum::serve(listener, app).await.unwrap();
 }
 
+/// Search endpoint that takes a query parameter and returns a list of the course ids that
+/// most closely match the query
 async fn search(
     Query(query): Query<SearchQuery>,
     State(state): State<AppState>,
@@ -120,7 +112,8 @@ async fn search(
     Json(ids)
 }
 
-
+/// Upserts the coordinator embeddings into the database using the coordinator information
+/// from the database and the embedder to generate the embeddings
 async fn populate_coordinator_embeddings(
     db: &PostgresDB,
     embedder: &Embedder,
@@ -139,6 +132,8 @@ async fn populate_coordinator_embeddings(
     }
 }
 
+/// Upserts the course embeddings into the database using the course information
+/// from the database and the embedder to generate the embeddings
 async fn populate_course_embeddings(
     db: &PostgresDB,
     embedder: &Embedder,
