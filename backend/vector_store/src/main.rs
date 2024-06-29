@@ -70,7 +70,7 @@ async fn main() {
     let data_dir = env::var("DATA_DIR").expect("DATA_DIR not set");
     let new_json_dir = data_dir.to_owned() + "new_json/";
     let path = Path::new(&new_json_dir);
-    upsert_documents_from_path(&db, path).await.unwrap();
+    upsert_documents_from_path(&db, path).await.expect("Failed to upsert documents from path into database");
 
     let state = AppState {
         db: Arc::new(db),
@@ -105,9 +105,9 @@ async fn main() {
     let port = env::var("SERVER_PORT").expect("SERVER_PORT must be set");
     let listener = tokio::net::TcpListener::bind(&format!("{}:{}", addr, port))
         .await
-        .unwrap();
+        .expect("Failed to bind to port");
     println!("listening on {}", port);
-    axum::serve(listener, app).await.unwrap();
+    axum::serve(listener, app).await.expect("Failed to start server, this should not happen");
 }
 
 /// Search endpoint that takes a query parameter and returns a list of the course ids that
@@ -120,7 +120,7 @@ async fn search(
     let db = &state.db;
     let ids = db.get_most_relevant_course_ids(&query_embedding)
         .await
-        .unwrap();
+        .expect("Failed to get most relevant course ids");
     Json(ids)
 }
 
@@ -130,17 +130,17 @@ async fn populate_coordinator_embeddings(
     db: &PostgresDB,
     embedder: &Embedder,
 ) {
-    let missing_coordinators = db.get_missing_embedding_email_names().await.unwrap();
+    let missing_coordinators = db.get_missing_embedding_email_names().await.expect("Failed to get missing coordinators");
 
     println!("missing coordinators: {}", missing_coordinators.len());
 
-    let embedding_stream = embedder.embed_coordinators(missing_coordinators.clone());
+    let embedding_stream = embedder.embed_coordinators(missing_coordinators);
     pin_mut!(embedding_stream);
 
     while let Some(embedded_coordinator) = embedding_stream.next().await {
         db.insert_coordinator_embedding(
             embedded_coordinator
-        ).await.unwrap();
+        ).await.expect("Failed to insert coordinator embedding");
     }
 }
 
@@ -150,20 +150,20 @@ async fn populate_course_embeddings(
     db: &PostgresDB,
     embedder: &Embedder,
 ) {
-    let outdated_embeddings = db.get_outdated_embedding_course_ids().await.unwrap();
+    let outdated_embeddings = db.get_outdated_embedding_course_ids().await.expect("Failed to get outdated embeddings");
 
     let outdated_courses: Vec<Course> =
-        db.get_courses_by_ids(&outdated_embeddings).await.unwrap();
+        db.get_courses_by_ids(&outdated_embeddings).await.expect("Failed to get courses by ids");
 
     println!("missing documents: {}", outdated_courses.len());
 
-    let embedding_stream = embedder.embed_courses(outdated_courses.clone());
+    let embedding_stream = embedder.embed_courses(outdated_courses);
     pin_mut!(embedding_stream);
 
     while let Some(embedded_document) = embedding_stream.next().await {
 
         db.insert_course_embedding(
             embedded_document
-        ).await.unwrap();
+        ).await.expect("Failed to insert course embedding");
     }
 }
