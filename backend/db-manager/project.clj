@@ -16,7 +16,8 @@
                  [ring-cors "0.1.13"]
                  [io.staticweb/rate-limit "1.1.0"]
                  [clj-http "3.12.3"]
-                 [datascript "1.5.3"]]
+                 [datascript "1.5.3"]
+                 [technology.tabula/tabula "1.0.5"]]
   :main ^:skip-aot db-manager.core
   :resource-path "resources"
   :target-path "target/%s"
