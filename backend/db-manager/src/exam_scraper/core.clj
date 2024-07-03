@@ -1,6 +1,7 @@
 (ns exam-scraper.core
   (:require [clojure.java.io :as io]
-            [clojure.string :as clojure.string])
+            [clojure.string :as string]
+            [clojure.set :as set])
   (:import (java.io File)
           (org.apache.commons.cli DefaultParser)
           (technology.tabula CommandLineApp)))
@@ -24,11 +25,33 @@
   (let [tsv-file (File/createTempFile "tabula" ".tsv")]
     (convert-exam-pdf-to-tsv pdf-file tsv-file)
     (let [tsv (slurp tsv-file)
-            lines (clojure.string/split-lines tsv)
-            itx-courses (filter #(clojure.string/includes? % "ITX") lines)]
-        (map #(first (clojure.string/split % #"\t")) itx-courses))))
+            lines (string/split-lines tsv)
+            itx-courses (filter #(string/includes? % "ITX") lines)]
+        (map #(first (string/split % #"\t")) itx-courses))))
 
 (defn get-itx-courses-from-dir [dir]
-  (let [pdf-files (file-seq (io/file dir))
+  (let [pdf-files (drop 1 (file-seq (io/file dir)))
         itx-courses (mapcat get-itx-courses-from-file pdf-files)]
     (distinct itx-courses)))
+
+
+(defn to-itx [exams-list]
+  ; exams-list is a vector of maps, each key has a key, if this key is "Written", change it to "ITX")
+  (map (fn [exam]
+         (if (map? exam)
+           (set/rename-keys exam {"Written" "ITX"})
+              exam)) exams-list))
+
+; I mistankenly thought they were a vector of maps, but they are a vector of maps OR strings
+
+
+; make a functio nthat only does this for a single course
+(defn patch-course-exam [course itx-course-ids]
+  (let [course-id (get-in course ["info" "id"])
+        itx? (some #(= course-id %) itx-course-ids)]
+    (if itx?
+      (assoc course "exams" (to-itx (get course "exams")))
+      course)))
+
+(defn patch-courses-w-itx [courses itx-course-ids]
+    (map #(patch-course-exam % itx-course-ids) courses))
