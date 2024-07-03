@@ -10,7 +10,6 @@ RUN apt-get install -y libssl-dev pkg-config openssl g++
 RUN cargo build --release
 
 # FINAL IMAGE
-
 FROM debian:bookworm-slim
 WORKDIR /app
 COPY --from=builder /app/target/release/vector_store ./
