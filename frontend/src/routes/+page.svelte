@@ -237,6 +237,7 @@
                         "Oral",
                         "Assignment",
                         "Continuous Assessment",
+                        "ITX",
                         "Other",
                     ]}
                     bind:selected={$queryStore.exams}

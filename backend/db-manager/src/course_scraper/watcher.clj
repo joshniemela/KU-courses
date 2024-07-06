@@ -6,6 +6,7 @@
             [clojure.java.shell :as shell]
             [datascript.core :as d]
             [db-manager.db :refer [schema]]
+            [exam-scraper.core :refer [get-itx-courses-from-dir patch-courses-w-itx]]
             [course-scraper.upsert :refer [try-finding-stats transactions-w-stats read-json-file]])
   (:import (javax.net.ssl SSLEngine SSLParameters SNIHostName)
            (java.net URI))
@@ -15,6 +16,7 @@
 (def data-dir "../../data/")
 (def pages-dir "../../data/pages")
 (def json-dir "../../data/new_json")
+(def exam-pdfs-dir "../../data/exam_pdfs")
 (def stats-dir (str data-dir "statistics/"))
 
 
@@ -54,6 +56,8 @@
                     zip/right
 
                     zip/rights)]
+
+
     ; for every course, grab mod date and check if it's newer than the file
     ; if it is, grab the info from the course and pass it to the callback
     (println "[course scraper]: Scraping courses")
@@ -89,10 +93,13 @@
     (let [stats-finder #(try-finding-stats stats-dir %)
           ; FIXME: we already know whihc courses to take, this does extra work
           ; this currently takes all courses instead of updating the ones that are new
-          courses (map read-json-file (drop 1 (file-seq (clojure.java.io/file json-dir))))]
+          courses (map read-json-file (drop 1 (file-seq (clojure.java.io/file json-dir))))
+          itx-course-ids (get-itx-courses-from-dir exam-pdfs-dir)
+          patched-courses (patch-courses-w-itx courses itx-course-ids)]
       ; FIXME: this is a hack and we should just drop the workflows and exams
       (d/reset-conn! conn (d/empty-db schema))
-      (d/transact! conn (transactions-w-stats stats-finder courses)))
+
+      (d/transact! conn (transactions-w-stats stats-finder patched-courses)))
     (println "[course scraper]: Finished updating database")
 
     (reset! newly-scraped [])
