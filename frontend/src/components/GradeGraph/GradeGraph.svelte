@@ -44,6 +44,9 @@
                     // make a tooltip that shows !!! as wel
                     // Here we can define customization and options for our chart
                     plugins: {
+                        legend: {
+                            display: false,
+                        },
                         tooltip: {
                             callbacks: {
                                 // Add percentage and count to tooltips (value is in percent)
@@ -53,7 +56,7 @@
                                     ] as number;
                                     // round to whole numbers
                                     return `${(value * 100).toFixed(
-                                        2,
+                                        2
                                     )}% (${Math.round(value * total)})`;
                                 },
                             },
