@@ -135,7 +135,7 @@
                 <h2>{course.id} - SCIENCE</h2>
             </div>
 
-            <div class="w-full md:w-3/4 px-4">
+            <div class="w-full md:w-3/5 px-4">
                 {#if course["statistics"] != null}
                     <h2 class="text-l font-bold">Grades</h2>
                     <GradeGraph

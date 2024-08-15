@@ -92,14 +92,7 @@
     });
 </script>
 
-<div class="chart-container">
+<div class="h-44">
     <canvas bind:this={graph} />
 </div>
 
-<style scoped>
-    .chart-container {
-        position: relative; /* Important as otherwise it won't be responsive */
-        width: 100%;
-        height: 100%;
-    }
-</style>
