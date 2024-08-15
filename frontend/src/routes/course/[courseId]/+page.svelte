@@ -128,7 +128,7 @@
 {#if loading}
     <Loader />
 {:else}
-    <a class="block mx-auto w-fit bg-kuRed text-white font-bold py-1 px-6" href="/">
+    <a class="block sticky top-0 left-1/2 -translate-x-1/2 mx-auto w-fit bg-kuRed text-white font-bold py-1 px-6" href="/">
         Back
     </a>
     <div class="min-h-screen mx-auto px-10 lg:px-0 lg:w-[750px] mt-6">
