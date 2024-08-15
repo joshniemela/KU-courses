@@ -131,7 +131,7 @@
     <a class="block sticky top-0 left-1/2 -translate-x-1/2 mx-auto w-fit bg-kuRed text-white font-bold py-1 px-6" href="/">
         Back
     </a>
-    <div class="min-h-screen mx-auto px-10 lg:px-0 lg:w-[750px] mt-6">
+    <div class="min-h-screen mx-auto px-10 lg:px-0 lg:w-[900px] mt-6">
         <div class="items-left mb-5 px-4 text-center">
             <h1 class="text-2xl font-bold md:text-4xl">{course.title}</h1>
             <h2>{course.id} - SCIENCE</h2>
