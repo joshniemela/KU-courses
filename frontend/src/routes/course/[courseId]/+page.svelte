@@ -236,11 +236,6 @@
             </div>
         </div>
 
-            <div class="w-full flex flex-col md:flex-row justify-center">
-                
-                
-        </div>
-
         <Footer />
     </div>
 {/if}
