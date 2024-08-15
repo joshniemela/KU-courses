@@ -59,11 +59,16 @@ export async function load({ fetch, params }) {
   );
 
   const course: Course = await res.json();
+  let grades = null_to_zero(transform_stats(course.statistics));
+  let stats = course.statistics;
+  if (stats !== undefined) {
+    stats.grades = grades;
+  }
   return {
     courseId: courseId,
     course: course,
     totalHours: total_hours(course),
-    statistics: null_to_zero(transform_stats(course.statistics)),
+    statistics: stats,
     loading: false,
   };
 }

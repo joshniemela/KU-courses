@@ -137,13 +137,17 @@
 
             <div class="w-full md:w-3/5 px-4">
                 {#if course["statistics"] != null}
-                    <h2 class="text-l font-bold">Grades</h2>
+                    <p>
+                        Passed: {Math.round(statistics["pass-rate"] * 100)}%,
+                        Average grade: {Math.round(statistics["mean"] * 100) / 100},
+                        Median grade: {statistics["median"]}
+                    </p>
                     <GradeGraph
-                        legend="Frequency"
-                        title="Exam grades"
-                        data={statistics}
+                        data={statistics.grades}
                     />
                 {/if}
+
+
             </div>
             <button
                 class="fixed top-0 mx-auto bg-kuRed text-white font-bold py-1 px-6"

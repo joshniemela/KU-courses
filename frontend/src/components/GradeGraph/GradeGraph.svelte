@@ -4,9 +4,11 @@
         type ChartItem,
         type DatasetChartOptions,
     } from "chart.js/auto";
+    import ChartDataLabels from 'chartjs-plugin-datalabels';
     import type { Grade } from "../../course";
     import { onMount } from "svelte";
     import jsonData from "./sample.json";
+    Chart.register(ChartDataLabels);
     console.log(jsonData);
 
     // Props
@@ -61,9 +63,17 @@
                                 },
                             },
                         },
-                        title: {
-                            display: false,
-                            text: title,
+                        datalabels: {
+                            anchor: 'end',
+                            align: 'end',
+                            font: {
+                                weight: 'bold',
+                                size: 14,
+                            },
+                            offset: -4,
+                            formatter: (value, context) => {
+                                return Math.round(value * total);
+                            },
                         },
                     },
                     scales: {
@@ -81,6 +91,7 @@
                             ticks: {
                                 font: {
                                     weight: "bolder",
+                                    size: 14
                                 },
                             },
                         },
@@ -95,4 +106,3 @@
 <div class="h-44">
     <canvas bind:this={graph} />
 </div>
-
