@@ -1,7 +1,10 @@
 <script lang="ts">
-    import Github from "../../assets/Github.svelte";
+    import Facebook from "../../assets/Facebook.svelte";
+import Github from "../../assets/Github.svelte";
     import { obfuscateEmail } from "../../stores";
     import { onMount } from "svelte";
+
+    export let additionalClasses: string = "";
 
     let email_fn = () => "";
 
@@ -11,7 +14,7 @@
 </script>
 
 <footer
-    class="mt-2 px-2 md:w-1/2 md:px-0 mx-auto py-4 border-t-2 border-kuGray flex justify-between items-center"
+    class="mt-2 px-2 py-4 border-t-2 border-kuGray flex justify-between items-center {additionalClasses}"
 >
     <div class="text-sm">
         <span class="block">
@@ -39,7 +42,7 @@
             target="_blank"
             href="https://github.com/joshniemela/KU-courses"
         >
-            <Github classes="w-8 h-8" />
+            <Github classes="size-8" />
         </a>
 
         <a
@@ -48,11 +51,7 @@
             target="_blank"
             class="block animated-icon"
         >
-            <img
-                src="https://simplesharebuttons.com/images/somacro/facebook.png"
-                alt="Facebook"
-                class="w-8 h-8"
-            />
+            <Facebook classes="size-8"/>
         </a>
     </div>
 </footer>
