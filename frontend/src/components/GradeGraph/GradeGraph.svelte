@@ -106,3 +106,11 @@
 <div class="h-44">
     <canvas bind:this={graph} />
 </div>
+
+<style scoped>
+    .chart-container {
+        position: relative; /* Important as otherwise it won't be responsive */
+        width: 100%;
+        height: fit-content;
+    }
+</style>

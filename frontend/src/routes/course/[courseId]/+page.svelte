@@ -128,14 +128,17 @@
 {#if loading}
     <Loader />
 {:else}
-    <div class="flex flex-col min-h-screen justify-between">
-        <div class="mt-10 flex flex-col items-center">
-            <div class="items-left mb-5 px-4">
-                <h1 class="text-2xl font-bold md:text-4xl">{course.title}</h1>
-                <h2>{course.id} - SCIENCE</h2>
-            </div>
-
-            <div class="w-full md:w-3/5 px-4">
+    <a class="block sticky top-0 left-1/2 -translate-x-1/2 mx-auto w-fit bg-kuRed text-white font-bold py-1 px-6" href="/">
+        Back
+    </a>
+    <div class="min-h-screen mx-auto px-10 lg:px-0 lg:w-[750px] mt-6">
+        <div class="items-left mb-5 px-4 text-center">
+            <h1 class="text-2xl font-bold md:text-4xl">{course.title}</h1>
+            <h2>{course.id} - SCIENCE</h2>
+        </div>
+            
+        <div class="block md:grid md:grid-cols-[auto_1fr] md:gap-x-10">
+            <div class="md:col-span-2">
                 {#if course["statistics"] != null}
                     <p>
                         Passed: {Math.round(statistics["pass-rate"] * 100)}%,
@@ -149,98 +152,87 @@
 
 
             </div>
-            <button
-                class="fixed top-0 mx-auto bg-kuRed text-white font-bold py-1 px-6"
-                on:click={() => {
-                    window.location.href = "/";
-                }}
-            >
-                Back
-            </button>
+            <div>
+                <h1 class="text-xl font-bold">Description</h1>
 
-            <div class="w-full flex flex-col md:flex-row justify-center">
-                <div class="w-text px-16">
-                    <h1 class="text-xl font-bold">Description</h1>
+                {@html content}
+                {@html learning_outcome}
+                {#if course["recommended-qualifications"] != null}
+                    <h2 class="text-l font-bold">
+                        Recommended qualifications
+                    </h2>
+                    {@html course["recommended-qualifications"]}
+                {/if}
+            </div>
+            <div>
+                <SideCard heading={"Coordinators"}>
+                    {#each course.coordinator as emp}
+                        <div class="">
+                            <p class="">{emp.name}</p>
+                        </div>
+                        <p class="">{emp.email}</p>
+                    {/each}
+                </SideCard>
+                <SideCard heading={"Exam"}>
+                    {#each course.exam as exam}
+                        <p class="">
+                            {separate_capitals_letters(exam.type)}
+                            {#if exam.duration}
+                                - ({formatExamDuration(exam.duration)})
+                            {/if}
+                        </p>
+                    {/each}
+                </SideCard>
+                <SideCard heading={"Course Info"}>
+                    <p class="">
+                        Level: {denest_type_maps(course.degree).join("\n")}
+                    </p>
+                    <p class="">ECTS: {course.ects}</p>
 
-                    {@html content}
-                    {@html learning_outcome}
-                    {#if course["recommended-qualifications"] != null}
-                        <h2 class="text-l font-bold">
-                            Recommended qualifications
-                        </h2>
-                        {@html course["recommended-qualifications"]}
-                    {/if}
-                </div>
-                <div class="">
-                    <SideCard heading={"Coordinators"}>
-                        {#each course.coordinator as emp}
-                            <div class="">
-                                <p class="">{emp.name}</p>
-                            </div>
-                            <p class="">{emp.email}</p>
+                    <p class="">
+                        Block(s): {coerce_blocks_to_int(
+                            denest_type_maps(course.block),
+                        )
+                            .sort()
+                            .join(", ")}
+                    </p>
+                    <p class="">
+                        Group(s): {denest_type_maps(course.schedule)
+                            .sort()
+                            .join(", ")}
+                    </p>
+
+                    <p class="flex flex-col" />
+
+                    <a
+                        href={`https://kurser.ku.dk/course/${course.id}`}
+                        class="text-kuRed font-bold"
+                    >
+                        Go to official page
+                    </a>
+                </SideCard>
+                <SideCard heading={"Department(s)"}>
+                    <ul class="list-square">
+                        {#each course.department as dep}
+                            <li class="">
+                                {separate_capitals_letters(dep.name)}
+                            </li>
                         {/each}
-                    </SideCard>
-                    <SideCard heading={"Exam"}>
-                        {#each course.exam as exam}
-                            <p class="">
-                                {separate_capitals_letters(exam.type)}
-                                {#if exam.duration}
-                                    - ({formatExamDuration(exam.duration)})
-                                {/if}
-                            </p>
+                    </ul>
+                </SideCard>
+                <SideCard heading={"Workload"}>
+                    <table>
+                        {#each course.workload as wl}
+                            <tr class="border-b-4 border-kuGray">
+                                <td class="">
+                                    {separate_capitals_letters(wl.type)}</td
+                                >
+                                <td class="pl-2">{wl.hours}h</td>
+                            </tr>
                         {/each}
-                    </SideCard>
-                    <SideCard heading={"Course Info"}>
-                        <p class="">
-                            Level: {denest_type_maps(course.degree).join("\n")}
-                        </p>
-                        <p class="">ECTS: {course.ects}</p>
-
-                        <p class="">
-                            Block(s): {coerce_blocks_to_int(
-                                denest_type_maps(course.block),
-                            )
-                                .sort()
-                                .join(", ")}
-                        </p>
-                        <p class="">
-                            Group(s): {denest_type_maps(course.schedule)
-                                .sort()
-                                .join(", ")}
-                        </p>
-
-                        <p class="flex flex-col" />
-
-                        <a
-                            href={`https://kurser.ku.dk/course/${course.id}`}
-                            class="text-kuRed font-bold"
-                        >
-                            Go to official page
-                        </a>
-                    </SideCard>
-                    <SideCard heading={"Department(s)"}>
-                        <ul class="list-square">
-                            {#each course.department as dep}
-                                <li class="">
-                                    {separate_capitals_letters(dep.name)}
-                                </li>
-                            {/each}
-                        </ul>
-                    </SideCard>
-                    <SideCard heading={"Workload"}>
-                        <table>
-                            {#each course.workload as wl}
-                                <tr class="border-b-4 border-kuGray">
-                                    <td class="">
-                                        {separate_capitals_letters(wl.type)}</td
-                                    >
-                                    <td class="pl-2">{wl.hours}h</td>
-                                </tr>
-                            {/each}
-                        </table>
-                        <p class="font-bold">Total: {totalHours}h</p>
-                    </SideCard>
-                </div>
+                    </table>
+                    <p class="font-bold">Total: {totalHours}h</p>
+                </SideCard>
             </div>
         </div>
 
