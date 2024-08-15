@@ -36,7 +36,7 @@
                                 .map((row) => row.count / total)
                                 .reverse(),
                             backgroundColor: "rgba(200, 56, 60, 0.6)",
-                            barPercentage: 0.4,
+                            barPercentage: 1.0,
                         },
                     ],
                 },
