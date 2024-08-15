@@ -14,7 +14,7 @@ import Github from "../../assets/Github.svelte";
 </script>
 
 <footer
-    class="mt-2 px-2 py-4 border-t-2 border-kuGray flex justify-between items-center {additionalClasses}"
+    class="mt-2 p-4 border-t-2 border-kuGray flex justify-between items-center {additionalClasses}"
 >
     <div class="text-sm">
         <span class="block">
