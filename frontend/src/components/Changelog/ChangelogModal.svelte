@@ -24,46 +24,6 @@
                 "Switched to a quantised multilingual search so that results are more accurate, faster and work with all languages",
             ],
         },
-        {
-            date: "2024-01-13",
-            changes: [
-                "Fixed opening in new tab and copying of course links",
-                "Fixed back button when coming from an external page",
-            ],
-        },
-        {
-            date: "2024-02-05",
-            changes: [
-                "Fixed that performing a vector search and a normal filter will destroy results that should appear.",
-                "Fixed that statistics weren't being updated",
-            ],
-        },
-        {
-            date: "2024-06-24",
-            changes: [
-                "Switched to a quantised multilingual search so that results are more accurate, faster and work with all languages",
-            ],
-        },
-        {
-            date: "2024-01-13",
-            changes: [
-                "Fixed opening in new tab and copying of course links",
-                "Fixed back button when coming from an external page",
-            ],
-        },
-        {
-            date: "2024-02-05",
-            changes: [
-                "Fixed that performing a vector search and a normal filter will destroy results that should appear.",
-                "Fixed that statistics weren't being updated",
-            ],
-        },
-        {
-            date: "2024-06-24",
-            changes: [
-                "Switched to a quantised multilingual search so that results are more accurate, faster and work with all languages",
-            ],
-        },
     ];
 
     let outsideDiv: HTMLElement;
