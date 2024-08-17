@@ -26,8 +26,6 @@
         },
     ];
 
-    let outsideDiv: HTMLElement;
-
     // Start with modal closed
     onMount(() => {
         modalStore.close();
