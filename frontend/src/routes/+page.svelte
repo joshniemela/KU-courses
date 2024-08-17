@@ -202,7 +202,7 @@
 <div class="flex flex-col min-h-screen justify-between relative">
     <ChangelogModal />
     <main class="flex flex-col items-center space-y-4 mt-10">
-        <h1 class="text-brand-500 text-4xl font-bold -mb-6">KU Courses 2.0</h1>
+        <h1 class="text-brand-500 text-4xl font-bold -mb-4">KU Courses 2.0</h1>
         <ChangelogButton />
         <div>
             <input type="text" placeholder="Search" bind:value={search} />
