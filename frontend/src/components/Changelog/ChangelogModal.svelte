@@ -1,0 +1,106 @@
+<script lang="ts">
+    import { onMount } from "svelte";
+    import CloseCross from "../../assets/CloseCross.svelte";
+    import {modalStore} from "./store";
+
+    const changelogItems = [
+        {
+            date: "2024-01-13",
+            changes: [
+                "Fixed opening in new tab and copying of course links",
+                "Fixed back button when coming from an external page",
+            ],
+        },
+        {
+            date: "2024-02-05",
+            changes: [
+                "Fixed that performing a vector search and a normal filter will destroy results that should appear.",
+                "Fixed that statistics weren't being updated",
+            ],
+        },
+        {
+            date: "2024-06-24",
+            changes: [
+                "Switched to a quantised multilingual search so that results are more accurate, faster and work with all languages",
+            ],
+        },
+        {
+            date: "2024-01-13",
+            changes: [
+                "Fixed opening in new tab and copying of course links",
+                "Fixed back button when coming from an external page",
+            ],
+        },
+        {
+            date: "2024-02-05",
+            changes: [
+                "Fixed that performing a vector search and a normal filter will destroy results that should appear.",
+                "Fixed that statistics weren't being updated",
+            ],
+        },
+        {
+            date: "2024-06-24",
+            changes: [
+                "Switched to a quantised multilingual search so that results are more accurate, faster and work with all languages",
+            ],
+        },
+        {
+            date: "2024-01-13",
+            changes: [
+                "Fixed opening in new tab and copying of course links",
+                "Fixed back button when coming from an external page",
+            ],
+        },
+        {
+            date: "2024-02-05",
+            changes: [
+                "Fixed that performing a vector search and a normal filter will destroy results that should appear.",
+                "Fixed that statistics weren't being updated",
+            ],
+        },
+        {
+            date: "2024-06-24",
+            changes: [
+                "Switched to a quantised multilingual search so that results are more accurate, faster and work with all languages",
+            ],
+        },
+    ];
+
+    let outsideDiv: HTMLElement;
+
+    // Start with modal closed
+    onMount(() => {
+        modalStore.close();
+    });
+</script>
+
+{#if $modalStore}
+    <!-- svelte-ignore a11y-click-events-have-key-events -->
+    <div class="absolute w-screen h-screen z-10 bg-black/40 flex justify-center items-center" on:click|self={modalStore.close}>
+        <div class="bg-white text-m font-normal h-fit mx-4 max-h-[75vh] md:max-h-[500px] overflow-y-scroll rounded">
+            <div class="flex justify-between mb-6 sticky top-0 bg-white pt-6 pb-4 border-b-2 px-6">
+                <h3 class="font-bold text-2xl">
+                    Changelog
+                </h3>
+                <button type="button" on:click={modalStore.close}>
+                    <CloseCross classes="size-6"/>
+                </button>
+            </div>
+            <ul class="space-y-4 -mt-4 px-6">
+                {#each changelogItems as { date, changes }}
+                    <li>
+                        <strong>{date}</strong>
+                        <ul>
+                            {#each changes as change}
+                                <li>{change}</li>
+                            {/each}
+                        </ul>
+                    </li>
+                {/each}
+            </ul>
+            <button class="my-6 py-2 px-6 mx-auto block bg-kuRed text-white" type="button" on:click={modalStore.close}>
+                Close
+            </button>
+        </div>
+    </div>
+{/if}
