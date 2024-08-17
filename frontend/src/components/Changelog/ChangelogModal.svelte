@@ -47,7 +47,7 @@
             <ul class="space-y-4 -mt-4 px-6">
                 {#each changelogItems as { date, changes }}
                     <li>
-                        <strong>{date}</strong>
+                        <p class="font-bold text-lg">{date}</p>
                         <ul>
                             {#each changes as change}
                                 <li>{change}</li>
