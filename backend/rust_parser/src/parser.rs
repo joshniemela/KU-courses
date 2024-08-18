@@ -46,7 +46,7 @@ pub struct CourseInformation {
 }
 
 #[derive(Debug, PartialEq, Serialize)]
-enum Department {
+pub enum Department {
     // Faculty of Science
     PlantAndEnvironmentalScience,
     Biology,
@@ -131,7 +131,7 @@ impl Department {
 }
 
 #[derive(Debug, PartialEq, Serialize)]
-enum Faculty {
+pub enum Faculty {
     Science,
 }
 
@@ -140,12 +140,30 @@ pub struct Coordinator {
     name: String,
     email: String,
 }
+impl Coordinator {
+    pub fn new(name: String, email: String) -> Self {
+        Self { name, email }
+    }
+}
 
 #[derive(Debug, PartialEq, Serialize)]
 pub struct LogisticInformation {
     departments: Vec<Department>,
     faculty: Faculty,
     coordinators: Vec<Coordinator>,
+}
+impl LogisticInformation {
+    pub fn new(
+        departments: Vec<Department>,
+        faculty: Faculty,
+        coordinators: Vec<Coordinator>,
+    ) -> Self {
+        Self {
+            departments,
+            faculty,
+            coordinators,
+        }
+    }
 }
 
 impl CourseInformation {
@@ -228,7 +246,7 @@ pub enum Exam {
 }
 
 #[derive(Debug, PartialEq, Serialize)]
-enum WorkloadType {
+pub enum WorkloadType {
     Exam,
     ELearning,
     Laboratory,
@@ -277,6 +295,14 @@ impl WorkloadType {
 pub struct Workload {
     workload_type: WorkloadType,
     hours: f32,
+}
+impl Workload {
+    pub fn new(workload_type: WorkloadType, hours: f32) -> Self {
+        Self {
+            workload_type,
+            hours,
+        }
+    }
 }
 
 #[derive(Debug, PartialEq, Serialize)]
