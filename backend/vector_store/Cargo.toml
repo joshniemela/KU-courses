@@ -31,8 +31,3 @@ futures-core = "0.3.30"
 #codegen-units = 1
 #panic = "abort"
 #debug=true
-
-
-[[bench]]
-name = "ort"
-harness = false
