@@ -142,7 +142,7 @@
 
         <div class="block md:grid md:grid-cols-[auto_1fr] md:gap-x-10">
             <div class="md:col-span-2">
-                {#if course["statistics"] != null}
+                {#if course["statistics"] != null && statistics != null}
                     <p>
                         Passed: {Math.round(statistics["pass-rate"] * 100)}%,
                         Average grade: {Math.round(statistics["mean"] * 100) /

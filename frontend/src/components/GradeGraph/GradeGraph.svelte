@@ -14,7 +14,6 @@
     // Props
     export let data: Grade[] = jsonData;
     export let legend: string = "Explainer";
-    export let title: string = "Title";
 
     const total = data.reduce((acc, row) => acc + row.count, 0);
 
@@ -106,11 +105,3 @@
 <div class="h-44">
     <canvas bind:this="{graph}"></canvas>
 </div>
-
-<style scoped>
-    .chart-container {
-        position: relative; /* Important as otherwise it won't be responsive */
-        width: 100%;
-        height: fit-content;
-    }
-</style>

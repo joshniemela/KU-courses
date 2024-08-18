@@ -33,7 +33,7 @@ const emptyQuery = {
     schedules: [],
     exams: [],
     departments: [],
-    search: null,
+    search: "",
 };
 
 export const queryStore = writableSession("filters", emptyQuery);
@@ -46,7 +46,7 @@ export function clearAll() {
         store.schedules = [];
         store.exams = [];
         store.departments = [];
-        store.search = null;
+        store.search = "";
         return store;
     });
 }
