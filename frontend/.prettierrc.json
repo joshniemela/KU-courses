@@ -1,12 +1,12 @@
 {
   "trailingComma": "es5",
-  "tabWidth": 2,
+  "tabWidth": 4,
   "arrowParens": "always",
   "bracketSpacing": true,
   "endOfLine": "lf",
   "printWidth": 80,
   "singleQuote": false,
-  "svelteSortOrder": "scripts-markup-styles",
   "svelteStrictMode": true,
-  "svelteAllowShorthand": false
+  "svelteAllowShorthand": false,
+  "plugins": ["prettier-plugin-svelte"]
 }
