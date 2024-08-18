@@ -4,7 +4,7 @@
         type ChartItem,
         type DatasetChartOptions,
     } from "chart.js/auto";
-    import ChartDataLabels from 'chartjs-plugin-datalabels';
+    import ChartDataLabels from "chartjs-plugin-datalabels";
     import type { Grade } from "../../course";
     import { onMount } from "svelte";
     import jsonData from "./sample.json";
@@ -64,10 +64,10 @@
                             },
                         },
                         datalabels: {
-                            anchor: 'end',
-                            align: 'end',
+                            anchor: "end",
+                            align: "end",
                             font: {
-                                weight: 'bold',
+                                weight: "bold",
                                 size: 14,
                             },
                             offset: -4,
@@ -91,7 +91,7 @@
                             ticks: {
                                 font: {
                                     weight: "bolder",
-                                    size: 14
+                                    size: 14,
                                 },
                             },
                         },
@@ -104,7 +104,7 @@
 </script>
 
 <div class="h-44">
-    <canvas bind:this={graph} />
+    <canvas bind:this="{graph}"></canvas>
 </div>
 
 <style scoped>

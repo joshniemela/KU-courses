@@ -33,8 +33,8 @@
     ];
 </script>
 
-<div class="p-2 relative text-xl font-bold" on:mouseleave={closeDropdown}>
-    <button on:click={toggleDropdown}>Changelog</button>
+<div class="p-2 relative text-xl font-bold" on:mouseleave="{closeDropdown}">
+    <button on:click="{toggleDropdown}">Changelog</button>
     {#if isOpen}
         <div class="text-m font-normal">
             {#each changelogItems as { date, changes }}

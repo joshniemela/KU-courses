@@ -16,7 +16,7 @@
             class="bg-kuRed text-white text-center text-xs {selected.length
                 ? 'visible'
                 : 'invisible'}"
-            on:click={() => (selected = [])}>Clear</button
+            on:click="{() => (selected = [])}">Clear</button
         >
         {#each options as option}
             <!--Align label before checkbox-->
@@ -26,9 +26,9 @@
                 <input
                     class="text-kuRed"
                     type="checkbox"
-                    bind:group={selected}
+                    bind:group="{selected}"
                     name="header_name"
-                    value={option}
+                    value="{option}"
                 />
                 <span class="text-left w-full absolute leading-none ml-6">
                     {option}

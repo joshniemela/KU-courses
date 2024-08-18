@@ -13,7 +13,7 @@
 
 <svelte:head>
     <script
-        data-goatcounter-settings={'{"allow-local":true, "no_onload": true}'}
+        data-goatcounter-settings="{'{"allow-local":true, "no_onload": true}'}"
         data-goatcounter="https://disku.goatcounter.com/count"
         async
         src="//gc.zgo.at/count.js"

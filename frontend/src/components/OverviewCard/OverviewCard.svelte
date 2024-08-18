@@ -83,7 +83,7 @@
                 <tr>
                     <td class="border-e border-black px-1">
                         Block(s): {coerce_blocks_to_int(
-                            denest_type_maps(course.block),
+                            denest_type_maps(course.block)
                         )
                             .sort()
                             .join(", ")}
@@ -130,7 +130,7 @@
                             ? "N/A"
                             : `${
                                   Math.round(
-                                      course.statistics["pass-rate"] * 10000,
+                                      course.statistics["pass-rate"] * 10000
                                   ) / 100
                               }%`}
                     </td>

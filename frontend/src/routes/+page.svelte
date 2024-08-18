@@ -80,14 +80,12 @@
             ...filters,
             blocks: filters.blocks.map((block) => blockMap[block]),
             departments: filters.departments.map(
-                (department) => departmentMap[department],
+                (department) => departmentMap[department]
             ),
 
             // Convert Continous Assessment to ContinuousAssessment
             exams: filters.exams.map((exam) =>
-                exam === "Continuous Assessment"
-                    ? "ContinuousAssessment"
-                    : exam,
+                exam === "Continuous Assessment" ? "ContinuousAssessment" : exam
             ),
         };
 
@@ -174,14 +172,14 @@
 
 <svelte:head>
     <title>{title}</title>
-    <meta name="description" content={description} />
+    <meta name="description" content="{description}" />
 
     <!-- Facebook Meta Tags -->
-    <meta property="og:url" content={url} />
+    <meta property="og:url" content="{url}" />
     <meta property="og:type" content="website" />
-    <meta property="og:title" content={title} />
-    <meta property="og:description" content={description} />
-    <meta property="og:image" content={`/assets/og-image.png`} />
+    <meta property="og:title" content="{title}" />
+    <meta property="og:description" content="{description}" />
+    <meta property="og:image" content="{`/assets/og-image.png`}" />
     <meta property="og:image:alt" content="DISKU - KU Courses 2.0" />
     <meta property="og:image:width" content="1200" />
     <meta property="og:image:height" content="630" />
@@ -189,12 +187,12 @@
     <!-- Twitter Meta Tags -->
     <meta name="twitter:card" content="summary_large_image" />
     <meta property="twitter:domain" content="disku.jniemela.dk" />
-    <meta property="twitter:url" content={url} />
-    <meta name="twitter:title" content={title} />
-    <meta name="twitter:description" content={description} />
-    <meta name="twitter:image" content={`/assets/og-image.png`} />
+    <meta property="twitter:url" content="{url}" />
+    <meta name="twitter:title" content="{title}" />
+    <meta name="twitter:description" content="{description}" />
+    <meta name="twitter:image" content="{`/assets/og-image.png`}" />
 
-    <link rel="canonical" href={url} />
+    <link rel="canonical" href="{url}" />
 </svelte:head>
 
 <div class="flex flex-col min-h-screen justify-between relative">
@@ -202,10 +200,10 @@
     <main class="flex flex-col items-center space-y-4 mt-10">
         <h1 class="text-brand-500 text-4xl font-bold">KU Courses 2.0</h1>
         <div>
-            <input type="text" placeholder="Search" bind:value={search} />
+            <input type="text" placeholder="Search" bind:value="{search}" />
             <button
                 class="bg-kuRed text-white p-2"
-                on:click={() => (search = "")}
+                on:click="{() => (search = '')}"
             >
                 Clear search
             </button>
@@ -214,48 +212,48 @@
             <div class="grid grid-cols-2 gap-4 pb-2 md:grid-cols-4 md:pb-0">
                 <CheckboxMenu
                     header_name="Block"
-                    options={["1", "2", "3", "4", "Summer"]}
-                    bind:selected={$queryStore.blocks}
+                    options="{['1', '2', '3', '4', 'Summer']}"
+                    bind:selected="{$queryStore.blocks}"
                 />
 
                 <CheckboxMenu
                     header_name="Study Level"
-                    options={["Bachelor", "Master"]}
-                    bind:selected={$queryStore.degrees}
+                    options="{['Bachelor', 'Master']}"
+                    bind:selected="{$queryStore.degrees}"
                 />
 
                 <CheckboxMenu
                     header_name="Schedule Group"
-                    options={["A", "B", "C", "D"]}
-                    bind:selected={$queryStore.schedules}
+                    options="{['A', 'B', 'C', 'D']}"
+                    bind:selected="{$queryStore.schedules}"
                 />
 
                 <CheckboxMenu
                     header_name="Examination Type"
-                    options={[
-                        "Written",
-                        "Oral",
-                        "Assignment",
-                        "Continuous Assessment",
-                        "ITX",
-                        "Other",
-                    ]}
-                    bind:selected={$queryStore.exams}
+                    options="{[
+                        'Written',
+                        'Oral',
+                        'Assignment',
+                        'Continuous Assessment',
+                        'ITX',
+                        'Other',
+                    ]}"
+                    bind:selected="{$queryStore.exams}"
                 />
             </div>
 
             <BigCheckbox
                 header_name="Department"
-                options={institutes}
-                bind:selected={$queryStore.departments}
+                options="{institutes}"
+                bind:selected="{$queryStore.departments}"
             />
         </div>
 
         <button
             class="bg-brand-500 text-white px-4 py-0"
-            on:click={() => {
+            on:click="{() => {
                 clearAll();
-            }}
+            }}"
         >
             Clear All
         </button>
@@ -281,7 +279,7 @@
                     class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 m-4"
                 >
                     {#each visibleCourses as card (card.id)}
-                        <OverviewCard course={card} />
+                        <OverviewCard course="{card}" />
                     {/each}
                 </div>
 
