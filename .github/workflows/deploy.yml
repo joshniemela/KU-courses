@@ -5,20 +5,21 @@ on:
     branches:
       - main
 
-job:
+jobs:
   deploy:
     name: Deploy to server
     runs-on: ubuntu-latest
 
     steps:
-      - uses: appleboy/ssh-action@v1.0.3
-      with:
-        host: ${{ secrets.HOST }}
-        username: ${{ secrets.USERNAME }}
-        key: ${{ secrets.SSH_KEY }}
-        port: 22
-        script: |
-          cd /dockers/KU-courses
-          git pull
-          git switch main
-          docker compose up -d --build
+      - name: Run SSH commands 
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.HOST }}
+          username: ${{ secrets.USERNAME }}
+          key: ${{ secrets.SSH_KEY }}
+          port: 22
+          script: |
+            cd /dockers/KU-courses
+            git pull
+            git switch main
+            docker compose up -d --build
