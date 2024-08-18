@@ -2,6 +2,7 @@
 @tailwind components;
 @tailwind utilities;
 
+/* FIXME: why does this need to be in app.css? */
 body.modal-open {
     position: fixed;
 }
