@@ -67,7 +67,7 @@ enum Department {
     DrugDesignAndPharmacology,
     CellularAndMolecularMedicine,
     Pharmacy,
-    GLOBE,
+    Globe,
 }
 impl Department {
     fn from_str(s: &str) -> Result<Self> {
@@ -124,7 +124,7 @@ impl Department {
             "Institut for Nordiske Studier og Sprogvidenskab" => {
                 bail!("Nordic studies not supported <EXPECTED>")
             }
-            "GLOBE Institute" => Ok(Department::GLOBE),
+            "GLOBE Institute" => Ok(Department::Globe),
             _ => bail!("Unknown department: {}", s),
         }
     }

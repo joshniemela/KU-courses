@@ -23,6 +23,6 @@ jobs:
         service: [rust_parser, vector_store]
     steps:
       - uses: actions/checkout@v4
-      - name: Run clippy
+      - name: Run clippy on ${{ matrix.service }}
         working-directory: backend/${{ matrix.service }}
         run: cargo clippy --all-targets --all-features
