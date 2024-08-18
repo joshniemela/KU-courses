@@ -1,10 +1,10 @@
-use super::{PostgresDB, Coordinator};
+use super::{Coordinator, PostgresDB};
 use anyhow::Result;
 use nanohtml2text::html2text;
+use serde::Deserialize;
 use std::fs::File;
 use std::io::BufReader;
 use std::path::Path;
-use serde::Deserialize;
 
 #[derive(Deserialize, Clone)]
 pub struct Document {

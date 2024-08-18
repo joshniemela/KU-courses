@@ -1,0 +1,28 @@
+name: Rust CI
+
+on:
+  push:
+    paths:
+      - "backend/rust_parser/**"
+      - "backend/vector_store/**"
+      - ".github/workflows/rust-ci.yml"
+  pull_request:
+    branches:
+      - main
+
+env:
+  CARGO_TERM_COLOR: always
+  RUSTFLAGS: "-Dwarnings"
+
+jobs:
+  prettier:
+    name: Rust quality check
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        service: [rust_parser, vector_store]
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run clippy on ${{ matrix.service }}
+        working-directory: backend/${{ matrix.service }}
+        run: cargo clippy --all-targets --all-features
