@@ -13,7 +13,7 @@
     import OverviewCard from "../components/OverviewCard/OverviewCard.svelte";
     import type { Overview } from "../course";
     import { browser } from "$app/environment";
-    
+
     let loading = true;
     let error: string | null = null;
     let API_URL = apiUrl();
