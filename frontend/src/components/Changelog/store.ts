@@ -2,11 +2,11 @@ import { writable } from "svelte/store";
 import { browser } from "$app/environment";
 
 function modalStoreFunctions() {
-	const { subscribe, set } = writable<boolean>(false);
+    const { subscribe, set } = writable<boolean>(false);
 
-	return {
+    return {
         subscribe,
-		open: () => {
+        open: () => {
             console.log(document.body.scrollTop);
             set(true);
             if (browser) {
@@ -18,8 +18,8 @@ function modalStoreFunctions() {
             if (browser) {
                 document.body.classList.remove("modal-open");
             }
-        }
-	};
+        },
+    };
 }
 
 export const modalStore = modalStoreFunctions();
