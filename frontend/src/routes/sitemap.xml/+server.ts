@@ -27,8 +27,6 @@ export async function GET() {
     const today = today_yyyy_mm_dd();
 
     const course_ids = json.map((x: { course_id: string }) => x.course_id);
-    // print how many course-ids we have
-    console.log(`Found ${course_ids.length} course-ids for sitemap`);
 
     return new Response(
         `

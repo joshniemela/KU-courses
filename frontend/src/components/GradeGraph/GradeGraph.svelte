@@ -9,7 +9,6 @@
     import { onMount } from "svelte";
     import jsonData from "./sample.json";
     Chart.register(ChartDataLabels);
-    console.log(jsonData);
 
     // Props
     export let data: Grade[] = jsonData;

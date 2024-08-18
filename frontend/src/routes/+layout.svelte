@@ -7,7 +7,6 @@
         (window as any).goatcounter.count({
             path: $page.url.pathname,
         });
-        console.log("counting", $page.url.pathname);
     }
 </script>
 

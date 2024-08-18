@@ -152,8 +152,6 @@
         "A more precise, user-friendly way to browse courses offered by University of Copenhagen which acutally gives you the information you were looking for";
     const url = "https://disku.jniemela.dk";
 
-    console.log(visibleCourses);
-
     let debounceTimeout: number;
     let firstDebounce = true;
     let search = $queryStore.search;
