@@ -9,7 +9,8 @@
 </script>
 
 <div class="flex flex-col w-full text-sm md:text-base">
-    <div
+    <button
+        type="button"
         class="bg-kuRed text-white text-center px-2 py-1"
         on:click="{() => (show = !show)}"
     >
@@ -17,7 +18,7 @@
             {show ? "Hide" : "Show"}
             {header_name}s {selected.length ? `(${selected.length})` : ""}
         </h2>
-    </div>
+    </button>
 
     <div class="flex flex-col {show ? 'visible' : 'hidden'}">
         <button

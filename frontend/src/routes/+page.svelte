@@ -201,12 +201,17 @@
         <h1 class="text-brand-500 text-4xl font-bold -mb-4">KU Courses 2.0</h1>
         <ChangelogButton />
         <div>
-            <input type="text" placeholder="Search" bind:value="{search}" />
+            <input
+                class="p-2 border-2 border-kuGray"
+                type="text"
+                placeholder="Search"
+                bind:value="{search}"
+            />
             <button
-                class="bg-kuRed text-white p-2"
+                class="bg-kuRed text-white p-2 border-2 border-kuRed"
                 on:click="{() => (search = '')}"
             >
-                Clear search
+                Clear text
             </button>
         </div>
         <div>
