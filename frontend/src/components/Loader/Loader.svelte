@@ -5,15 +5,15 @@
 <!-- Pure CSS Loader from 'https://loading.io/css/' -->
 <div class="container">
     <div class="lds-grid" style="--color: {theme.colors.brand[500]}">
-        <div />
-        <div />
-        <div />
-        <div />
-        <div />
-        <div />
-        <div />
-        <div />
-        <div />
+        <div></div>
+        <div></div>
+        <div></div>
+        <div></div>
+        <div></div>
+        <div></div>
+        <div></div>
+        <div></div>
+        <div></div>
     </div>
 </div>
 

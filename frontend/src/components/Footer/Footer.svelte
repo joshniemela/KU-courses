@@ -1,6 +1,6 @@
 <script lang="ts">
     import Facebook from "../../assets/Facebook.svelte";
-import Github from "../../assets/Github.svelte";
+    import Github from "../../assets/Github.svelte";
     import { obfuscateEmail } from "../../stores";
     import { onMount } from "svelte";
 
@@ -51,7 +51,7 @@ import Github from "../../assets/Github.svelte";
             target="_blank"
             class="block animated-icon"
         >
-            <Facebook classes="size-8"/>
+            <Facebook classes="size-8" />
         </a>
     </div>
 </footer>

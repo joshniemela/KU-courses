@@ -38,7 +38,7 @@
     if (content != null) {
         content = content.replaceAll(
             "<li>",
-            '<li class="list-square list-inside ml-4">',
+            '<li class="list-square list-inside ml-4">'
         );
     }
 
@@ -46,7 +46,7 @@
     if (learning_outcome != null) {
         learning_outcome = learning_outcome.replaceAll(
             "<li>",
-            '<li class="list-square list-inside ml-4">',
+            '<li class="list-square list-inside ml-4">'
         );
     }
 
@@ -102,14 +102,14 @@
 
 <svelte:head>
     <title>{title}</title>
-    <meta name="description" content={description} />
+    <meta name="description" content="{description}" />
 
     <!-- Facebook Meta Tags -->
-    <meta property="og:url" content={url} />
+    <meta property="og:url" content="{url}" />
     <meta property="og:type" content="website" />
-    <meta property="og:title" content={title} />
-    <meta property="og:description" content={description} />
-    <meta property="og:image" content={`/assets/og-image.png`} />
+    <meta property="og:title" content="{title}" />
+    <meta property="og:description" content="{description}" />
+    <meta property="og:image" content="{`/assets/og-image.png`}" />
     <meta property="og:image:alt" content="DISKU - KU Courses 2.0" />
     <meta property="og:image:width" content="1200" />
     <meta property="og:image:height" content="630" />
@@ -117,18 +117,21 @@
     <!-- Twitter Meta Tags -->
     <meta name="twitter:card" content="summary_large_image" />
     <meta property="twitter:domain" content="disku.jniemela.dk" />
-    <meta property="twitter:url" content={url} />
-    <meta name="twitter:title" content={title} />
-    <meta name="twitter:description" content={description} />
-    <meta name="twitter:image" content={`/assets/og-image.png`} />
+    <meta property="twitter:url" content="{url}" />
+    <meta name="twitter:title" content="{title}" />
+    <meta name="twitter:description" content="{description}" />
+    <meta name="twitter:image" content="{`/assets/og-image.png`}" />
 
-    <link rel="canonical" href={url} />
+    <link rel="canonical" href="{url}" />
 </svelte:head>
 
 {#if loading}
     <Loader />
 {:else}
-    <a class="block sticky top-0 left-1/2 -translate-x-1/2 mx-auto w-fit bg-kuRed text-white font-bold py-1 px-6" href="/">
+    <a
+        class="block sticky top-0 left-1/2 -translate-x-1/2 mx-auto w-fit bg-kuRed text-white font-bold py-1 px-6"
+        href="/"
+    >
         Back
     </a>
     <div class="min-h-screen mx-auto px-10 lg:px-0 lg:w-[900px] mt-6">
@@ -136,21 +139,17 @@
             <h1 class="text-2xl font-bold md:text-4xl">{course.title}</h1>
             <h2>{course.id} - SCIENCE</h2>
         </div>
-            
+
         <div class="block md:grid md:grid-cols-[auto_1fr] md:gap-x-10">
             <div class="md:col-span-2">
-                {#if course["statistics"] != null}
+                {#if course["statistics"] != null && statistics != null}
                     <p>
                         Passed: {Math.round(statistics["pass-rate"] * 100)}%,
-                        Average grade: {Math.round(statistics["mean"] * 100) / 100},
-                        Median grade: {statistics["median"]}
+                        Average grade: {Math.round(statistics["mean"] * 100) /
+                            100}, Median grade: {statistics["median"]}
                     </p>
-                    <GradeGraph
-                        data={statistics.grades}
-                    />
+                    <GradeGraph data="{statistics.grades}" />
                 {/if}
-
-
             </div>
             <div>
                 <h1 class="text-xl font-bold">Description</h1>
@@ -158,14 +157,12 @@
                 {@html content}
                 {@html learning_outcome}
                 {#if course["recommended-qualifications"] != null}
-                    <h2 class="text-l font-bold">
-                        Recommended qualifications
-                    </h2>
+                    <h2 class="text-l font-bold">Recommended qualifications</h2>
                     {@html course["recommended-qualifications"]}
                 {/if}
             </div>
             <div>
-                <SideCard heading={"Coordinators"}>
+                <SideCard heading="{'Coordinators'}">
                     {#each course.coordinator as emp}
                         <div class="">
                             <p class="">{emp.name}</p>
@@ -173,7 +170,7 @@
                         <p class="">{emp.email}</p>
                     {/each}
                 </SideCard>
-                <SideCard heading={"Exam"}>
+                <SideCard heading="{'Exam'}">
                     {#each course.exam as exam}
                         <p class="">
                             {separate_capitals_letters(exam.type)}
@@ -183,7 +180,7 @@
                         </p>
                     {/each}
                 </SideCard>
-                <SideCard heading={"Course Info"}>
+                <SideCard heading="{'Course Info'}">
                     <p class="">
                         Level: {denest_type_maps(course.degree).join("\n")}
                     </p>
@@ -191,7 +188,7 @@
 
                     <p class="">
                         Block(s): {coerce_blocks_to_int(
-                            denest_type_maps(course.block),
+                            denest_type_maps(course.block)
                         )
                             .sort()
                             .join(", ")}
@@ -202,16 +199,16 @@
                             .join(", ")}
                     </p>
 
-                    <p class="flex flex-col" />
+                    <p class="flex flex-col"></p>
 
                     <a
-                        href={`https://kurser.ku.dk/course/${course.id}`}
+                        href="{`https://kurser.ku.dk/course/${course.id}`}"
                         class="text-kuRed font-bold"
                     >
                         Go to official page
                     </a>
                 </SideCard>
-                <SideCard heading={"Department(s)"}>
+                <SideCard heading="{'Department(s)'}">
                     <ul class="list-square">
                         {#each course.department as dep}
                             <li class="">
@@ -220,7 +217,7 @@
                         {/each}
                     </ul>
                 </SideCard>
-                <SideCard heading={"Workload"}>
+                <SideCard heading="{'Workload'}">
                     <table>
                         {#each course.workload as wl}
                             <tr class="border-b-4 border-kuGray">

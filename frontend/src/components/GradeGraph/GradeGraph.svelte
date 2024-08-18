@@ -4,7 +4,7 @@
         type ChartItem,
         type DatasetChartOptions,
     } from "chart.js/auto";
-    import ChartDataLabels from 'chartjs-plugin-datalabels';
+    import ChartDataLabels from "chartjs-plugin-datalabels";
     import type { Grade } from "../../course";
     import { onMount } from "svelte";
     import jsonData from "./sample.json";
@@ -14,7 +14,6 @@
     // Props
     export let data: Grade[] = jsonData;
     export let legend: string = "Explainer";
-    export let title: string = "Title";
 
     const total = data.reduce((acc, row) => acc + row.count, 0);
 
@@ -64,10 +63,10 @@
                             },
                         },
                         datalabels: {
-                            anchor: 'end',
-                            align: 'end',
+                            anchor: "end",
+                            align: "end",
                             font: {
-                                weight: 'bold',
+                                weight: "bold",
                                 size: 14,
                             },
                             offset: -4,
@@ -91,7 +90,7 @@
                             ticks: {
                                 font: {
                                     weight: "bolder",
-                                    size: 14
+                                    size: 14,
                                 },
                             },
                         },
@@ -104,13 +103,5 @@
 </script>
 
 <div class="h-44">
-    <canvas bind:this={graph} />
+    <canvas bind:this="{graph}"></canvas>
 </div>
-
-<style scoped>
-    .chart-container {
-        position: relative; /* Important as otherwise it won't be responsive */
-        width: 100%;
-        height: fit-content;
-    }
-</style>

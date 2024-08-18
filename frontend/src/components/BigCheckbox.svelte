@@ -11,7 +11,7 @@
 <div class="flex flex-col w-full text-sm md:text-base">
     <div
         class="bg-kuRed text-white text-center px-2 py-1"
-        on:click={() => (show = !show)}
+        on:click="{() => (show = !show)}"
     >
         <h2>
             {show ? "Hide" : "Show"}
@@ -24,7 +24,7 @@
             class="bg-kuRed text-white mt-2 text-center text-xs {selected.length
                 ? 'visible'
                 : 'invisible'}"
-            on:click={() => (selected = [])}>Clear</button
+            on:click="{() => (selected = [])}">Clear</button
         >
         {#each options as option}
             <!--Align label before checkbox-->
@@ -34,9 +34,9 @@
                 <input
                     class="text-kuRed"
                     type="checkbox"
-                    bind:group={selected}
+                    bind:group="{selected}"
                     name="header_name"
-                    value={option}
+                    value="{option}"
                 />
                 <span class="text-left w-full absolute leading-none ml-6">
                     {option}
