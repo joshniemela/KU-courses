@@ -1,7 +1,8 @@
 <script lang="ts">
     import CheckboxMenu from "../components/CheckboxMenu.svelte";
     import BigCheckbox from "../components/BigCheckbox.svelte";
-    import Changelog from "../components/Changelog.svelte";
+    import ChangelogModal from "../components/Changelog/ChangelogModal.svelte";
+    import ChangelogButton from "../components/Changelog/ChangelogButton.svelte";
     import Footer from "../components/Footer/Footer.svelte";
     import { queryStore, clearAll } from "../stores";
 
@@ -12,6 +13,7 @@
     import OverviewCard from "../components/OverviewCard/OverviewCard.svelte";
     import type { Overview } from "../course";
     import { browser } from "$app/environment";
+
     let loading = true;
     let error: string | null = null;
     let API_URL = apiUrl();
@@ -196,9 +198,10 @@
 </svelte:head>
 
 <div class="flex flex-col min-h-screen justify-between relative">
-    <Changelog />
+    <ChangelogModal />
     <main class="flex flex-col items-center space-y-4 mt-10">
-        <h1 class="text-brand-500 text-4xl font-bold">KU Courses 2.0</h1>
+        <h1 class="text-brand-500 text-4xl font-bold -mb-4">KU Courses 2.0</h1>
+        <ChangelogButton />
         <div>
             <input type="text" placeholder="Search" bind:value="{search}" />
             <button
