@@ -33,8 +33,6 @@
         "@popperjs/core": "^2.11.8",
         "chart.js": "^4.3.3",
         "chartjs-plugin-datalabels": "^2.2.0",
-        "flowbite": "^1.7.0",
-        "flowbite-svelte": "^0.39.2",
         "lorem-ipsum": "^2.0.8",
         "postgres": "^3.3.4",
         "prettier-plugin-svelte": "^3.2.6",
