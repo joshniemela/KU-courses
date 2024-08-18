@@ -1,12 +1,12 @@
 {
-  "trailingComma": "es5",
-  "tabWidth": 4,
-  "arrowParens": "always",
-  "bracketSpacing": true,
-  "endOfLine": "lf",
-  "printWidth": 80,
-  "singleQuote": false,
-  "svelteStrictMode": true,
-  "svelteAllowShorthand": false,
-  "plugins": ["prettier-plugin-svelte"]
+    "trailingComma": "es5",
+    "tabWidth": 4,
+    "arrowParens": "always",
+    "bracketSpacing": true,
+    "endOfLine": "lf",
+    "printWidth": 80,
+    "singleQuote": false,
+    "svelteStrictMode": true,
+    "svelteAllowShorthand": false,
+    "plugins": ["prettier-plugin-svelte"]
 }
