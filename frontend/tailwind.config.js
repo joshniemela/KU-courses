@@ -1,4 +1,5 @@
 /** @type {import('tailwindcss').Config} */
+import flowbite from "flowbite/plugin";
 export default {
     content: [
         "./src/**/*.{html,js,svelte,ts}",
@@ -94,5 +95,5 @@ export default {
             fadeIn: "fadeIn 0.5s ease-in-out",
         },
     },
-    plugins: [require("flowbite/plugin")],
+    plugins: [flowbite],
 };

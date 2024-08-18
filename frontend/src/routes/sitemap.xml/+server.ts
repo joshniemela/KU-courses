@@ -26,7 +26,7 @@ export async function GET() {
     const json = await res.json();
     const today = today_yyyy_mm_dd();
 
-    let course_ids = json.map((x: any) => x.course_id);
+    const course_ids = json.map((x: { course_id: string }) => x.course_id);
     // print how many course-ids we have
     console.log(`Found ${course_ids.length} course-ids for sitemap`);
 

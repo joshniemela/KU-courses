@@ -1,4 +1,4 @@
-let theme = {
+const theme = {
     colors: {
         kuRed: "#901a1e",
         kuGray: "#14314f",

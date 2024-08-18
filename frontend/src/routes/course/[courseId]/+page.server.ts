@@ -59,8 +59,8 @@ export async function load({ fetch, params }) {
     );
 
     const course: Course = await res.json();
-    let grades = null_to_zero(transform_stats(course.statistics));
-    let stats = course.statistics;
+    const grades = null_to_zero(transform_stats(course.statistics));
+    const stats = course.statistics;
     if (stats !== undefined) {
         stats.grades = grades;
     }

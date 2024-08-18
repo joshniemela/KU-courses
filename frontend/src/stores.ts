@@ -59,7 +59,7 @@ export function apiUrl() {
         return "https://disku.jniemela.dk/api"; // SSR
     }
 
-    let hostname = window.location.hostname;
+    const hostname = window.location.hostname;
     if (hostname == "localhost") {
         return "http://localhost:3000/api";
     }
