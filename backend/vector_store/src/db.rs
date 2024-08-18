@@ -1,10 +1,10 @@
 use super::{Coordinator, Course};
-use crate::populate::Document;
 use crate::embedding::{CoordinatorEmbedding, CourseEmbedding};
+use crate::populate::Document;
 use anyhow::Result;
 use pgvector::Vector;
 use sqlx::postgres::{PgPool, PgPoolOptions};
-use sqlx::{Row, query};
+use sqlx::{query, Row};
 
 pub struct PostgresDB {
     pub pool: PgPool,
@@ -30,7 +30,9 @@ impl PostgresDB {
             WHERE
                 c.last_modified > COALESCE(te.last_modified, to_timestamp(0)) OR
                 c.last_modified > COALESCE(ce.last_modified, to_timestamp(0))"
-        ).fetch_all(&self.pool).await?;
+        )
+        .fetch_all(&self.pool)
+        .await?;
 
         let mut ids: Vec<String> = Vec::new();
         for row in result {
@@ -47,8 +49,10 @@ impl PostgresDB {
             "SELECT coordinator.email, coordinator.full_name
             FROM coordinator
             LEFT JOIN name_embedding ne ON coordinator.email = ne.email
-            WHERE ne.embedding IS NULL"
-        ).fetch_all(&self.pool).await?;
+            WHERE ne.embedding IS NULL",
+        )
+        .fetch_all(&self.pool)
+        .await?;
 
         let mut coordinators = Vec::new();
         for row in result {
@@ -84,7 +88,6 @@ impl PostgresDB {
         Ok(courses)
     }
 
-
     /// Inserts the document into the database
     /// If the document already exists, it updates the title, content, and last_modified timestamp
     /// This is used by populate.rs but is not strictly required
@@ -96,14 +99,15 @@ impl PostgresDB {
         let result = query!(
             "SELECT title, content FROM course WHERE id = $1",
             document.info.id
-        ).fetch_optional(&self.pool).await?;
+        )
+        .fetch_optional(&self.pool)
+        .await?;
 
         if let Some(row) = result {
             if row.title == document.title && row.content == document.description.content {
                 return Ok(());
             }
         }
-
 
         let mut tx = self.pool.begin().await?;
 
@@ -150,13 +154,18 @@ impl PostgresDB {
     /// Inserts the coordinator embedding into the database
     /// If the coordinator already exists, it does nothing,
     /// this is because we assume the names of the coordinators are immutable
-    pub async fn insert_coordinator_embedding(&self, coordinator: CoordinatorEmbedding) -> Result<()> {
+    pub async fn insert_coordinator_embedding(
+        &self,
+        coordinator: CoordinatorEmbedding,
+    ) -> Result<()> {
         query(
             "INSERT INTO name_embedding (email, embedding) VALUES ($1, $2)
-            ON CONFLICT(email) DO NOTHING")
-            .bind(coordinator.email)
-            .bind(Vector::from(coordinator.name.to_owned()))
-            .execute(&self.pool).await?;
+            ON CONFLICT(email) DO NOTHING",
+        )
+        .bind(coordinator.email)
+        .bind(Vector::from(coordinator.name.to_owned()))
+        .execute(&self.pool)
+        .await?;
         Ok(())
     }
 
@@ -166,17 +175,21 @@ impl PostgresDB {
         let mut tx = self.pool.begin().await?;
         query(
             "INSERT INTO title_embedding (course_id, embedding) VALUES ($1, $2)
-            ON CONFLICT(course_id) DO UPDATE SET embedding = $2, last_modified = CURRENT_TIMESTAMP")
-            .bind(&course_embedding.id)
-            .bind(Vector::from(course_embedding.title.to_owned()))
-            .execute(&mut *tx).await?;
+            ON CONFLICT(course_id) DO UPDATE SET embedding = $2, last_modified = CURRENT_TIMESTAMP",
+        )
+        .bind(&course_embedding.id)
+        .bind(Vector::from(course_embedding.title.to_owned()))
+        .execute(&mut *tx)
+        .await?;
 
         query(
             "INSERT INTO content_embedding (course_id, embedding) VALUES ($1, $2)
-            ON CONFLICT(course_id) DO UPDATE SET embedding = $2, last_modified = CURRENT_TIMESTAMP")
-            .bind(course_embedding.id)
-            .bind(Vector::from(course_embedding.content.to_owned()))
-            .execute(&mut *tx).await?;
+            ON CONFLICT(course_id) DO UPDATE SET embedding = $2, last_modified = CURRENT_TIMESTAMP",
+        )
+        .bind(course_embedding.id)
+        .bind(Vector::from(course_embedding.content.to_owned()))
+        .execute(&mut *tx)
+        .await?;
 
         tx.commit().await?;
         Ok(())

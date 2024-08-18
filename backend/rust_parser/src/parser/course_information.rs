@@ -9,7 +9,7 @@ pub fn parse_course_info(dom: &VDom) -> Result<CourseInformation> {
     let panel_bodies = dom.get_elements_by_class_name("panel-body");
     // there might be multiple panel-bodies, so we need to check each one
     // for the dl element (only the course info should have a dl element)
-    for (_i, panel_body) in panel_bodies.enumerate() {
+    for panel_body in panel_bodies {
         let mut dl_elements = panel_body
             .get(parser)
             .context("Failed to get panel-body")?
@@ -380,7 +380,7 @@ fn parse_dl(dl_tag: &tl::HTMLTag, parser: &tl::Parser) -> Result<Vec<(String, St
     // for even numbers, we expect a dt element, odd numbers we expect a dd element
     // make a pair of precisely two strings
     let mut pair: Vec<String> = Vec::with_capacity(2);
-    for (_i, child) in children.top().iter().enumerate() {
+    for child in children.top().iter() {
         let node = child
             .get(parser)
             .context("Failed to get node whilst parsing dl")?;
