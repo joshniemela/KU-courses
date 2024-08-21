@@ -97,7 +97,21 @@
         }
     }
 
-    onMount(() => remove_repeated_br_tags(document));
+    // If a p tag is immediately descendent of an li tag, we pop the text out of the p tag
+    function pop_p_tags(dom: Document) {
+        let lis = dom.getElementsByTagName("li");
+        for (let i = 0; i < lis.length; i++) {
+            let p = lis[i].getElementsByTagName("p");
+            if (p.length > 0) {
+                lis[i].innerHTML = p[0].innerHTML;
+            }
+        }
+    }
+
+    onMount(() => {
+        remove_repeated_br_tags(document);
+        pop_p_tags(document);
+    });
 </script>
 
 <svelte:head>
