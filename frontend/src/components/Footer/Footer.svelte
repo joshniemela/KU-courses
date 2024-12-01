@@ -42,16 +42,16 @@
             target="_blank"
             href="https://github.com/joshniemela/KU-courses"
         >
-            <Github classes="size-8" />
+            <Github width="4rem" height="4rem" />
         </a>
 
         <a
-            href="https://www.facebook.com/sharer/sharer.php?u=https%3A%2F%2Fdisku.jniemela.dk"
+            href="https://www.facebook.com/sharer/sharer.php?u=https%3A%2F%2Fkucourses.dk"
             rel="noopener"
             target="_blank"
-            class="block animated-icon"
+            class="block animated-icon md:pr-8 pr-0"
         >
-            <Facebook classes="size-8" />
+            <Facebook width="4rem" height="4rem" />
         </a>
     </div>
 </footer>
