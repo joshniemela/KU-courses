@@ -62,7 +62,7 @@
     href="course/{course.id}"
 >
     <div class="p-2">
-        <div class="flex flex-row justify-between">
+        <div class="flex flex-row justify-between overflow-x-auto">
             <div class="w-full">
                 <h1 class="text-l font-bold text-center z-10">
                     {@html course.title}

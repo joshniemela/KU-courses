@@ -112,6 +112,12 @@
         // if queryStore.search is empty, then sort otherwise do nothing
         if ($queryStore.search === "") {
             courses.sort((a, b) => {
+                if (a.title.startsWith("§")) {
+                    return 1;
+                }
+                if (b.title.startsWith("§")) {
+                    return -1;
+                }
                 return a.title.localeCompare(b.title);
             });
         }
