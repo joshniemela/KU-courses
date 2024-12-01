@@ -71,7 +71,7 @@
                     {course.id} - SCIENCE
                 </h2>
             </div>
-            <table class="text-sm">
+            <table class="text-sm h-8 whitespace-nowrap">
                 <tr>
                     <td class="border-e border-b border-black px-1">
                         {denest_type_maps(course.degree).join(", ")}
@@ -81,11 +81,28 @@
                     </td>
                 </tr>
                 <tr>
-                    <td class="border-e border-black px-1">
+                    <td class="border-e border-black p-1">
                         Block(s): {coerce_blocks_to_int(
                             denest_type_maps(course.block)
                         )
-                            .sort()
+                            .sort((a, b) => a - b) // Ensure numeric sorting
+                            .reduce((acc, curr, index, arr) => {
+                                // Convert consecutive numbers to ranges
+                                if (
+                                    index === 0 ||
+                                    curr - arr[index - 1] !== 1
+                                ) {
+                                    acc.push([curr]); // Start a new range
+                                } else {
+                                    acc[acc.length - 1][1] = curr; // Extend the current range
+                                }
+                                return acc;
+                            }, [])
+                            .map((range) =>
+                                range.length === 2
+                                    ? `${range[0]}-${range[1]}`
+                                    : range[0]
+                            ) // Format ranges or single values
                             .join(", ")}
                     </td>
                     <!--TODO: If this is an "other", this breaks and just shows object object-->
@@ -93,6 +110,9 @@
                         Group(s): {denest_type_maps(course.schedule)
                             // TODO: acutally process the string schedules instead of calling them other
                             .map((x) => (typeof x === "object" ? "Other" : x))
+                            .map((x) =>
+                                x == "OutsideOfSchedule" ? "Other" : x
+                            )
                             .sort()
                             .join(", ")}
                     </td>
