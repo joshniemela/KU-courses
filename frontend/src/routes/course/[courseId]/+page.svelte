@@ -27,11 +27,11 @@
     }
 
     // SEO
-    const title = `${course.title} - DISKU`;
+    const title = `${course.title} - KU Courses`;
 
     const description =
         "A more precise, user-friendly way to browse courses offered by University of Copenhagen which acutally gives you the information you were looking for";
-    const url = "https://disku.jniemela.dk/course/" + courseId;
+    const url = "https://kucourses.dk/course/" + courseId;
 
     // To every li tag, add class="list-square list-inside" in content["learning-outcome"]
     let content = course.content;
@@ -124,13 +124,13 @@
     <meta property="og:title" content="{title}" />
     <meta property="og:description" content="{description}" />
     <meta property="og:image" content="{`/assets/og-image.png`}" />
-    <meta property="og:image:alt" content="DISKU - KU Courses 2.0" />
+    <meta property="og:image:alt" content="KU Courses" />
     <meta property="og:image:width" content="1200" />
     <meta property="og:image:height" content="630" />
 
     <!-- Twitter Meta Tags -->
     <meta name="twitter:card" content="summary_large_image" />
-    <meta property="twitter:domain" content="disku.jniemela.dk" />
+    <meta property="twitter:domain" content="kucourses.dk" />
     <meta property="twitter:url" content="{url}" />
     <meta name="twitter:title" content="{title}" />
     <meta name="twitter:description" content="{description}" />

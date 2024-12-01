@@ -1,6 +1,6 @@
 import { dev } from "$app/environment";
 
-const url = dev ? "http://localhost:3000" : "https://disku.jniemela.dk";
+const url = dev ? "http://localhost:3000" : "https://kucourses.dk";
 
 function today_yyyy_mm_dd(): string {
     const d = new Date();

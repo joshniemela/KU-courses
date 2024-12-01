@@ -53,10 +53,10 @@ export function clearAll() {
 
 // API URL
 export function apiUrl() {
-    return "https://disku.jniemela.dk/api"; // SSR
+    return "https://kucourses.dk/api"; // SSR
     // check that window is defined, this is used for checking if we are running in the browser
     if (typeof window === "undefined") {
-        return "https://disku.jniemela.dk/api"; // SSR
+        return "https://kucourses.dk/api"; // SSR
     }
 
     const hostname = window.location.hostname;
