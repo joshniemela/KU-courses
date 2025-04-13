@@ -6,3 +6,7 @@
 body.modal-open {
     position: fixed;
 }
+
+html {
+    overflow-y: scroll;
+}
