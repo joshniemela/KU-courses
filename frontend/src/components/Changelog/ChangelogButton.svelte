@@ -5,7 +5,7 @@
 <button
     type="button"
     class="text-kuRed/75 underline md:no-underline md:text-sm relative"
-    on:click="{modalStore.open}"
+    onclick={modalStore.open}
 >
     View Changelog
 </button>

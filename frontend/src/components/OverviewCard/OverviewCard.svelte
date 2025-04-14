@@ -72,51 +72,55 @@
                 </h2>
             </div>
             <table class="text-sm h-8 whitespace-nowrap">
-                <tr>
-                    <td class="border-e border-b border-black px-1">
-                        {denest_type_maps(course.degree).join(", ")}
-                    </td>
-                    <td class="border-b border-black px-1">
-                        ECTS: {course.ects}
-                    </td>
-                </tr>
-                <tr>
-                    <td class="border-e border-black p-1">
-                        Block(s): {coerce_blocks_to_int(
-                            denest_type_maps(course.block)
-                        )
-                            .sort((a, b) => a - b) // Ensure numeric sorting
-                            .reduce((acc, curr, index, arr) => {
-                                // Convert consecutive numbers to ranges
-                                if (
-                                    index === 0 ||
-                                    curr - arr[index - 1] !== 1
-                                ) {
-                                    acc.push([curr]); // Start a new range
-                                } else {
-                                    acc[acc.length - 1][1] = curr; // Extend the current range
-                                }
-                                return acc;
-                            }, [])
-                            .map((range) =>
-                                range.length === 2
-                                    ? `${range[0]}-${range[1]}`
-                                    : range[0]
-                            ) // Format ranges or single values
-                            .join(", ")}
-                    </td>
-                    <!--TODO: If this is an "other", this breaks and just shows object object-->
-                    <td class="px-1">
-                        Group(s): {denest_type_maps(course.schedule)
-                            // TODO: acutally process the string schedules instead of calling them other
-                            .map((x) => (typeof x === "object" ? "Other" : x))
-                            .map((x) =>
-                                x == "OutsideOfSchedule" ? "Other" : x
+                <tbody>
+                    <tr>
+                        <td class="border-e border-b border-black px-1">
+                            {denest_type_maps(course.degree).join(", ")}
+                        </td>
+                        <td class="border-b border-black px-1">
+                            ECTS: {course.ects}
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="border-e border-black p-1">
+                            Block(s): {coerce_blocks_to_int(
+                                denest_type_maps(course.block)
                             )
-                            .sort()
-                            .join(", ")}
-                    </td>
-                </tr>
+                                .sort((a, b) => a - b) // Ensure numeric sorting
+                                .reduce((acc, curr, index, arr) => {
+                                    // Convert consecutive numbers to ranges
+                                    if (
+                                        index === 0 ||
+                                        curr - arr[index - 1] !== 1
+                                    ) {
+                                        acc.push([curr]); // Start a new range
+                                    } else {
+                                        acc[acc.length - 1][1] = curr; // Extend the current range
+                                    }
+                                    return acc;
+                                }, [])
+                                .map((range) =>
+                                    range.length === 2
+                                        ? `${range[0]}-${range[1]}`
+                                        : range[0]
+                                ) // Format ranges or single values
+                                .join(", ")}
+                        </td>
+                        <!--TODO: If this is an "other", this breaks and just shows object object-->
+                        <td class="px-1">
+                            Group(s): {denest_type_maps(course.schedule)
+                                // TODO: acutally process the string schedules instead of calling them other
+                                .map((x) =>
+                                    typeof x === "object" ? "Other" : x
+                                )
+                                .map((x) =>
+                                    x == "OutsideOfSchedule" ? "Other" : x
+                                )
+                                .sort()
+                                .join(", ")}
+                        </td>
+                    </tr>
+                </tbody>
             </table>
         </div>
 
@@ -142,55 +146,64 @@
         <!--stats table, contains pass_rate, median_grade, and avg_grade-->
         {#if course.statistics}
             <table class="text-xs whitespace-nowrap">
-                <tr>
-                    <td class="border-e border-b border-white px-1"> Pass</td>
+                <tbody>
+                    <tr>
+                        <td class="border-e border-b border-white px-1">
+                            Pass</td
+                        >
 
-                    <td class="border-b border-white px-1">
-                        {course.statistics["pass-rate"] == null
-                            ? "N/A"
-                            : `${
-                                  Math.round(
-                                      course.statistics["pass-rate"] * 10000
-                                  ) / 100
-                              }%`}
-                    </td>
-                </tr>
-                <tr>
-                    <td class="border-e border-white px-1"> Median</td>
-                    <td class="border-white px-1">
-                        {course.statistics.median == null
-                            ? "N/A"
-                            : course.statistics.median}
-                    </td>
-                </tr>
-                <tr>
-                    <td class="border-e border-t border-white px-1">
-                        Average
-                    </td>
-                    <td class="border-t border-white px-1">
-                        {course.statistics.mean == null
-                            ? "N/A"
-                            : Math.round(course.statistics.mean * 100) / 100}
-                    </td>
-                </tr>
+                        <td class="border-b border-white px-1">
+                            {course.statistics["pass-rate"] == null
+                                ? "N/A"
+                                : `${
+                                      Math.round(
+                                          course.statistics["pass-rate"] * 10000
+                                      ) / 100
+                                  }%`}
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="border-e border-white px-1"> Median</td>
+                        <td class="border-white px-1">
+                            {course.statistics.median == null
+                                ? "N/A"
+                                : course.statistics.median}
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="border-e border-t border-white px-1">
+                            Average
+                        </td>
+                        <td class="border-t border-white px-1">
+                            {course.statistics.mean == null
+                                ? "N/A"
+                                : Math.round(course.statistics.mean * 100) /
+                                  100}
+                        </td>
+                    </tr>
+                </tbody>
             </table>
         {:else}
             <table class="text-xs whitespace-nowrap">
-                <tr>
-                    <td class="border-e border-b border-white px-1"> Pass</td>
+                <tbody>
+                    <tr>
+                        <td class="border-e border-b border-white px-1">
+                            Pass</td
+                        >
 
-                    <td class="border-b border-white px-1">N/A</td>
-                </tr>
-                <tr>
-                    <td class="border-e border-white px-1"> Median</td>
-                    <td class="border-white px-1">N/A</td>
-                </tr>
-                <tr>
-                    <td class="border-e border-t border-white px-1">
-                        Average
-                    </td>
-                    <td class="border-t border-white px-1">N/A</td>
-                </tr>
+                        <td class="border-b border-white px-1">N/A</td>
+                    </tr>
+                    <tr>
+                        <td class="border-e border-white px-1"> Median</td>
+                        <td class="border-white px-1">N/A</td>
+                    </tr>
+                    <tr>
+                        <td class="border-e border-t border-white px-1">
+                            Average
+                        </td>
+                        <td class="border-t border-white px-1">N/A</td>
+                    </tr>
+                </tbody>
             </table>
         {/if}
     </div>

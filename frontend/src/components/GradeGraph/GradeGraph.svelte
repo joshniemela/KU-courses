@@ -10,13 +10,17 @@
     import jsonData from "./sample.json";
     Chart.register(ChartDataLabels);
 
-    // Props
-    export let data: Grade[] = jsonData;
-    export let legend: string = "Explainer";
+    interface Props {
+        // Props
+        data?: Grade[];
+        legend?: string;
+    }
+
+    let { data = jsonData, legend = "Explainer" }: Props = $props();
 
     const total = data.reduce((acc, row) => acc + row.count, 0);
 
-    let graph: HTMLCanvasElement;
+    let graph: HTMLCanvasElement = $state();
     onMount(() => {
         // We grab the canvas context
         const ctx = graph.getContext("2d");
@@ -102,5 +106,5 @@
 </script>
 
 <div class="h-44">
-    <canvas bind:this="{graph}"></canvas>
+    <canvas bind:this={graph}></canvas>
 </div>

@@ -4,9 +4,13 @@
     import { obfuscateEmail } from "../../stores";
     import { onMount } from "svelte";
 
-    export let additionalClasses: string = "";
+    interface Props {
+        additionalClasses?: string;
+    }
 
-    let email_fn = () => "";
+    let { additionalClasses = "" }: Props = $props();
+
+    let email_fn = $state(() => "");
 
     onMount(() => {
         email_fn = obfuscateEmail("josh@jniemela.dk");

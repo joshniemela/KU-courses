@@ -8,7 +8,7 @@
 
     import GradeGraph from "../../../components/GradeGraph/GradeGraph.svelte";
 
-    export let data;
+    let { data } = $props();
     let { courseId, course, totalHours, statistics, loading } = data;
 
     /**
@@ -34,7 +34,7 @@
     const url = "https://kucourses.dk/course/" + courseId;
 
     // To every li tag, add class="list-square list-inside" in content["learning-outcome"]
-    let content = course.content;
+    let content = $state(course.content);
     if (content != null) {
         content = content.replaceAll(
             "<li>",
@@ -42,7 +42,7 @@
         );
     }
 
-    let learning_outcome = course["learning-outcome"];
+    let learning_outcome = $state(course["learning-outcome"]);
     if (learning_outcome != null) {
         learning_outcome = learning_outcome.replaceAll(
             "<li>",
@@ -116,14 +116,14 @@
 
 <svelte:head>
     <title>{title}</title>
-    <meta name="description" content="{description}" />
+    <meta name="description" content={description} />
 
     <!-- Facebook Meta Tags -->
-    <meta property="og:url" content="{url}" />
+    <meta property="og:url" content={url} />
     <meta property="og:type" content="website" />
-    <meta property="og:title" content="{title}" />
-    <meta property="og:description" content="{description}" />
-    <meta property="og:image" content="{`/assets/og-image.png`}" />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:image" content={`/assets/og-image.png`} />
     <meta property="og:image:alt" content="KU Courses" />
     <meta property="og:image:width" content="1200" />
     <meta property="og:image:height" content="630" />
@@ -131,12 +131,12 @@
     <!-- Twitter Meta Tags -->
     <meta name="twitter:card" content="summary_large_image" />
     <meta property="twitter:domain" content="kucourses.dk" />
-    <meta property="twitter:url" content="{url}" />
-    <meta name="twitter:title" content="{title}" />
-    <meta name="twitter:description" content="{description}" />
-    <meta name="twitter:image" content="{`/assets/og-image.png`}" />
+    <meta property="twitter:url" content={url} />
+    <meta name="twitter:title" content={title} />
+    <meta name="twitter:description" content={description} />
+    <meta name="twitter:image" content={`/assets/og-image.png`} />
 
-    <link rel="canonical" href="{url}" />
+    <link rel="canonical" href={url} />
 </svelte:head>
 
 {#if loading}
@@ -162,7 +162,7 @@
                         Average grade: {Math.round(statistics["mean"] * 100) /
                             100}, Median grade: {statistics["median"]}
                     </p>
-                    <GradeGraph data="{statistics.grades}" />
+                    <GradeGraph data={statistics.grades} />
                 {/if}
             </div>
             <div>
@@ -176,7 +176,7 @@
                 {/if}
             </div>
             <div>
-                <SideCard heading="{'Coordinators'}">
+                <SideCard heading={"Coordinators"}>
                     {#each course.coordinator as emp}
                         <div class="">
                             <p class="">{emp.name}</p>
@@ -184,7 +184,7 @@
                         <p class="">{emp.email}</p>
                     {/each}
                 </SideCard>
-                <SideCard heading="{'Exam'}">
+                <SideCard heading={"Exam"}>
                     {#each course.exam as exam}
                         <p class="">
                             {separate_capitals_letters(exam.type)}
@@ -194,7 +194,7 @@
                         </p>
                     {/each}
                 </SideCard>
-                <SideCard heading="{'Course Info'}">
+                <SideCard heading={"Course Info"}>
                     <p class="">
                         Level: {denest_type_maps(course.degree).join("\n")}
                     </p>
@@ -216,13 +216,13 @@
                     <p class="flex flex-col"></p>
 
                     <a
-                        href="{`https://kurser.ku.dk/course/${course.id}`}"
+                        href={`https://kurser.ku.dk/course/${course.id}`}
                         class="text-kuRed font-bold"
                     >
                         Go to official page
                     </a>
                 </SideCard>
-                <SideCard heading="{'Department(s)'}">
+                <SideCard heading={"Department(s)"}>
                     <ul class="list-square">
                         {#each course.department as dep}
                             <li class="">
@@ -231,16 +231,18 @@
                         {/each}
                     </ul>
                 </SideCard>
-                <SideCard heading="{'Workload'}">
+                <SideCard heading={"Workload"}>
                     <table>
-                        {#each course.workload as wl}
-                            <tr class="border-b-4 border-kuGray">
-                                <td class="">
-                                    {separate_capitals_letters(wl.type)}</td
-                                >
-                                <td class="pl-2">{wl.hours}h</td>
-                            </tr>
-                        {/each}
+                        <tbody>
+                            {#each course.workload as wl}
+                                <tr class="border-b-4 border-kuGray">
+                                    <td class="">
+                                        {separate_capitals_letters(wl.type)}</td
+                                    >
+                                    <td class="pl-2">{wl.hours}h</td>
+                                </tr>
+                            {/each}
+                        </tbody>
                     </table>
                     <p class="font-bold">Total: {totalHours}h</p>
                 </SideCard>

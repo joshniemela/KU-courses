@@ -1,9 +1,14 @@
 <script lang="ts">
     // Create a function that takes a list of possible values and returns an object with the
-    // possible values as keys and the values as booleans from checkboxes
-    export let header_name: string;
-    export let options: string[];
-    export let selected: string[];
+
+    interface Props {
+        // possible values as keys and the values as booleans from checkboxes
+        header_name: string;
+        options: string[];
+        selected: string[];
+    }
+
+    let { header_name, options, selected = $bindable() }: Props = $props();
 </script>
 
 <div class="">
@@ -16,7 +21,7 @@
             class="bg-kuRed text-white text-center text-xs {selected.length
                 ? 'visible'
                 : 'invisible'}"
-            on:click="{() => (selected = [])}">Clear</button
+            onclick={() => (selected = [])}>Clear</button
         >
         {#each options as option}
             <!--Align label before checkbox-->
@@ -26,9 +31,9 @@
                 <input
                     class="text-kuRed"
                     type="checkbox"
-                    bind:group="{selected}"
+                    bind:group={selected}
                     name="header_name"
-                    value="{option}"
+                    value={option}
                 />
                 <span class="text-left w-full absolute leading-none ml-6">
                     {option}
