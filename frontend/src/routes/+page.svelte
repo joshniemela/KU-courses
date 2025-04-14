@@ -1,6 +1,4 @@
 <script lang="ts">
-    import { run } from "svelte/legacy";
-
     import CheckboxMenu from "../components/CheckboxMenu.svelte";
     import BigCheckbox from "../components/BigCheckbox.svelte";
     import ChangelogModal from "../components/Changelog/ChangelogModal.svelte";
@@ -14,7 +12,6 @@
     import { onMount } from "svelte";
     import OverviewCard from "../components/OverviewCard/OverviewCard.svelte";
     import type { Overview } from "../course";
-    import { browser } from "$app/environment";
 
     let loading = $state(true);
     let error: string | null = $state(null);
@@ -24,8 +21,6 @@
     let remainingCourses: Overview[] = [];
     const initialCourseNumber = 40;
     const batchLoadSize = 20;
-
-    let expand_footer = false;
 
     const loadMoreCourses = () => {
         if (remainingCourses.length > 0) {
@@ -50,9 +45,8 @@
             loadMoreCourses();
         }
     };
-    const fetchCourses = async () => {
+    const fetchCourses = async (filters) => {
         loading = true;
-        const filters = $queryStore;
         // prepreocess the filters so they are in the correct format
         // Convert blocks to longer format
         // 1, 2, 3, 4 => "One", "Two", "Three", "Four
@@ -110,9 +104,10 @@
         const json = await res.json();
         loading = false;
         courses = json.courses;
+
         // sort courses alphanumerically or by weights
         // if queryStore.search is empty, then sort otherwise do nothing
-        if ($queryStore.search === "") {
+        if (filters.search === "") {
             courses.sort((a, b) => {
                 if (a.title.startsWith("§")) {
                     return 1;
@@ -149,34 +144,33 @@
         //"Department of Biomedical Sciences", // 1
     ];
 
-    onMount(async () => {
-        await fetchCourses();
-    });
-
-    // If the store changes, we should fetch new courses
-    run(() => {
-        $queryStore, browser && fetchCourses();
-    });
-
     // SEO
     const title = "KU Courses";
     const description =
         "A more precise, user-friendly way to browse courses offered by University of Copenhagen which acutally gives you the information you were looking for";
     const url = "https://kucourses.dk";
 
-    let debounceTimeout: number = $state();
-    let firstDebounce = $state(true);
-    let search = $state($queryStore.search);
-    // when search changes, we want to debounce it and then update the queryStore
-    run(() => {
-        if (firstDebounce) {
-            firstDebounce = false;
+    // This is the search button state, we don't want to update
+    // the search every letter, or we spam the server with requests
+    let search = $state("");
+    let debounceTimeout: NodeJS.Timeout;
+
+    $effect(() => {
+        if (debounceTimeout) clearTimeout(debounceTimeout);
+
+        if (search.length === 0) {
+            // Immediate update if search is cleared
+            $queryStore.search = "";
         } else {
-            clearTimeout(debounceTimeout);
-            debounceTimeout = window.setTimeout(() => {
+            // Debounced update if there's input
+            debounceTimeout = setTimeout(() => {
                 $queryStore.search = search;
-            }, 500);
+            }, 300);
         }
+    });
+
+    $effect(() => {
+        fetchCourses($queryStore);
     });
 </script>
 
