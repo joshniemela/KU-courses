@@ -164,7 +164,13 @@
         } else {
             // Debounced update if there's input
             debounceTimeout = setTimeout(() => {
-                $queryStore.search = search;
+                // If the search button isn't empty we get a
+                // initial query, and then another identical query
+                // after the button debounces
+                // This if-statement prevents that
+                if ($queryStore.search !== search) {
+                    $queryStore.search = search;
+                }
             }, 300);
         }
     });
