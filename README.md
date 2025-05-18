@@ -7,10 +7,11 @@ The entire application is governed through the `docker-compose.yml` file and is 
 ## Starting the application
 1. Install `docker` and `docker-compose`, this may need a restart of your system since Docker is a very low level program.
 2. Run `docker compose up --build` as either a user with permissions to docker, or with `sudo`/`doas`, the build flag is required if the backend or frontend code has been changed, additionally `-d` will make it detach from the terminal.
-3. Wait for the scraper in the backend to complete scraping pages, this may take about 15 minutes.
-4. Run `docker compose restart`, this is required so that the parser will run and so that the vector store can create new embeddings.
-5. ???
-6. PROFIT!!!
+  a. Add folders `exam_pdfs` and `pages` to the `data` folder.
+4. Wait for the scraper in the backend to complete scraping pages, this may take about 15 minutes.
+5. Run `docker compose restart`, this is required so that the parser will run and so that the vector store can create new embeddings.
+6. ???
+7. PROFIT!!!
 
 
 ## db-manager
