@@ -23,11 +23,19 @@
   ; the course code is on the first column, if the second column contains "ITX" anywheer in the row it's an ITX course
   ; start by converting to tsv at a temporary location
   (let [tsv-file (File/createTempFile "tabula" ".tsv")]
-    (convert-exam-pdf-to-tsv pdf-file tsv-file)
-    (let [tsv (slurp tsv-file)
+    (try
+      (convert-exam-pdf-to-tsv pdf-file tsv-file)
+      (let [tsv (slurp tsv-file)
             lines (string/split-lines tsv)
             itx-courses (filter #(string/includes? % "ITX") lines)]
-        (map #(first (string/split % #"\t")) itx-courses))))
+        (println "[exam scraper] Found" (count itx-courses) "ITX courses in" pdf-file)
+        (map #(first (string/split % #"\t")) itx-courses))
+      (catch Exception e
+        (println "[exam scraper] Failed to extract ITX courses from" pdf-file ":" (.getMessage e))
+        (.printStackTrace e)
+        ; we don't handle this case yet,
+        ; we just return an empty list and move on
+        []))))
 
 (defn get-itx-courses-from-dir [dir]
   (let [pdf-files (drop 1 (file-seq (io/file dir)))

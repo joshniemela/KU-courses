@@ -49,7 +49,7 @@
    (ring/router
     [["/api/swagger.json"
       {:get {:no-doc true
-             :swagger {:info {:title "DISKU backend API"}
+             :swagger {:info {:title "KU courses backend API"}
                        :basePath "/"} ;; prefix for all paths
              :handler (swagger/create-swagger-handler)}}]
      ["/api" {:middleware [remove-namespace-keywords-in-response-middleware]}
