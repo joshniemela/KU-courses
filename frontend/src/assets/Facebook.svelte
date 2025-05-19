@@ -10,8 +10,8 @@
 <svg
     version="1.1"
     id="svg9"
-    width="{width}"
-    height="{height}"
+    width={width}
+    height={height}
     viewBox="0 0 700 700"
     xmlns="http://www.w3.org/2000/svg"
     xmlns:svg="http://www.w3.org/2000/svg"

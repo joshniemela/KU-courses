@@ -1,11 +1,11 @@
 <script lang="ts">
-    import { run } from 'svelte/legacy';
+    import { run } from "svelte/legacy";
 
     import "../app.css";
     import { browser } from "$app/environment";
     import { page } from "$app/stores";
     interface Props {
-        children?: import('svelte').Snippet;
+        children?: import("svelte").Snippet;
     }
 
     let { children }: Props = $props();
@@ -21,7 +21,7 @@
 
 <svelte:head>
     <script
-        data-goatcounter-settings="{'{"allow-local":true, "no_onload": true}'}"
+        data-goatcounter-settings={'{"allow-local":true, "no_onload": true}'}
         data-goatcounter="https://kucourses.goatcounter.com/count"
         async
         src="//gc.zgo.at/count.js"

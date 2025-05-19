@@ -1,5 +1,5 @@
 <script>
-    import { createBubbler } from 'svelte/legacy';
+    import { createBubbler } from "svelte/legacy";
 
     const bubble = createBubbler();
     import theme from "../theme";
@@ -12,7 +12,7 @@
 <button
     class="svg-container"
     style="--bg: {BgColor}; --text-color: {fill} --bg-Hover: {fillHover}; --text-color-Hover: {BgColorHover}"
-    onclick={bubble('click')}
+    onclick={bubble("click")}
 >
     <svg
         xmlns="http://www.w3.org/2000/svg"

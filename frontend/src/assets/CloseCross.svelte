@@ -10,9 +10,9 @@
 
 <svg
     xmlns="http://www.w3.org/2000/svg"
-    class="{classes}"
-    width="{width}"
-    height="{height}"
+    class={classes}
+    width={width}
+    height={height}
     viewBox="0 0 24 24"
 >
     <path
