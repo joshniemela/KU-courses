@@ -10,3 +10,28 @@ body.modal-open {
 html {
     overflow-y: scroll;
 }
+
+@layer utilities {
+    input[type="checkbox"] {
+        @apply appearance-none w-4 h-4 border-2 border-kuGray rounded-none bg-white checked:bg-kuRed;
+    }
+}
+
+@layer components {
+    input[type="checkbox"]::after {
+        content: "";
+        position: absolute;
+        display: none;
+        top: 9px;
+        left: 6px;
+        width: 4px;
+        height: 8px;
+        border: solid white;
+        border-width: 0 2px 2px 0;
+        transform: rotate(45deg);
+    }
+
+    input[type="checkbox"]:checked::after {
+        display: block;
+    }
+}
