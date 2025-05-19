@@ -29,7 +29,7 @@
                 class="flex items-center relative cursor-pointer py-1.5 ml-2"
             >
                 <input
-                    class="text-kuRed"
+                    class="text-kuRed accent-current"
                     type="checkbox"
                     bind:group={selected}
                     name="header_name"
