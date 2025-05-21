@@ -81,9 +81,9 @@
                 (department) => departmentMap[department]
             ),
 
-            // Convert Continous Assessment to ContinuousAssessment
+            // Convert Continuous Assessment to ContinuousAssessment
             exams: filters.exams.map((exam) =>
-                exam === "Continuous Assessment" ? "ContinuousAssessment" : exam
+                exam === "Continuous" ? "ContinuousAssessment" : exam
             ),
         };
 
@@ -225,18 +225,27 @@
             </button>
         </div>
         <div>
-            <div class="grid grid-cols-2 gap-4 pb-2 md:grid-cols-4 md:pb-0">
+            <div class="grid grid-cols-2 gap-4 pb-2 md:grid-cols-5 md:pb-0">
                 <CheckboxMenu
                     header_name="Block"
                     options={["1", "2", "3", "4", "Summer"]}
                     bind:selected={$queryStore.blocks}
                 />
 
-                <CheckboxMenu
-                    header_name="Study Level"
-                    options={["Bachelor", "Master"]}
-                    bind:selected={$queryStore.degrees}
-                />
+                <div>
+                    <div class="pb-2">
+                        <CheckboxMenu
+                            header_name="Study Level"
+                            options={["Bachelor", "Master"]}
+                            bind:selected={$queryStore.degrees}
+                        />
+                    </div>
+                    <CheckboxMenu
+                        header_name="Language"
+                        options={["English", "Danish"]}
+                        bind:selected={$queryStore.languages}
+                    />
+                </div>
 
                 <CheckboxMenu
                     header_name="Schedule Group"
@@ -250,7 +259,7 @@
                         "Written",
                         "Oral",
                         "Assignment",
-                        "Continuous Assessment",
+                        "Continuous",
                         "ITX",
                         "Other",
                     ]}
