@@ -9,22 +9,43 @@
         {
             date: "2024-01-13",
             changes: [
-                "Fixed opening in new tab and copying of course links",
-                "Fixed back button when coming from an external page",
+                "Fixed opening in new tab and copying of course links.",
+                "Fixed back button when coming from an external page.",
             ],
         },
         {
             date: "2024-02-05",
             changes: [
                 "Fixed that performing a vector search and a normal filter will destroy results that should appear.",
-                "Fixed that statistics weren't being updated",
+                "Fixed that statistics weren't being updated.",
             ],
         },
         {
             date: "2024-06-24",
             changes: [
-                "Switched to a quantised multilingual search so that results are more accurate, faster and work with all languages",
+                "Switched to a quantised multilingual search so that results are more accurate, faster and work with all languages.",
             ],
+        },
+        {
+            date: "2025-04-14",
+            changes: [
+                "Fixed double fetching",
+                "Migrated to Svelte 5",
+                "Migrated to SvelteKit 2",
+            ],
+        },
+
+        {
+            date: "2025-05-19",
+            changes: [
+                "Update styling of checkboxes.",
+                "Fix unhandled exception when parsing exam types",
+            ],
+        },
+
+        {
+            date: "2025-05-21",
+            changes: ["Added the ability to search by language."],
         },
     ];
 
@@ -50,8 +71,8 @@
                     <CloseCross classes="size-6" />
                 </button>
             </div>
-            <ul class="space-y-4 -mt-4 px-6">
-                {#each changelogItems as { date, changes }}
+            <ul class="space-y-4 mb-6 mt-2 px-6">
+                {#each changelogItems.reverse() as { date, changes }}
                     <li>
                         <p class="font-bold text-lg">{date}</p>
                         <ul>
@@ -62,13 +83,6 @@
                     </li>
                 {/each}
             </ul>
-            <button
-                class="my-6 py-2 px-6 mx-auto block bg-kuRed text-white"
-                type="button"
-                onclick={modalStore.close}
-            >
-                Close
-            </button>
         </div>
     </dialog>
 {/if}
