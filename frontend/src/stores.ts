@@ -2,6 +2,9 @@ import { writable } from "svelte/store";
 import type { Writable } from "svelte/store";
 import { browser } from "$app/environment";
 
+const VERSION = "v1.0.0";
+const VERSION_KEY = "version";
+
 // Generic store functions
 function setSessionStore<T>(key: string, value: T): void {
     sessionStorage.setItem(key, JSON.stringify(value));
@@ -14,6 +17,14 @@ function getSessionStore<T>(key: string): T | null {
 // A generic writable store that persists to sessionStorage
 export function writableSession<T>(key: string, value: T): Writable<T> {
     if (!browser) return writable(value); // Mock for SSR
+    const storedVersion = sessionStorage.getItem(VERSION_KEY);
+
+    // Cache busting
+    if (storedVersion !== VERSION) {
+        sessionStorage.removeItem(key);
+        sessionStorage.setItem(VERSION_KEY, VERSION);
+    }
+
     const sessionValue = getSessionStore<T>(key);
     if (!sessionValue) setSessionStore(key, value);
 
@@ -33,6 +44,7 @@ const emptyQuery = {
     schedules: [],
     exams: [],
     departments: [],
+    languages: [],
     search: "",
 };
 
@@ -46,6 +58,7 @@ export function clearAll() {
         store.schedules = [];
         store.exams = [];
         store.departments = [];
+        store.languages = [];
         store.search = "";
         return store;
     });

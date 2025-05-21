@@ -81,9 +81,9 @@
                 (department) => departmentMap[department]
             ),
 
-            // Convert Continous Assessment to ContinuousAssessment
+            // Convert Continuous Assessment to ContinuousAssessment
             exams: filters.exams.map((exam) =>
-                exam === "Continuous Assessment" ? "ContinuousAssessment" : exam
+                exam === "Continuous" ? "ContinuousAssessment" : exam
             ),
         };
 
@@ -232,11 +232,20 @@
                     bind:selected={$queryStore.blocks}
                 />
 
-                <CheckboxMenu
-                    header_name="Study Level"
-                    options={["Bachelor", "Master"]}
-                    bind:selected={$queryStore.degrees}
-                />
+                <div>
+                    <div class="pb-2">
+                        <CheckboxMenu
+                            header_name="Study Level"
+                            options={["Bachelor", "Master"]}
+                            bind:selected={$queryStore.degrees}
+                        />
+                    </div>
+                    <CheckboxMenu
+                        header_name="Language"
+                        options={["English", "Danish"]}
+                        bind:selected={$queryStore.languages}
+                    />
+                </div>
 
                 <CheckboxMenu
                     header_name="Schedule Group"
@@ -250,7 +259,7 @@
                         "Written",
                         "Oral",
                         "Assignment",
-                        "Continuous Assessment",
+                        "Continuous",
                         "ITX",
                         "Other",
                     ]}
