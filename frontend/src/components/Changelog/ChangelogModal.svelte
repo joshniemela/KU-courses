@@ -45,7 +45,10 @@
 
         {
             date: "2025-05-21",
-            changes: ["Added the ability to search by language."],
+            changes: [
+                "Added the ability to search by language.",
+                "Made cancelled courses more obvious.",
+            ],
         },
     ];
 

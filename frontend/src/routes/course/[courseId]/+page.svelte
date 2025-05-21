@@ -10,6 +10,9 @@
 
     let { data } = $props();
     let { courseId, course, totalHours, statistics, loading } = data;
+    const isCancelled =
+        course.title.toLowerCase().includes("aflyst") ||
+        course.title.toLowerCase().includes("cancelled");
 
     /**
      * This function takes an exam duration and changes the unit depending on the duration, e.g. 120 minutes -> 2 hours
@@ -150,7 +153,14 @@
     </a>
     <div class="min-h-screen mx-auto px-10 lg:px-0 lg:w-[900px] mt-6">
         <div class="items-left mb-5 px-4 text-center">
-            <h1 class="text-2xl font-bold md:text-4xl">{course.title}</h1>
+            <h1
+                class="text-2xl font-bold md:text-4xl {isCancelled
+                    ? 'text-red-500'
+                    : ''}
+        "
+            >
+                {course.title}
+            </h1>
             <h2>{course.id} - SCIENCE</h2>
         </div>
 

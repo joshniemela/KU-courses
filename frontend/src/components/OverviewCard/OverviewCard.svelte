@@ -55,6 +55,10 @@
         }
         return block_vector;
     }
+
+    const isCancelled =
+        course.title.toLowerCase().includes("aflyst") ||
+        course.title.toLowerCase().includes("cancelled");
 </script>
 
 <a
@@ -64,8 +68,12 @@
     <div class="p-2">
         <div class="flex flex-row justify-between overflow-x-auto">
             <div class="w-full">
-                <h1 class="text-l font-bold text-center z-10">
-                    {@html course.title}
+                <h1
+                    class="text-l font-bold text-center z-10 {isCancelled
+                        ? 'text-red-500'
+                        : ''}"
+                >
+                    {course.title}
                 </h1>
                 <h2>
                     {course.id} - SCIENCE
