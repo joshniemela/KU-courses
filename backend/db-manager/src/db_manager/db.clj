@@ -176,6 +176,7 @@
         exams (get predicate-map :exams)
         degrees (get predicate-map :degrees)
         departments (get predicate-map :departments)
+        languages (get predicate-map :languages)
         search (get predicate-map :search)
         courses (denest (d/q (concat '[:find ?course-id :in $
                                        :where
@@ -184,7 +185,8 @@
                                        [?e :course/schedule ?schedule]
                                        [?e :course/exam ?exam]
                                        [?e :course/degree ?degree]
-                                       [?e :course/department ?department]]
+                                       [?e :course/department ?department]
+                                       [?e :course/language ?language]]
                                      (if (empty? blocks)
                                        []
                                        (list (cons 'or (mapv (fn [block] (vector '?block ':block/type block)) blocks))))
@@ -203,7 +205,10 @@
 
                                      (if (empty? departments)
                                        []
-                                       (list (cons 'or (mapv (fn [department] (vector '?department ':department/name department)) departments)))))
+                                       (list (cons 'or (mapv (fn [department] (vector '?department ':department/name department)) departments))))
+                                     (if (empty? languages)
+                                       []
+                                       (list (cons 'or (mapv (fn [language] (vector '?language ':language/name language)) languages)))))
                              @conn))]
     (if (empty? search)
       courses
