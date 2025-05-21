@@ -11,7 +11,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Run SSH commands 
+      - name: Run SSH commands
         uses: appleboy/ssh-action@v1.0.3
         with:
           host: ${{ secrets.HOST }}
@@ -20,6 +20,6 @@ jobs:
           port: 22
           script: |
             cd /dockers/KU-courses
-            git pull
-            git switch main
+            git fetch
+            git reset --hard origin/main
             docker compose up -d --build
