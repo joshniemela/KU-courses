@@ -2,7 +2,6 @@
     import Facebook from "../../assets/Facebook.svelte";
     import Github from "../../assets/Github.svelte";
     import { obfuscateEmail } from "../../stores";
-    import { onMount } from "svelte";
 
     interface Props {
         additionalClasses?: string;
@@ -10,11 +9,7 @@
 
     let { additionalClasses = "" }: Props = $props();
 
-    let email_fn = $state(() => "");
-
-    onMount(() => {
-        email_fn = obfuscateEmail("josh@jniemela.dk");
-    });
+    let email_fn = obfuscateEmail("josh@jniemela.dk");
 </script>
 
 <footer
@@ -46,7 +41,7 @@
             target="_blank"
             href="https://github.com/joshniemela/KU-courses"
         >
-            <Github width="4rem" height="4rem" />
+            <Github width="3rem" height="3rem" />
         </a>
 
         <a
@@ -55,14 +50,14 @@
             target="_blank"
             class="block animated-icon md:pr-8 pr-0"
         >
-            <Facebook width="4rem" height="4rem" />
+            <Facebook width="3rem" height="3rem" />
         </a>
     </div>
 </footer>
 
 <style scoped>
     .animated-icon {
-        @apply duration-300;
+        transition-duration: 300ms;
 
         transform: scale(1);
     }

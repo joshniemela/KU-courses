@@ -37,21 +37,20 @@
     const url = "https://kucourses.dk/course/" + courseId;
 
     // To every li tag, add class="list-square list-inside" in content["learning-outcome"]
-    let content = $state(course.content);
-    if (content != null) {
-        content = content.replaceAll(
-            "<li>",
-            '<li class="list-square list-inside ml-4">'
-        );
-    }
 
-    let learning_outcome = $state(course["learning-outcome"]);
-    if (learning_outcome != null) {
-        learning_outcome = learning_outcome.replaceAll(
-            "<li>",
-            '<li class="list-square list-inside ml-4">'
-        );
-    }
+    let content = course.content
+        ? course.content.replaceAll(
+              "<li>",
+              '<li class="list-square list-inside ml-4">'
+          )
+        : null;
+
+    let learning_outcome = course["learning-outcome"]
+        ? course["learning-outcome"].replaceAll(
+              "<li>",
+              '<li class="list-square list-inside ml-4">'
+          )
+        : null;
 
     // this takes a vector of maps ex: [{:type "A"}, {:type "B"}] and returns a vector of strings ex: ["A", "B"]
     function denest_type_maps(map_vector: any) {

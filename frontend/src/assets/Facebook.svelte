@@ -14,7 +14,6 @@
     height={height}
     viewBox="0 0 700 700"
     xmlns="http://www.w3.org/2000/svg"
-    xmlns:svg="http://www.w3.org/2000/svg"
 >
     <defs id="defs13">
         <clipPath clipPathUnits="userSpaceOnUse" id="clipPath25">

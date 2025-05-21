@@ -22,7 +22,7 @@
     }
 
     // this takes a vector of maps ex: [{:type "A"}, {:type "B"}] and returns a vector of strings ex: ["A", "B"]
-    function denest_type_maps(map_vector: any) {
+    function denest_type_maps(map_vector: { type: string }[]): string[] {
         let type_vector: string[] = [];
         for (let i = 0; i < map_vector.length; i++) {
             type_vector.push(map_vector[i].type);
@@ -30,26 +30,26 @@
         return type_vector;
     }
 
-    function coerce_blocks_to_int(blocks: any) {
+    function coerce_blocks_to_int(blocks: string[]): number[] {
         // blocks are written in One Two Three Four
         // this function converts them to "1" "2" "3" "4"
-        let block_vector: string[] = [];
+        let block_vector: number[] = [];
         for (let i = 0; i < blocks.length; i++) {
             switch (blocks[i]) {
                 case "One":
-                    block_vector.push("1");
+                    block_vector.push(1);
                     break;
                 case "Two":
-                    block_vector.push("2");
+                    block_vector.push(2);
                     break;
                 case "Three":
-                    block_vector.push("3");
+                    block_vector.push(3);
                     break;
                 case "Four":
-                    block_vector.push("4");
+                    block_vector.push(4);
                     break;
-                default:
-                    block_vector.push(blocks[i]);
+                case "Summer":
+                    block_vector.push(5);
                     break;
             }
         }
@@ -95,7 +95,7 @@
                                 denest_type_maps(course.block)
                             )
                                 .sort((a, b) => a - b) // Ensure numeric sorting
-                                .reduce((acc, curr, index, arr) => {
+                                .reduce((acc: number[][], curr, index, arr) => {
                                     // Convert consecutive numbers to ranges
                                     if (
                                         index === 0 ||
@@ -107,11 +107,17 @@
                                     }
                                     return acc;
                                 }, [])
-                                .map((range) =>
-                                    range.length === 2
-                                        ? `${range[0]}-${range[1]}`
-                                        : range[0]
-                                ) // Format ranges or single values
+                                .map((range) => {
+                                    if (range.length === 2) {
+                                        return `${range[0]}-${range[1]}`;
+                                    } else if (range[0] === 5) {
+                                        // Map block 5 to "Summer"
+                                        return "Summer";
+                                    } else {
+                                        return `${range[0]}`;
+                                    }
+                                })
+                                // Format ranges or single values
                                 .join(", ")}
                         </td>
                         <!--TODO: If this is an "other", this breaks and just shows object object-->

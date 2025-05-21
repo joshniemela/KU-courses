@@ -11,7 +11,7 @@
     import { apiUrl } from "../stores";
     import { onMount } from "svelte";
     import OverviewCard from "../components/OverviewCard/OverviewCard.svelte";
-    import type { Overview } from "../course";
+    import type { Overview, Filters } from "../course";
 
     let loading = $state(true);
     let error: string | null = $state(null);
@@ -45,12 +45,12 @@
             loadMoreCourses();
         }
     };
-    const fetchCourses = async (filters) => {
+    const fetchCourses = async (filters: Filters) => {
         loading = true;
         // prepreocess the filters so they are in the correct format
         // Convert blocks to longer format
         // 1, 2, 3, 4 => "One", "Two", "Three", "Four
-        const blockMap = {
+        const blockMap: Record<"1" | "2" | "3" | "4" | "Summer", string> = {
             "1": "One",
             "2": "Two",
             "3": "Three",
@@ -76,7 +76,9 @@
 
         let coerced_filters = {
             ...filters,
-            blocks: filters.blocks.map((block) => blockMap[block]),
+            blocks: filters.blocks.map(
+                (block) => blockMap[block as keyof typeof blockMap]
+            ),
             departments: filters.departments.map(
                 (department) => departmentMap[department]
             ),

@@ -20,10 +20,10 @@
 
     const total = data.reduce((acc, row) => acc + row.count, 0);
 
-    let graph: HTMLCanvasElement = $state();
+    let graph: HTMLCanvasElement | undefined = $state();
     onMount(() => {
         // We grab the canvas context
-        const ctx = graph.getContext("2d");
+        const ctx = graph?.getContext("2d");
 
         // If the canvas context != null, we can create our bar chart
         if (ctx) {

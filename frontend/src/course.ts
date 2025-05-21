@@ -144,3 +144,14 @@ export const empty_overview: Overview = {
     id: "",
     degree: [],
 };
+
+// Type for query store
+export interface Filters {
+    blocks: string[];
+    degrees: string[];
+    schedules: string[];
+    exams: string[];
+    departments: string[];
+    languages: string[];
+    search: string;
+}
