@@ -14,17 +14,18 @@ fn double_hex_to_u8(hex: &str) -> u8 {
 }
 
 fn deobfuscate_email(obfuscated_email: &str) -> Result<String> {
-    let split = obfuscated_email.split('-');
+    let mut split = obfuscated_email.split('-');
     if split.clone().count() == 1 {
         return Ok(obfuscated_email.to_string());
     }
-    let text = split.last().unwrap();
+    let text = split.next_back().unwrap();
 
     let mut email = String::new();
     // Iterate through the split and move in steps of two
     // we offset the numbers by 0..25 since thats how they are obfuscated
     // if the regex matches an email we return it
     // else we continue incrementing the offset and hoping we find a match
+    let regex = regex::Regex::new(r"(.+@.+\..+)").unwrap();
     for i in 0..25 {
         for j in (0..text.len()).step_by(2) {
             let hex = &text[j..j + 2];
@@ -32,7 +33,6 @@ fn deobfuscate_email(obfuscated_email: &str) -> Result<String> {
             email.push(u8 as char);
         }
 
-        let regex = regex::Regex::new(r"(.+@.+\..+)").unwrap();
         if regex.is_match(&email) {
             return Ok(email);
         }

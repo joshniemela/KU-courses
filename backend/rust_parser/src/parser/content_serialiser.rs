@@ -24,12 +24,12 @@ pub fn grab_htmls(dom: &VDom) -> Result<Description> {
     let recommended_qualifications_html = dom
         .get_element_by_id("course-skills") // this might be none
         .and_then(|elem| {
-            return Some(
+            Some(
                 elem.get(parser)
                     .context("Unable to grab parser for the dom, this should not happen")
                     .ok()?
                     .inner_html(parser),
-            );
+            )
         });
 
     let recommended_qualifications_html =
