@@ -15,7 +15,7 @@ WORKDIR /app
 COPY --from=builder /app/target/release/vector_store ./
 
 RUN apt-get update 
-RUN apt-get install -y libssl3 
+RUN apt-get install -y libssl3 ca-certificates
 
 ENV SERVER_ADDRESS=0.0.0.0
 ENV SERVER_PORT=4000

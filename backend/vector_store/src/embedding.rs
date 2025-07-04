@@ -30,12 +30,9 @@ pub struct Embedder {
 
 impl Embedder {
     pub fn new() -> Self {
-        let model: TextEmbedding = TextEmbedding::try_new(InitOptions {
-            model_name: EmbeddingModel::AllMiniLML12V2Q,
-            show_download_progress: true,
-            ..Default::default()
-        })
-        .expect("Failed to load model, please check your internet connection");
+        let model: TextEmbedding =
+            TextEmbedding::try_new(InitOptions::new(EmbeddingModel::AllMiniLML12V2Q))
+                .expect("Failed to load model, please check your internet connection");
         Self { model }
     }
 
