@@ -50,6 +50,13 @@
                 "Made cancelled courses more obvious.",
             ],
         },
+        {
+            date: "2025-08-09",
+            changes: [
+                "Fixed text search being cleared on page refresh or navigation",
+                "Fixed text search occasionally filtering out courses (it should only sort courses)",
+            ],
+        },
     ];
 
     // Start with modal closed
