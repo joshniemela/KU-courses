@@ -154,7 +154,7 @@
 
     // This is the search button state, we don't want to update
     // the search every letter, or we spam the server with requests
-    let search = $state("");
+    let search = $state($queryStore.search ?? "");
     let debounceTimeout: NodeJS.Timeout;
 
     $effect(() => {
