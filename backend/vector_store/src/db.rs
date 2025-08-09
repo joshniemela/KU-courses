@@ -271,8 +271,7 @@ FROM
 WHERE
     rn = 1
 ORDER BY
-    total_distance
-LIMIT 200;
+    total_distance;
 ")
         .bind(Vector::from(query_embedding.to_owned()))
         .fetch_all(&self.pool)
