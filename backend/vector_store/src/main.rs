@@ -108,10 +108,10 @@ async fn main() {
         .with_state(state);
     let addr = env::var("SERVER_ADDRESS").expect("SERVER_ADDRESS must be set");
     let port = env::var("SERVER_PORT").expect("SERVER_PORT must be set");
-    let listener = tokio::net::TcpListener::bind(&format!("{}:{}", addr, port))
+    let listener = tokio::net::TcpListener::bind(&format!("{addr}:{port}"))
         .await
         .expect("Failed to bind to port");
-    println!("listening on {}", port);
+    println!("Listening on {addr}:{port}");
     axum::serve(listener, app)
         .await
         .expect("Failed to start server, this should not happen");

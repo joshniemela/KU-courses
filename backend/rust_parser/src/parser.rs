@@ -322,25 +322,21 @@ pub fn parse_course(html: &str) -> Result<Course> {
         content.is_some(),
         "Unable to find content element, this should not happen"
     );
-    let info = parse_course_info(&dom).context(format!("Unable to parse course: {}", title))?;
+    let info = parse_course_info(&dom).context(format!("Unable to parse course: {title}"))?;
     let logistic_info = parse_logistic_info(&dom).context(format!(
-        "Unable to parse logistic information for course: {}",
-        title
+        "Unable to parse logistic information for course: {title}"
     ))?;
 
     let exam_info = parse_course_exams(&dom).context(format!(
-        "Unable to parse exam information for course: {}",
-        title
+        "Unable to parse exam information for course: {title}"
     ))?;
 
     let workload_info = parse_workloads(&dom).context(format!(
-        "Unable to parse workload information for course: {}",
-        title
+        "Unable to parse workload information for course: {title}"
     ))?;
 
     let html_info = grab_htmls(&dom).context(format!(
-        "Unable to grab html information for course: {}",
-        title
+        "Unable to grab html information for course: {title}"
     ))?;
 
     Ok(Course {

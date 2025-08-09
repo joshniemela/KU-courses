@@ -36,7 +36,7 @@ fn count_fails(htmls_dir: &str, json_dir: &str) -> (usize, usize) {
                     continue;
                 } else {
                     fails += 1;
-                    println!("Error: {:?}\n\n", e);
+                    println!("Error: {e:?}\n\n");
                 }
             }
         }
@@ -76,7 +76,7 @@ mod tests {
 
     #[test]
     fn test_lsls10061_u() {
-        let html = std::fs::read_to_string(format!("{}/LSLS10061U.html", TEST_HTMLS_DIR)).unwrap();
+        let html = std::fs::read_to_string(format!("{TEST_HTMLS_DIR}/LSLS10061U.html")).unwrap();
         let course = parser::parse_course(&html);
         let expected_course = Course {
             title: "International Naturforvaltning".to_string(),
@@ -140,7 +140,7 @@ mod tests {
     #[ignore]
     #[test]
     fn test_nbik15000_u() {
-        let html = std::fs::read_to_string(format!("{}/NBIK15000U.html", TEST_HTMLS_DIR)).unwrap();
+        let html = std::fs::read_to_string(format!("{TEST_HTMLS_DIR}/NBIK15000U.html")).unwrap();
         let course = parser::parse_course(&html);
         let expected_course = Course {
             title: "BAdvanced Plant Identification".to_string(),

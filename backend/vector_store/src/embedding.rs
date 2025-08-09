@@ -148,7 +148,7 @@ fn passage_embed(
     // for each passage, add passage: to the front of it
     let passages: Vec<String> = passages
         .par_iter()
-        .map(|x| format!("passage: {}", x))
+        .map(|x| format!("passage: {x}"))
         .collect();
     model.embed(passages, batch_size)
 }
@@ -159,6 +159,6 @@ fn passage_embed(
 fn query_embed(query: &str, model: &TextEmbedding) -> Result<Embedding> {
     // add query: to the front of the query
     model
-        .embed(vec![format!("query: {}", query)], None)
+        .embed(vec![format!("query: {query}")], None)
         .map(|x| x[0].clone())
 }
