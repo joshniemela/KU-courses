@@ -1,4 +1,5 @@
 # KU-Courses
+⚠️ Future developement will continue on [Forgejo](https://git.argmin.dk/joshnie/KU-courses)
 
 ![Example of KU-Courses](frontend/static/assets/preview.png "KU Courses")
 
